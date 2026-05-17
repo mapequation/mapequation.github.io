@@ -26,6 +26,7 @@ export type PreviewGraph =
       links: PreviewLink[];
       isStateNetwork: boolean;
       numLevels: number;
+      oneLevelCodeLength: number | null;
     }
   | {
       status: "empty" | "error";
@@ -34,6 +35,7 @@ export type PreviewGraph =
       links: PreviewLink[];
       isStateNetwork: boolean;
       numLevels: number;
+      oneLevelCodeLength: number | null;
     };
 
 const emptyGraph: Omit<
@@ -44,6 +46,7 @@ const emptyGraph: Omit<
   links: [],
   isStateNetwork: false,
   numLevels: 1,
+  oneLevelCodeLength: null,
 };
 
 export function parseInfomapPreviewResult(result: Result): PreviewGraph {
@@ -106,6 +109,8 @@ export function parseInfomapPreviewResult(result: Result): PreviewGraph {
     links,
     isStateNetwork,
     numLevels: typeof json.numLevels === "number" ? json.numLevels : 1,
+    oneLevelCodeLength:
+      typeof json.codelength === "number" ? json.codelength : null,
   };
 }
 

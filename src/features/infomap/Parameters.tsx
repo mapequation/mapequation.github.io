@@ -14,7 +14,7 @@ import { Select } from "chakra-react-select";
 import type { Ref } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { LuMinus, LuPlus, LuSearch, } from "react-icons/lu";
+import { LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import useStore from "../../state";
 import { applyArgsToParams, createParams } from "../../state/parameters";
 import type { InfomapParameter } from "../../state/types";

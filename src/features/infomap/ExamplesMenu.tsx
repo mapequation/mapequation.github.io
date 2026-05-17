@@ -85,6 +85,12 @@ const categories: { label: string; networks: ExampleNetwork[] }[] = [
         value: networks.weakBridges,
         args: undirected,
       },
+      {
+        name: "bipartite",
+        label: "Bipartite",
+        value: networks.bipartite,
+        args: undirected,
+      },
     ],
   },
   {
@@ -103,7 +109,7 @@ const categories: { label: string; networks: ExampleNetwork[] }[] = [
     networks: [
       {
         name: "modular_w",
-        label: "Weighted",
+        label: "Modular",
         value: networks.modular_w,
         args: undirected,
       },
@@ -120,7 +126,7 @@ const categories: { label: string; networks: ExampleNetwork[] }[] = [
     networks: [
       {
         name: "modular_wd",
-        label: "Weighted (directed)",
+        label: "Modular (directed)",
         value: networks.modular_wd,
         args: directed,
       },
@@ -133,18 +139,7 @@ const categories: { label: string; networks: ExampleNetwork[] }[] = [
     ],
   },
   {
-    label: "Bipartite",
-    networks: [
-      {
-        name: "bipartite",
-        label: "Bipartite",
-        value: networks.bipartite,
-        args: undirected,
-      },
-    ],
-  },
-  {
-    label: "Multilayer",
+    label: "Higher-order",
     networks: [
       {
         name: "multilayerIntra",
@@ -164,11 +159,6 @@ const categories: { label: string; networks: ExampleNetwork[] }[] = [
         value: networks.multilayer,
         args: undirected,
       },
-    ],
-  },
-  {
-    label: "Memory",
-    networks: [
       {
         name: "states",
         label: "State network",
@@ -300,12 +290,7 @@ export default function ExampleNetworksList({
                 store.network.value === exampleValue;
 
               return (
-                <Flex
-                  as="li"
-                  key={network.name}
-                  flex={{ base: "0 0 100%", sm: "0 0 calc(50% - 0.25rem)" }}
-                  minW={0}
-                >
+                <Flex as="li" key={network.name}>
                   <Button
                     type="button"
                     size="xs"
@@ -317,7 +302,8 @@ export default function ExampleNetworksList({
                     onClick={() => onSelect(network)}
                     px={2}
                     _hover={{ bg: "white", borderColor: "gray.300" }}
-                    w="100%"
+                    w="auto"
+                    whiteSpace="nowrap"
                   >
                     {isLoading ? (
                       <Spinner size="xs" />

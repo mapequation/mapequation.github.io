@@ -1,4 +1,4 @@
-import { Box, Grid, HStack, Stat, } from "@chakra-ui/react";
+import { Box, Grid, HStack, Stat } from "@chakra-ui/react";
 import type { ModuleFlowMap } from "../../state/output";
 import {
   type ModuleId,
@@ -75,6 +75,7 @@ export function InfomapStatsStrip({
   modules,
   nodeCount,
   numLevels,
+  oneLevelCodeLength,
   trialSetting,
 }: {
   codeLength: number | null;
@@ -85,6 +86,7 @@ export function InfomapStatsStrip({
   modules: ModuleMap;
   nodeCount: number;
   numLevels: number | null;
+  oneLevelCodeLength: number | null;
   trialSetting: string | null;
 }) {
   const segments = moduleSegments(modules, moduleFlows).sort(
@@ -93,6 +95,7 @@ export function InfomapStatsStrip({
   const moduleCount = segments.length;
   const visibleSegments = moduleStripSegments(segments);
   const trialCount = parseTrialCount(consoleContent);
+  const displayedCodeLength = codeLength ?? oneLevelCodeLength;
 
   return (
     <Grid
@@ -107,9 +110,8 @@ export function InfomapStatsStrip({
       borderWidth="1px"
     >
       <ResultStat
-        label="Top Modules"
-        value={moduleCount > 0 ? String(moduleCount) : "—"}
-        unit="modules"
+        value={moduleCount > 0 ? String(moduleCount) : "0"}
+        unit={numLevels != null && numLevels < 3 ? "modules" : "top modules"}
         detail={
           nodeCount > 0
             ? `${nodeCount.toLocaleString()} nodes`
@@ -141,9 +143,8 @@ export function InfomapStatsStrip({
         </HStack>
       </ResultStat>
       <ResultStat
-        label="Hierarchy"
-        value={numLevels === null ? "—" : String(numLevels)}
-        unit={numLevels === 1 ? "level" : "levels"}
+        value={numLevels === null ? "1" : String(numLevels)}
+        unit={numLevels === null || numLevels === 1 ? "level" : "levels"}
         detail={
           numLevels === null
             ? "Awaiting result"
@@ -153,22 +154,22 @@ export function InfomapStatsStrip({
         }
       />
       <ResultStat
-        label="Codelength"
-        value={formatCodeLengthValue(codeLength)}
-        unit={codeLength === null ? undefined : "bits"}
+        value={formatCodeLengthValue(displayedCodeLength)}
+        unit={displayedCodeLength === null ? undefined : "bits"}
         detail={
-          codelengthSavings === null
-            ? "Run Infomap for savings"
-            : `${new Intl.NumberFormat(undefined, {
-                maximumFractionDigits: 2,
-                style: "percent",
-              }).format(codelengthSavings)} savings`
+          codeLength === null && oneLevelCodeLength !== null
+            ? "One-level codelength"
+            : codelengthSavings === null
+              ? "Run Infomap for codelength"
+              : `${new Intl.NumberFormat(undefined, {
+                  maximumFractionDigits: 2,
+                  style: "percent",
+                }).format(codelengthSavings)} savings`
         }
       />
       <ResultStat
-        label="Trials"
-        value={trialCount === null ? (trialSetting ?? "—") : String(trialCount)}
-        unit="trials"
+        value={trialCount === null ? (trialSetting ?? "1") : String(trialCount)}
+        unit={trialCount === null ? "trial" : "trials"}
         detail={trialCount === null ? "Current setting" : "Latest run"}
       />
     </Grid>
@@ -178,13 +179,11 @@ export function InfomapStatsStrip({
 function ResultStat({
   children,
   detail,
-  label,
   unit,
   value,
 }: {
   children?: React.ReactNode;
   detail: string;
-  label: string;
   unit?: string;
   value: string;
 }) {
@@ -198,7 +197,6 @@ function ResultStat({
       borderColor="gray.200"
       _last={{ borderRightWidth: 0 }}
     >
-      <Stat.Label>{label}</Stat.Label>
       <Stat.ValueText alignItems="baseline">
         {value}
         {unit && <Stat.ValueUnit>{unit}</Stat.ValueUnit>}

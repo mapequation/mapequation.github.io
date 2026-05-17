@@ -26,13 +26,14 @@ import {
   useState,
 } from "react";
 import {
-  LuCheck,
   LuChevronDown,
+  LuChevronRight,
   LuDownload,
   LuFiles,
   LuPanelLeftOpen,
   LuPanelRightOpen,
   LuPlay,
+  LuTrash2,
   LuX,
 } from "react-icons/lu";
 import useStore from "../../state";
@@ -76,17 +77,29 @@ const MenuItem = Menu.Item as FC<
 const useIsomorphicLayoutEffect =
   typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-const inputTabs = [
-  { key: "network", label: "Network" },
-  { key: "cluster data", label: "Clusters" },
-  { key: "meta data", label: "Metadata" },
-] satisfies { key: InputName; label: string }[];
-
 const inputPlaceholders = {
   network: "Paste network data here…",
   "cluster data": "Paste cluster data here…",
   "meta data": "Paste metadata here…",
 } satisfies Record<InputName, string>;
+
+const inputCards = [
+  {
+    key: "network",
+    label: "Network",
+    description: "Network data used as the main Infomap input.",
+  },
+  {
+    key: "cluster data",
+    label: "Clusters",
+    description: "Optional partition data for evaluating known modules.",
+  },
+  {
+    key: "meta data",
+    label: "Metadata",
+    description: "Optional node metadata for metadata-aware runs.",
+  },
+] satisfies { key: InputName; label: string; description: string }[];
 
 type EvaluationMetadata = {
   codeLength: number | null;
@@ -321,6 +334,9 @@ export default function InfomapOnline() {
   const [isRunning, setIsRunning] = useState(false);
   const [isInputLoading, setIsInputLoading] = useState(false);
   const [lastRun, setLastRun] = useState<LastRunSummary | null>(null);
+  const [openInputCards, setOpenInputCards] = useState<Set<InputName>>(
+    () => new Set(),
+  );
   const outputBufferRef = useRef<string[]>([]);
   const outputFrameRef = useRef<number | null>(null);
   const runStartedAtRef = useRef(0);
@@ -644,7 +660,7 @@ export default function InfomapOnline() {
 
   const onCopyClusters = () => store.output.setDownloaded(true);
 
-  const { activeInput, network, clusterData, metaData, output, params } = store;
+  const { network, clusterData, metaData, output, params } = store;
   const [clusterEvaluation, setClusterEvaluation] =
     useState<EvaluationMetadata>({
       codeLength: null,
@@ -793,31 +809,58 @@ export default function InfomapOnline() {
     "meta data": params.getParam("--meta-data").accept,
   };
 
-  const inputValue = inputOptions[activeInput].value;
-  const hasActiveInputValue = Boolean(inputValue);
-  const inputLineCount = inputValue ? inputValue.split("\n").length : 0;
-  const hasNetworkValue = Boolean(network.value);
-  const _networkCardName = hasNetworkValue
-    ? network.name || "Current network"
-    : "—";
-  const _networkCardStats = !hasNetworkValue
-    ? "No input"
-    : previewGraph.status === "ok"
-      ? `${previewGraph.nodes.length.toLocaleString()} nodes · ${previewGraph.links.length.toLocaleString()} links`
-      : network.name
-        ? "File selected · preview unavailable"
-        : "No file · preview unavailable";
   const inputPreviewLineLimit = 500;
-  const isLargeInput =
-    inputLineCount > inputPreviewLineLimit || inputValue.length > 200_000;
-  const displayInputValue = isLargeInput
-    ? `${inputValue
+  const getInputDisplayValue = (value: string) => {
+    const lineCount = value ? value.split("\n").length : 0;
+    const isLarge = lineCount > inputPreviewLineLimit || value.length > 200_000;
+    if (!isLarge) return { value, isLarge, lineCount };
+
+    return {
+      value: `${value
         .split("\n")
         .slice(0, inputPreviewLineLimit)
         .join("\n")}\n…\n# ${
-        inputLineCount - inputPreviewLineLimit
-      } more lines hidden — input is read-only above the size threshold`
-    : inputValue;
+        lineCount - inputPreviewLineLimit
+      } more lines hidden - input is read-only above the size threshold`,
+      isLarge,
+      lineCount,
+    };
+  };
+  const getInputSummary = (key: InputName, file: InputFile) => {
+    if (!file.value) return "No input";
+    const fileName = file.name || "Pasted input";
+    if (key === "network") return fileName;
+    const lineCount = file.value.split("\n").length;
+    return `${fileName} · ${lineCount.toLocaleString()} lines`;
+  };
+  const getExpandedInputDetail = (
+    key: InputName,
+    display: { lineCount: number; isLarge: boolean },
+  ) => {
+    if (key === "network" && previewGraph.status === "ok") {
+      return [
+        `${previewGraph.nodes.length.toLocaleString()} nodes`,
+        `${previewGraph.links.length.toLocaleString()} links`,
+      ];
+    }
+    return [
+      `${display.lineCount.toLocaleString()} lines${
+        display.isLarge ? " · preview truncated" : ""
+      }`,
+    ];
+  };
+  const toggleInputCard = (key: InputName) => {
+    store.setActiveInput(key);
+    setOpenInputCards((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
   const consoleContent = infomapOutput.join("\n");
   const changedSinceRun =
     !!lastRun &&
@@ -870,84 +913,195 @@ export default function InfomapOnline() {
         flex="1"
         flexDirection="column"
         minH={0}
-        overflow="hidden"
+        overflowX="hidden"
+        overflowY="auto"
+        pr={1}
       >
-        <HStack flexShrink={0} mb={1} gap={1} align="center" w="100%">
-          <ButtonGroup
-            attached
-            variant="outline"
-            size="sm"
-            role="tablist"
-            w="100%"
-          >
-            {inputTabs.map(({ key, label }) => {
-              const hasInput = Boolean(inputOptions[key].value);
-              const isActive = activeInput === key;
+        <Stack flexShrink={0} gap={2}>
+          {inputCards.map(({ key, label, description }) => {
+            const file = inputOptions[key];
+            const hasInput = Boolean(file.value);
+            const isOpen = openInputCards.has(key);
+            const display = getInputDisplayValue(file.value);
 
-              return (
-                <Button
-                  key={key}
-                  aria-selected={isActive}
-                  bg={isActive ? "gray.100" : undefined}
-                  borderColor={isActive ? "gray.300" : undefined}
-                  color={isActive ? "gray.900" : undefined}
-                  role="tab"
-                  type="button"
-                  flex="1"
-                  minW={0}
-                  onClick={() => store.setActiveInput(key)}
-                  _hover={isActive ? { bg: "gray.100" } : undefined}
-                >
-                  {hasInput && <LuCheck />}
-                  {label}
-                </Button>
-              );
-            })}
-          </ButtonGroup>
-        </HStack>
-
-        <InputTextarea
-          aria-label={`${activeInput} network input`}
-          name={`${activeInput}-network-input`}
-          onDrop={onLoad(activeInput)}
-          accept={inputAccept[activeInput]}
-          onChange={(event) => onInputChange(activeInput)(event.target)}
-          value={displayInputValue}
-          readOnly={isLargeInput}
-          disabled={isInputLoading}
-          placeholder={inputPlaceholders[activeInput]}
-          spellCheck={false}
-          wrap="off"
-          overflow="auto"
-          resize="none"
-          flexShrink={0}
-          h={{ base: "11rem", lg: "22rem" }}
-          variant="outline"
-          bg="gray.50"
-          fontSize="sm"
-        />
-        <HStack flexShrink={0} mt={1} gap={2}>
-          <LoadButton
-            onDrop={onLoad(activeInput)}
-            accept={inputAccept[activeInput]}
-            disabled={isInputLoading}
-            size="sm"
-            variant="outline"
-          >
-            Load file
-          </LoadButton>
-          <Button
-            disabled={!hasActiveInputValue || isInputLoading}
-            onClick={() => onInputChange(activeInput)({ name: "", value: "" })}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            <LuX />
-            Clear input
-          </Button>
-        </HStack>
-        <Box flex="1" minH={0} overflowX="hidden" overflowY="auto" pr={1}>
+            return (
+              <Box
+                key={key}
+                bg="white"
+                borderColor="gray.200"
+                borderRadius="md"
+                borderWidth="1px"
+                overflow="hidden"
+              >
+                <HStack gap={1} p={2}>
+                  <Button
+                    aria-expanded={isOpen}
+                    flex="1"
+                    justifyContent="flex-start"
+                    minH="3rem"
+                    minW={0}
+                    onClick={() => toggleInputCard(key)}
+                    px={2}
+                    py={2}
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                    _hover={{ bg: "gray.50" }}
+                  >
+                    <HStack gap={2} minW={0}>
+                      {isOpen ? <LuChevronDown /> : <LuChevronRight />}
+                      <Box minW={0} textAlign="left">
+                        <HStack gap={1.5}>
+                          <Text as="span" fontWeight={700}>
+                            {label}
+                          </Text>
+                        </HStack>
+                        <Text
+                          as="span"
+                          color="gray.500"
+                          display="block"
+                          fontSize="xs"
+                          fontWeight={400}
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                          whiteSpace="nowrap"
+                        >
+                          {getInputSummary(key, file)}
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </Button>
+                  {key === "network" && !isOpen && (
+                    <LoadButton
+                      onDrop={onLoad(key)}
+                      accept={inputAccept[key]}
+                      disabled={isInputLoading}
+                      flexShrink={0}
+                      size="xs"
+                      variant={hasInput ? "outline" : "surface"}
+                    >
+                      {hasInput ? "Change" : "Browse"}
+                    </LoadButton>
+                  )}
+                </HStack>
+                {isOpen && (
+                  <Stack
+                    borderTopWidth="1px"
+                    borderColor="gray.100"
+                    gap={3}
+                    p={3}
+                  >
+                    {hasInput ? (
+                      <HStack gap={2} justify="space-between" wrap="wrap">
+                        <Stack gap={0} minW={0}>
+                          {getExpandedInputDetail(key, display).map(
+                            (detail) => (
+                              <Text
+                                key={detail}
+                                color="gray.500"
+                                fontSize="xs"
+                                fontWeight={400}
+                                mb={0}
+                                overflow="hidden"
+                                textOverflow="ellipsis"
+                                whiteSpace="nowrap"
+                              >
+                                {detail}
+                              </Text>
+                            ),
+                          )}
+                        </Stack>
+                        <HStack gap={1}>
+                          <LoadButton
+                            onDrop={onLoad(key)}
+                            accept={inputAccept[key]}
+                            disabled={isInputLoading}
+                            size="xs"
+                            variant="surface"
+                          >
+                            Change file
+                          </LoadButton>
+                          <Button
+                            aria-label={`Clear ${label.toLowerCase()} input`}
+                            disabled={isInputLoading}
+                            onClick={() =>
+                              onInputChange(key)({ name: "", value: "" })
+                            }
+                            size="xs"
+                            type="button"
+                            variant="ghost"
+                          >
+                            <LuTrash2 />
+                          </Button>
+                        </HStack>
+                      </HStack>
+                    ) : (
+                      <Box
+                        bg="gray.50"
+                        borderColor="gray.200"
+                        borderRadius="md"
+                        borderStyle="dashed"
+                        borderWidth="1px"
+                        p={3}
+                      >
+                        <Stack align="flex-start" gap={2}>
+                          <Box>
+                            <Text
+                              color="gray.700"
+                              fontSize="sm"
+                              fontWeight={700}
+                              mb={0}
+                            >
+                              Add {label.toLowerCase()} input
+                            </Text>
+                            <Text color="gray.500" fontSize="xs" mb={0}>
+                              {description}
+                            </Text>
+                          </Box>
+                          <LoadButton
+                            onDrop={onLoad(key)}
+                            accept={inputAccept[key]}
+                            disabled={isInputLoading}
+                            size="sm"
+                            variant="surface"
+                          >
+                            Browse file
+                          </LoadButton>
+                        </Stack>
+                      </Box>
+                    )}
+                    <InputTextarea
+                      aria-label={`${key} input`}
+                      name={`${key}-input`}
+                      onDrop={onLoad(key)}
+                      accept={inputAccept[key]}
+                      onChange={(event) =>
+                        onInputChange(key)({
+                          name: file.name,
+                          value: event.target.value,
+                        })
+                      }
+                      value={display.value}
+                      readOnly={display.isLarge}
+                      disabled={isInputLoading}
+                      placeholder={inputPlaceholders[key]}
+                      spellCheck={false}
+                      wrap="off"
+                      overflow="auto"
+                      resize="vertical"
+                      minH="9rem"
+                      maxH={{ base: "16rem", lg: "22rem" }}
+                      variant="outline"
+                      bg="gray.50"
+                      fontSize="sm"
+                    />
+                  </Stack>
+                )}
+              </Box>
+            );
+          })}
+        </Stack>
+        <Box flexShrink={0}>
           <ExampleNetworksList
             disabled={isRunning}
             onLoadingChange={setIsInputLoading}
@@ -1053,6 +1207,11 @@ export default function InfomapOnline() {
             previewGraph.status === "ok" ? previewGraph.nodes.length : 0
           }
           numLevels={previewNumLevels}
+          oneLevelCodeLength={
+            previewGraph.status === "ok"
+              ? previewGraph.oneLevelCodeLength
+              : null
+          }
           trialSetting={previewTrialSetting}
         />
 
