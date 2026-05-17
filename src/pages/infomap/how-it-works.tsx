@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import TeX from "@matejmazur/react-katex";
 import type { NextPage } from "next";
+import dynamic from "next/dynamic";
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -25,13 +26,22 @@ import {
   LuStepForward,
 } from "react-icons/lu";
 import traceDemoManifest from "../../../public/trace-demo/manifest.json";
-import FlowDemo from "../../shared/compounds/FlowDemo";
+import { DocsCard } from "../../shared/components/DocsCard";
+import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 
-type RailItem =
-  | { kind: "heading"; label: string; id?: never; href?: never }
-  | { id: string; label: string; href?: string; kind?: never };
+const FlowDemo = dynamic(() => import("../../shared/compounds/FlowDemo"), {
+  ssr: false,
+  loading: () => (
+    <Box
+      aria-hidden="true"
+      aspectRatio="16 / 9"
+      bg="bg.subtle"
+      borderRadius="md"
+    />
+  ),
+});
 
-const railItems: RailItem[] = [
+const railItems: DocsRailItem[] = [
   { id: "FlowLens", label: "Flow lens" },
   { id: "ChooseLens", label: "Choose lens" },
   { id: "NetworkModels", label: "Network models" },
@@ -232,31 +242,9 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <Box
-      as="section"
-      id={id}
-      bg="white"
-      borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="md"
-      p={{ base: 5, md: 6 }}
-      scrollMarginTop="6rem"
-    >
-      <Text
-        color="gray.500"
-        fontFamily="monospace"
-        fontSize="xs"
-        letterSpacing="0.1em"
-        textTransform="uppercase"
-        mb={2}
-      >
-        {eyebrow}
-      </Text>
-      <Heading as="h2" size="md" mb={3}>
-        {title}
-      </Heading>
+    <DocsCard id={id} eyebrow={eyebrow} title={title}>
       {children}
-    </Box>
+    </DocsCard>
   );
 }
 
@@ -306,8 +294,17 @@ function AlgorithmTraceDemo({
   }, [frames.length, isPlaying]);
 
   return (
-    <Box borderWidth="1px" borderColor="gray.200" borderRadius="md" mt={5}>
-      <Box bg="gray.50" borderBottomWidth="1px" borderBottomColor="gray.200">
+    <Box
+      borderWidth="1px"
+      borderColor="border.emphasized"
+      borderRadius="md"
+      mt={5}
+    >
+      <Box
+        bg="bg.subtle"
+        borderBottomWidth="1px"
+        borderBottomColor="border.emphasized"
+      >
         <img
           src={frame.src}
           alt={frame.title}
@@ -331,13 +328,13 @@ function AlgorithmTraceDemo({
         p={4}
       >
         <Box minW={0}>
-          <Text color="gray.500" fontFamily="monospace" fontSize="xs" mb={1}>
+          <Text color="fg.muted" fontFamily="monospace" fontSize="xs" mb={1}>
             {activeFrame + 1} / {frames.length} · {frame.phase}
           </Text>
           <Heading as="h3" size="sm" mb={1}>
             {frame.title}
           </Heading>
-          <Text color="gray.600" fontSize="sm" mb={0}>
+          <Text color="fg.muted" fontSize="sm" mb={0}>
             {frame.description}
           </Text>
         </Box>
@@ -417,83 +414,11 @@ const HowItWorksPage: NextPage = () => {
         alignItems="start"
         mt={8}
       >
-        <Box
-          as="aside"
-          display={{ base: "none", lg: "block" }}
-          position="sticky"
-          top="5rem"
-        >
-          <Text
-            color="gray.500"
-            fontFamily="monospace"
-            fontSize="xs"
-            letterSpacing="0.1em"
-            textTransform="uppercase"
-            mb={3}
-          >
-            On this page
-          </Text>
-          <Box borderLeftWidth="1px" borderLeftColor="gray.300">
-            {railItems.map((item, index) =>
-              item.kind === "heading" ? (
-                <Text
-                  key={`${item.label}-${index}`}
-                  color="gray.500"
-                  fontSize="xs"
-                  letterSpacing="0.08em"
-                  textTransform="uppercase"
-                  px={4}
-                  pt={4}
-                  pb={1}
-                  mb={0}
-                >
-                  {item.label}
-                </Text>
-              ) : item.href ? (
-                <CkLink
-                  key={item.id}
-                  asChild
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                >
-                  <NextLink href={item.href}>{item.label}</NextLink>
-                </CkLink>
-              ) : (
-                <CkLink
-                  key={item.id}
-                  href={item.id ? `#${item.id}` : "#"}
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                  onClick={() => {
-                    if (item.id) setActive(item.id);
-                  }}
-                >
-                  {item.label}
-                </CkLink>
-              ),
-            )}
-          </Box>
-        </Box>
+        <DocsRail
+          items={railItems}
+          active={active}
+          onActiveChange={setActive}
+        />
 
         <Box as="main">
           <Text color="gray.500" fontSize="sm" mb={2}>
@@ -994,20 +919,7 @@ const HowItWorksPage: NextPage = () => {
               </Text>
             </SectionCard>
 
-            <Box
-              as="section"
-              id="ReadNext"
-              bg="white"
-              borderWidth="1px"
-              borderColor="gray.200"
-              borderRadius="md"
-              p={{ base: 5, md: 6 }}
-              mb={12}
-              scrollMarginTop="6rem"
-            >
-              <Heading as="h2" size="md" mb={3}>
-                Read next
-              </Heading>
+            <DocsCard id="ReadNext" title="Read next" mb={12}>
               <Flex gap={4} flexWrap="wrap">
                 <CkLink asChild fontWeight={600}>
                   <NextLink href="/publications#how-to-cite">
@@ -1015,7 +927,7 @@ const HowItWorksPage: NextPage = () => {
                   </NextLink>
                 </CkLink>
               </Flex>
-            </Box>
+            </DocsCard>
           </Stack>
         </Box>
       </Grid>

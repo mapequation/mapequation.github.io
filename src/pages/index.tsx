@@ -12,6 +12,7 @@ import {
 import type { GetStaticProps, NextPage } from "next";
 import NextLink from "next/link";
 import { LuArrowRight } from "react-icons/lu";
+import { ImageThumb } from "../shared/components/ImageThumb";
 import { PrimaryButton } from "../shared/components/PrimaryButton";
 import FlowDemo from "../shared/compounds/FlowDemo";
 import NewsList from "../shared/compounds/NewsList";
@@ -114,29 +115,18 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
               style={{ textDecoration: "none", display: "block" }}
             >
               <Stack role="group" gap={3} h="100%">
-                <Box
+                <ImageThumb
+                  src={card.image}
+                  alt={card.title}
+                  imagePosition={card.imagePosition}
+                  imageSize={card.imageSize}
                   aspectRatio="16 / 10"
-                  borderRadius="md"
-                  bg="white"
-                  borderWidth="1px"
-                  borderColor="gray.200"
-                  boxShadow="0 0 0 1px var(--chakra-colors-gray-200)"
-                  transition="box-shadow 150ms, border-color 150ms"
-                  _hover={{
-                    borderColor: "gray.400",
-                    boxShadow: "0 0 0 1px var(--chakra-colors-gray-400)",
-                  }}
-                  style={{
-                    background: `white url(${card.image}) no-repeat ${card.imagePosition} / ${card.imageSize ?? "cover"}`,
-                  }}
-                  role="img"
-                  aria-label={card.title}
                 />
                 <Heading
                   as="h3"
                   size="md"
-                  color="#128bc2"
-                  _groupHover={{ color: "#096992" }}
+                  color="link.emphasis"
+                  _groupHover={{ color: "link.emphasisHover" }}
                   mb={0}
                 >
                   {card.title}{" "}
@@ -144,7 +134,7 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
                     »
                   </chakra.span>
                 </Heading>
-                <Text color="gray.600" fontSize="sm" mb={0}>
+                <Text color="fg.muted" fontSize="sm" mb={0}>
                   {card.description}
                 </Text>
               </Stack>

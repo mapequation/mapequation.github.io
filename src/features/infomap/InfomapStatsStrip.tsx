@@ -1,5 +1,6 @@
-import { Box, Grid, HStack, Stat } from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import type { ModuleFlowMap } from "../../state/output";
+import { WorkbenchMetricStrip } from "../../shared/components/WorkbenchMetricStrip";
 import {
   type ModuleId,
   type ModuleMap,
@@ -98,109 +99,72 @@ export function InfomapStatsStrip({
   const displayedCodeLength = codeLength ?? oneLevelCodeLength;
 
   return (
-    <Grid
-      flexShrink={0}
-      gap={0}
-      templateColumns="repeat(4, minmax(0, 1fr))"
-      display={{ base: "none", md: "grid" }}
-      overflow="hidden"
-      mb={3}
-      borderColor="gray.200"
-      borderRadius="md"
-      borderWidth="1px"
-      boxShadow="sm"
-    >
-      <ResultStat
-        value={moduleCount > 0 ? String(moduleCount) : "0"}
-        unit={numLevels != null && numLevels < 3 ? "modules" : "top modules"}
-        detail={
-          nodeCount > 0
-            ? `${nodeCount.toLocaleString()} nodes`
-            : "No modules yet"
-        }
-      >
-        <HStack
-          aria-hidden="true"
-          gap={0.5}
-          h="0.375rem"
-          mt={1.5}
-          visibility={visibleSegments.length > 0 ? "visible" : "hidden"}
-          w="100%"
-        >
-          {visibleSegments.map(({ isRemainder, moduleId, value }, index) => (
-            <Box
-              bg={
-                isRemainder || moduleId === undefined
-                  ? "gray.300"
-                  : moduleColorFromModel(moduleColors, moduleId)
-              }
-              borderRadius="full"
-              flex={`${value} 1 0`}
-              h="100%"
-              key={isRemainder ? "remaining-modules" : `${moduleId}-${index}`}
-              minW="0.375rem"
-            />
-          ))}
-        </HStack>
-      </ResultStat>
-      <ResultStat
-        value={numLevels === null ? "1" : String(numLevels)}
-        unit={numLevels === null || numLevels === 1 ? "level" : "levels"}
-        detail={
-          numLevels === null
-            ? "Awaiting result"
-            : numLevels > 2
-              ? "Multi-level"
-              : "Two-level"
-        }
-      />
-      <ResultStat
-        value={formatCodeLengthValue(displayedCodeLength)}
-        unit={displayedCodeLength === null ? undefined : "bits"}
-        detail={
-          codeLength === null && oneLevelCodeLength !== null
-            ? "One-level codelength"
-            : codelengthSavings === null
-              ? "Run Infomap for codelength"
-              : `${(100 * codelengthSavings).toFixed(0)}% lower than one-level`
-        }
-      />
-      <ResultStat
-        value={trialCount === null ? (trialSetting ?? "1") : String(trialCount)}
-        unit={trialCount === null ? "trial" : "trials"}
-        detail={trialCount === null ? "Current setting" : "Latest run"}
-      />
-    </Grid>
-  );
-}
-
-function ResultStat({
-  children,
-  detail,
-  unit,
-  value,
-}: {
-  children?: React.ReactNode;
-  detail: string;
-  unit?: string;
-  value: string;
-}) {
-  return (
-    <Stat.Root
-      size="sm"
-      py={3}
-      px={4}
-      h="100%"
-      borderRightWidth="1px"
-      borderColor="gray.200"
-      _last={{ borderRightWidth: 0 }}
-    >
-      <Stat.ValueText alignItems="baseline">
-        {value}
-        {unit && <Stat.ValueUnit>{unit}</Stat.ValueUnit>}
-      </Stat.ValueText>
-      <Stat.HelpText>{detail}</Stat.HelpText>
-      {children}
-    </Stat.Root>
+    <WorkbenchMetricStrip
+      metrics={[
+        {
+          value: moduleCount > 0 ? String(moduleCount) : "0",
+          unit: numLevels != null && numLevels < 3 ? "modules" : "top modules",
+          detail:
+            nodeCount > 0
+              ? `${nodeCount.toLocaleString()} nodes`
+              : "No modules yet",
+          children: (
+            <HStack
+              aria-hidden="true"
+              gap={0.5}
+              h="0.375rem"
+              mt={1.5}
+              visibility={visibleSegments.length > 0 ? "visible" : "hidden"}
+              w="100%"
+            >
+              {visibleSegments.map(
+                ({ isRemainder, moduleId, value }, index) => (
+                  <Box
+                    bg={
+                      isRemainder || moduleId === undefined
+                        ? "gray.300"
+                        : moduleColorFromModel(moduleColors, moduleId)
+                    }
+                    borderRadius="full"
+                    flex={`${value} 1 0`}
+                    h="100%"
+                    key={
+                      isRemainder ? "remaining-modules" : `${moduleId}-${index}`
+                    }
+                    minW="0.375rem"
+                  />
+                ),
+              )}
+            </HStack>
+          ),
+        },
+        {
+          value: numLevels === null ? "1" : String(numLevels),
+          unit: numLevels === null || numLevels === 1 ? "level" : "levels",
+          detail:
+            numLevels === null
+              ? "Awaiting result"
+              : numLevels > 2
+                ? "Multi-level"
+                : "Two-level",
+        },
+        {
+          value: formatCodeLengthValue(displayedCodeLength),
+          unit: displayedCodeLength === null ? undefined : "bits",
+          detail:
+            codeLength === null && oneLevelCodeLength !== null
+              ? "One-level codelength"
+              : codelengthSavings === null
+                ? "Run Infomap for codelength"
+                : `${(100 * codelengthSavings).toFixed(0)}% lower than one-level`,
+        },
+        {
+          value:
+            trialCount === null ? (trialSetting ?? "1") : String(trialCount),
+          unit: trialCount === null ? "trial" : "trials",
+          detail: trialCount === null ? "Current setting" : "Latest run",
+        },
+      ]}
+    />
   );
 }

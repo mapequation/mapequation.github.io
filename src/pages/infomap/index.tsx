@@ -157,9 +157,12 @@ const Home: NextPage = () => {
               target="_blank"
               rel="noreferrer"
               fontSize="sm"
-              color="#128bc2"
+              color="link.emphasis"
               textDecoration="none"
-              _hover={{ color: "#096992", textDecoration: "underline" }}
+              _hover={{
+                color: "link.emphasisHover",
+                textDecoration: "underline",
+              }}
             >
               {l.label} ↗
             </chakra.a>

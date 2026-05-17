@@ -1,6 +1,7 @@
 import {
   Accordion,
   Box,
+  Card,
   Container,
   chakra,
   Dialog,
@@ -86,19 +87,22 @@ function formatPubDate(p: Publication): string {
 
 const ActionLink = ({
   href,
+  ariaLabel,
   children,
 }: {
   href: string;
+  ariaLabel?: string;
   children: React.ReactNode;
 }) => (
   <chakra.a
     href={href}
     target="_blank"
     rel="noreferrer"
+    aria-label={ariaLabel}
     fontSize="sm"
-    color="#128bc2"
+    color="link.emphasis"
     textDecoration="none"
-    _hover={{ color: "#096992", textDecoration: "underline" }}
+    _hover={{ color: "link.emphasisHover", textDecoration: "underline" }}
   >
     {children}
   </chakra.a>
@@ -122,10 +126,10 @@ const PublicationFigureModal = ({
       <DialogBackdrop bg="blackAlpha.700" />
       <DialogPositioner p={{ base: 3, md: 6 }}>
         <DialogContent
-          bg="white"
+          bg="bg.panel"
           borderRadius="md"
           boxShadow="2xl"
-          color="gray.900"
+          color="fg"
           w="fit-content"
           maxW="calc(100vw - 2rem)"
           maxH="calc(100dvh - 2rem)"
@@ -141,7 +145,7 @@ const PublicationFigureModal = ({
               right={2}
               size="sm"
               variant="ghost"
-              color="gray.700"
+              color="fg.muted"
               zIndex={1}
             >
               <LuX />
@@ -174,7 +178,7 @@ const PublicationFigureModal = ({
             )}
             {publication?.figure?.caption && (
               <DialogDescription
-                color="gray.600"
+                color="fg.muted"
                 fontSize="sm"
                 lineHeight={1.5}
                 mb={0}
@@ -212,7 +216,7 @@ const PublicationsAccordion = ({
         <AccItem
           value={p.slug}
           borderBottomWidth={i < publications.length - 1 ? "1px" : 0}
-          borderBottomColor="gray.100"
+          borderBottomColor="border"
         >
           <AccTrigger
             px={6}
@@ -221,7 +225,7 @@ const PublicationsAccordion = ({
             textAlign="left"
             flexDirection={{ base: "column", md: "row" }}
             alignItems={{ base: "stretch", md: "flex-start" }}
-            _hover={{ bg: "gray.50" }}
+            _hover={{ bg: "bg.subtle" }}
           >
             <Flex
               gap={3}
@@ -230,7 +234,7 @@ const PublicationsAccordion = ({
               flexShrink={0}
             >
               <Text
-                color="gray.500"
+                color="fg.muted"
                 fontFamily="monospace"
                 fontSize="xs"
                 letterSpacing="0.04em"
@@ -250,12 +254,12 @@ const PublicationsAccordion = ({
                 fontWeight={600}
                 fontSize="sm"
                 lineHeight={1.4}
-                color="gray.900"
+                color="fg"
                 mb={1}
               >
                 {p.title}
               </Text>
-              <Text color="gray.600" fontSize="sm" mb={0}>
+              <Text color="fg.muted" fontSize="sm" mb={0}>
                 {p.authors}
               </Text>
             </Box>
@@ -276,7 +280,7 @@ const PublicationsAccordion = ({
                 >
                   {p.bodyHtml && (
                     <Box
-                      color="gray.800"
+                      color="fg"
                       fontSize="sm"
                       lineHeight={1.6}
                       css={{
@@ -292,7 +296,7 @@ const PublicationsAccordion = ({
                       <ActionLink href={p.doiHref}>{p.journal} ↗</ActionLink>
                     )}
                     {!p.doiHref && p.journal && (
-                      <Text color="gray.600" fontSize="sm" mb={0}>
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
                         {p.journal}
                       </Text>
                     )}
@@ -302,14 +306,11 @@ const PublicationsAccordion = ({
                       </ActionLink>
                     )}
                     {p.pdfHref && (
-                      <ActionLink href={p.pdfHref} aria-label="PDF">
+                      <ActionLink href={p.pdfHref} ariaLabel="PDF">
                         <FaRegFilePdf size={16} />
                       </ActionLink>
                     )}
-                    <ActionLink
-                      href={p.scholarHref}
-                      aria-label="Google Scholar"
-                    >
+                    <ActionLink href={p.scholarHref} ariaLabel="Google Scholar">
                       <SiGooglescholar size={16} />
                     </ActionLink>
                     {p.links?.map((l) => (
@@ -339,10 +340,13 @@ const PublicationsAccordion = ({
                       borderRadius="sm"
                       cursor="zoom-in"
                       transition="border-color 150ms, opacity 150ms"
-                      _hover={{ borderColor: "gray.300", opacity: 0.9 }}
+                      _hover={{
+                        borderColor: "border.emphasized",
+                        opacity: 0.9,
+                      }}
                       _focusVisible={{
                         outline: "2px solid",
-                        outlineColor: "#128bc2",
+                        outlineColor: "link.emphasis",
                         outlineOffset: "3px",
                       }}
                     >
@@ -366,7 +370,7 @@ const PublicationsAccordion = ({
                     </chakra.button>
                     {p.figure?.caption && (
                       <Text
-                        color="gray.500"
+                        color="fg.muted"
                         fontSize="xs"
                         mt={2}
                         mb={0}
@@ -384,6 +388,73 @@ const PublicationsAccordion = ({
       </Box>
     ))}
   </Accordion.Root>
+);
+
+const FeaturedPublicationCard = ({
+  publication,
+  onSelect,
+}: {
+  publication: Publication;
+  onSelect: (slug: string) => void;
+}) => (
+  <Card.Root
+    asChild
+    h="100%"
+    bg="bg.panel"
+    borderColor="border.emphasized"
+    transition="border-color 150ms"
+    _hover={{ borderColor: "fg.muted" }}
+  >
+    <chakra.a
+      href={`#${publication.slug}`}
+      onClick={() => {
+        // Open before the browser scrolls so layout is final.
+        onSelect(publication.slug);
+      }}
+      display="flex"
+      flexDirection="column"
+      gap={2}
+      h="100%"
+      p={5}
+      textDecoration="none"
+      color="inherit"
+      _hover={{ textDecoration: "none" }}
+    >
+      <Flex gap={2} align="center">
+        <Tag>{publication.year}</Tag>
+      </Flex>
+      <Heading as="h3" size="sm" mb={0} lineHeight={1.4}>
+        {publication.title}
+      </Heading>
+      <Text color="fg.muted" fontSize="xs" mb={0}>
+        {publication.authors}
+      </Text>
+      {publication.journal && (
+        <Text color="fg.muted" fontSize="xs" mb={0}>
+          {publication.journal}
+        </Text>
+      )}
+      {publication.figureSrc && (
+        <Box mt={2}>
+          <chakra.img
+            src={publication.figureSrc}
+            alt={publication.figure?.caption ?? publication.title}
+            width={publication.figureWidth}
+            height={publication.figureHeight}
+            loading="lazy"
+            display="block"
+            w="100%"
+            h="auto"
+          />
+        </Box>
+      )}
+      {publication.figure?.caption && (
+        <Text color="fg.muted" fontSize="xs" lineHeight={1.5} mb={0}>
+          {publication.figure.caption}
+        </Text>
+      )}
+    </chakra.a>
+  </Card.Root>
 );
 
 const PublicationsPage: NextPage<Props> = ({ publications }) => {
@@ -422,7 +493,7 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
         <Heading as="h1" textStyle="h1" maxW="20ch">
           Papers behind the Map Equation framework
         </Heading>
-        <Text color="gray.700" textStyle="body" maxW="42rem">
+        <Text color="fg.muted" textStyle="body" maxW="42rem">
           Find the core method papers, software citations, surveys, and
           application papers for flow-based community detection with Infomap.
         </Text>
@@ -436,72 +507,20 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
         <PortalSection eyebrow="Featured" title="Featured papers">
           <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
             {featured.map((p) => (
-              <chakra.a
+              <FeaturedPublicationCard
                 key={p.slug}
-                href={`#${p.slug}`}
-                onClick={() => {
-                  // Open before the browser scrolls so layout is final.
-                  setOpenItems([p.slug]);
-                }}
-                display="flex"
-                flexDirection="column"
-                gap={2}
-                h="100%"
-                p={5}
-                bg="white"
-                borderWidth="1px"
-                borderColor="gray.200"
-                borderRadius="md"
-                textDecoration="none"
-                color="inherit"
-                transition="border-color 150ms"
-                _hover={{ borderColor: "gray.400", textDecoration: "none" }}
-              >
-                <Flex gap={2} align="center">
-                  <Tag>{p.year}</Tag>
-                </Flex>
-                <Heading as="h3" size="sm" mb={0} lineHeight={1.4}>
-                  {p.title}
-                </Heading>
-                <Text color="gray.700" fontSize="xs" mb={0}>
-                  {p.authors}
-                </Text>
-                {p.journal && (
-                  <Text color="gray.500" fontSize="xs" mb={0}>
-                    {p.journal}
-                  </Text>
-                )}
-                {p.figureSrc && (
-                  <Box mt={2}>
-                    <chakra.img
-                      src={p.figureSrc}
-                      alt={p.figure?.caption ?? p.title}
-                      width={p.figureWidth}
-                      height={p.figureHeight}
-                      loading="lazy"
-                      display="block"
-                      w="100%"
-                      h="auto"
-                    />
-                  </Box>
-                )}
-                {p.figure?.caption && (
-                  <Text color="gray.500" fontSize="xs" lineHeight={1.5} mb={0}>
-                    {p.figure.caption}
-                  </Text>
-                )}
-              </chakra.a>
+                publication={p}
+                onSelect={(slug) => setOpenItems([slug])}
+              />
             ))}
           </SimpleGrid>
         </PortalSection>
       )}
 
       <PortalSection title="All papers">
-        <Box
-          bg="white"
-          borderWidth="1px"
-          borderColor="gray.200"
-          borderRadius="md"
+        <Card.Root
+          bg="bg.panel"
+          borderColor="border.emphasized"
           overflow="hidden"
         >
           <PublicationsAccordion
@@ -510,7 +529,7 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
             onValueChange={setOpenItems}
             onFigureOpen={setFigurePublication}
           />
-        </Box>
+        </Card.Root>
       </PortalSection>
       <PublicationFigureModal
         publication={figurePublication}

@@ -38,6 +38,11 @@ const MAIN_NAV: NavItem[] = [
   { id: "about", label: "About", href: "/about" },
 ];
 
+const BRAND_ACTIVE = "brand.solid";
+const PAGE_BG = "#f5f2f0";
+const PAPER_TEXTURE =
+  "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACHUlEQVQ4T1XUCW5bMQwEUMn7cv8btmnqxLGT1vui4AkY4EeA8BeRwyGHVN38+d3G43GxW2tlMpmU2+1Wns9nWSwW5Xg8ltFoVB6PR7FWq1V/v1wuZTqdltls1r/v93v3qW+vLy1G1+u1gzLMYhgnjvZ6vS6Hw6HUWrv9fD7v7+fzudTPj/eG0XK57GzCCojNUUBngDgBAczndDr1ZzKsUpamH2EACDPgngCkLTA2QNjLRABPDPs+fO2b6Fg4BAbAO+dhPdVIWRCwwkpQAe263bw2yD7ChKOoDLEG4Okc6wTzz3vE6gx375sWhTgC4ugQOyuMvLNlk/SjtjLIrn7ttl2U1ISBVKXGEVuLje+0SECdC4hEb5v/n7sG3QdQikVJQAHkpCypl7P0J3AYylH/vvxqXoYNnTZK6tgKZqUTiJgSCGr3ftxv37ooqQkj32mXGEZ5QMoS4aJ6MuwqY+iHFBgDV2DGomKvwaUWgdIBAgjGtquc0UsPpiUAAx32oToBTHAEYhO1e8qZW3XS5EN1h+OFReo4nJxhRn30oqzotnQsABikPhFEwPRr1I5P/bf/6KOXuY2a6UdMpJoejBjqlbbiw74LShSFV3SgDqWAqUC5NHIGMO2k3rLzD/s+KQAZOJBiqOfSjVPEyiWQWvNxraU7+qRgl5+ZDE8tkbFMegDCVpAMxI/bRsqYOcwtDAjzlCA3cxpZTaN67k4kvgH79HB6cJuWywAAAABJRU5ErkJggg==')";
+
 function topSection(pathname: string): string {
   if (pathname === "/" || pathname === "") return "home";
   if (pathname.startsWith("/infomap")) return "infomap";
@@ -55,12 +60,12 @@ const navLinkStyles = (active: boolean) => ({
   px: 3,
   py: 2,
   borderRadius: "md",
-  color: active ? "#b22222" : "gray.600",
+  color: active ? BRAND_ACTIVE : "fg.muted",
   fontSize: "sm",
   fontWeight: active ? 600 : 400,
   textDecoration: "none",
   transition: "background 120ms, color 120ms",
-  _hover: { bg: "blackAlpha.50", color: "gray.900" },
+  _hover: { bg: "bg.subtle", color: "fg" },
 });
 
 const NavLink = ({
@@ -87,7 +92,7 @@ const MegaSection = ({
   <Stack gap={0}>
     <Heading
       as="h4"
-      color="gray.500"
+      color="fg.muted"
       fontFamily="monospace"
       fontSize="xs"
       letterSpacing="0.16em"
@@ -116,15 +121,15 @@ const MegaLink = ({
     px={2.5}
     py={2}
     borderRadius="md"
-    color="gray.900"
+    color="fg"
     textDecoration="none"
-    _hover={{ bg: "gray.100" }}
+    _hover={{ bg: "bg.subtle" }}
   >
     <NextLink href={href}>
       <Text as="strong" fontSize="sm" fontWeight={600} mb={0}>
         {label}
       </Text>
-      <Text color="gray.500" fontSize="xs" mb={0} mt="2px">
+      <Text color="fg.muted" fontSize="xs" mb={0} mt="2px">
         {desc}
       </Text>
     </NextLink>
@@ -159,9 +164,9 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
     </HoverTrigger>
     <HoverPositioner>
       <HoverContent
-        bg="white"
+        bg="bg.panel"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="border.emphasized"
         borderRadius="md"
         boxShadow="lg"
         p={5}
@@ -231,7 +236,7 @@ const MobileNav = ({ active }: { active: string }) => {
       <Portal>
         <Drawer.Backdrop />
         <DrawerPositioner>
-          <DrawerContent bg="#f5f2f0">
+          <DrawerContent bg={PAGE_BG}>
             <Flex justify="flex-end" p={4}>
               <DrawerCloseTrigger asChild>
                 <IconButton aria-label="Close menu" variant="ghost" size="md">
@@ -252,9 +257,9 @@ const MobileNav = ({ active }: { active: string }) => {
                     borderRadius="md"
                     fontSize="xl"
                     fontWeight={active === item.id ? 600 : 400}
-                    color={active === item.id ? "#b22222" : "gray.900"}
+                    color={active === item.id ? BRAND_ACTIVE : "fg"}
                     textDecoration="none"
-                    _hover={{ bg: "blackAlpha.50" }}
+                    _hover={{ bg: "bg.subtle" }}
                   >
                     <NextLink href={item.href} onClick={() => setOpen(false)}>
                       {item.label}
@@ -280,8 +285,8 @@ export default function Header() {
       position={{ base: "static", md: "sticky" }}
       top={0}
       zIndex={50}
-      bg="#f5f2f0"
-      bgImage="linear-gradient(to bottom, rgba(100, 80, 50, 0.35) 0%, rgba(0, 0, 0, 0) 100%), url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAACHUlEQVQ4T1XUCW5bMQwEUMn7cv8btmnqxLGT1vui4AkY4EeA8BeRwyGHVN38+d3G43GxW2tlMpmU2+1Wns9nWSwW5Xg8ltFoVB6PR7FWq1V/v1wuZTqdltls1r/v93v3qW+vLy1G1+u1gzLMYhgnjvZ6vS6Hw6HUWrv9fD7v7+fzudTPj/eG0XK57GzCCojNUUBngDgBAczndDr1ZzKsUpamH2EACDPgngCkLTA2QNjLRABPDPs+fO2b6Fg4BAbAO+dhPdVIWRCwwkpQAe263bw2yD7ChKOoDLEG4Okc6wTzz3vE6gx375sWhTgC4ugQOyuMvLNlk/SjtjLIrn7ttl2U1ISBVKXGEVuLje+0SECdC4hEb5v/n7sG3QdQikVJQAHkpCypl7P0J3AYylH/vvxqXoYNnTZK6tgKZqUTiJgSCGr3ftxv37ooqQkj32mXGEZ5QMoS4aJ6MuwqY+iHFBgDV2DGomKvwaUWgdIBAgjGtquc0UsPpiUAAx32oToBTHAEYhO1e8qZW3XS5EN1h+OFReo4nJxhRn30oqzotnQsABikPhFEwPRr1I5P/bf/6KOXuY2a6UdMpJoejBjqlbbiw74LShSFV3SgDqWAqUC5NHIGMO2k3rLzD/s+KQAZOJBiqOfSjVPEyiWQWvNxraU7+qRgl5+ZDE8tkbFMegDCVpAMxI/bRsqYOcwtDAjzlCA3cxpZTaN67k4kvgH79HB6cJuWywAAAABJRU5ErkJggg==')"
+      bg={PAGE_BG}
+      bgImage={`linear-gradient(to bottom, rgba(100, 80, 50, 0.35) 0%, rgba(0, 0, 0, 0) 100%), ${PAPER_TEXTURE}`}
       bgRepeat="no-repeat, repeat"
       bgSize="auto, 10px 10px"
     >

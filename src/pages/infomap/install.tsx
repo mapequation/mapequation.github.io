@@ -1,9 +1,7 @@
 import {
   Box,
-  Button,
   Link as CkLink,
   Container,
-  chakra,
   Flex,
   Grid,
   Heading,
@@ -15,13 +13,11 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
-import {
-  LuArrowRight,
-  LuCheck,
-  LuCopy,
-  LuMonitor,
-  LuTerminal,
-} from "react-icons/lu";
+import { LuArrowRight, LuMonitor, LuTerminal } from "react-icons/lu";
+import { DocsCard } from "../../shared/components/DocsCard";
+import { DocsCodeBlock } from "../../shared/components/DocsCodeBlock";
+import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { Tag } from "../../shared/components/Tag";
 
 const installMethods = [
   {
@@ -131,72 +127,19 @@ const installMethods = [
   },
 ];
 
-type RailItem =
-  | { kind: "heading"; label: string; id?: never; href?: never }
-  | { kind?: never; id: string; label: string; href?: string };
-
-const railItems: RailItem[] = [
+const railItems: DocsRailItem[] = [
   ...installMethods.map(({ id, label }) => ({ id, label })),
   { id: "Running", label: "Run Infomap" },
   { kind: "heading", label: "Read next" },
   { id: "FormatsNext", label: "Formats", href: "/infomap/formats" },
 ];
 
-function CodeBlock({ children }) {
-  const [copied, setCopied] = useState(false);
-  const text = Array.isArray(children) ? children.join("") : String(children);
-
-  return (
-    <Box position="relative">
-      <Box
-        bg="gray.100"
-        borderWidth="1px"
-        borderColor="gray.200"
-        borderRadius="md"
-        p={4}
-        overflowX="auto"
-      >
-        <chakra.pre
-          m={0}
-          fontFamily="monospace"
-          fontSize="sm"
-          lineHeight={1.6}
-          whiteSpace="pre-wrap"
-        >
-          {children}
-        </chakra.pre>
-      </Box>
-      <Button
-        type="button"
-        variant="surface"
-        size="xs"
-        position="absolute"
-        top={2}
-        right={2}
-        onClick={async () => {
-          await navigator?.clipboard?.writeText(text);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1400);
-        }}
-      >
-        {copied ? <LuCheck /> : <LuCopy />}
-        {copied ? "Copied" : "Copy"}
-      </Button>
-    </Box>
-  );
-}
-
 function MethodCard({ method }) {
   return (
-    <Box
+    <DocsCard
       as="article"
       id={method.id}
-      bg="white"
-      borderWidth="1px"
-      borderColor={method.recommended ? "gray.300" : "gray.200"}
-      borderRadius="md"
-      p={{ base: 5, md: 6 }}
-      scrollMarginTop="6rem"
+      borderColor={method.recommended ? "border.emphasized" : "border"}
       position="relative"
     >
       {method.recommended && (
@@ -205,8 +148,8 @@ function MethodCard({ method }) {
           top="-0.7rem"
           left={5}
           borderRadius="sm"
-          backgroundColor="white"
-          borderColor="gray.300"
+          bg="bg.panel"
+          borderColor="border.emphasized"
           borderWidth="1px"
           px={2}
           py={1}
@@ -231,31 +174,19 @@ function MethodCard({ method }) {
         </Heading>
         <Flex gap={2} flexWrap="wrap">
           {method.tags.map((tag) => (
-            <Box
-              key={tag}
-              as="span"
-              bg="gray.100"
-              color="gray.600"
-              borderRadius="sm"
-              px={2}
-              py={1}
-              fontFamily="monospace"
-              fontSize="xs"
-            >
-              {tag}
-            </Box>
+            <Tag key={tag}>{tag}</Tag>
           ))}
         </Flex>
       </Flex>
 
-      <Text color="gray.600" fontSize="sm">
+      <Text color="fg.muted" fontSize="sm">
         {method.description}
       </Text>
 
       {method.custom === "binaries" ? (
         <BinaryTable />
       ) : (
-        <CodeBlock>{method.command}</CodeBlock>
+        <DocsCodeBlock>{method.command}</DocsCodeBlock>
       )}
 
       {method.commands?.length > 0 && (
@@ -263,10 +194,10 @@ function MethodCard({ method }) {
           <Stack gap={4} mt={3}>
             {method.commands.map(([title, command]) => (
               <Box key={title}>
-                <Text color="gray.600" fontSize="sm" mb={2}>
+                <Text color="fg.muted" fontSize="sm" mb={2}>
                   {title}
                 </Text>
-                <CodeBlock>{command}</CodeBlock>
+                <DocsCodeBlock>{command}</DocsCodeBlock>
               </Box>
             ))}
           </Stack>
@@ -289,7 +220,7 @@ function MethodCard({ method }) {
           ))}
         </Flex>
       )}
-    </Box>
+    </DocsCard>
   );
 }
 
@@ -307,7 +238,7 @@ function BinaryTable() {
         <Table.Body>
           <Table.Row>
             <Table.Cell>
-              <Icon as={LuMonitor} color="gray.600" mr={2} />
+              <Icon as={LuMonitor} color="fg.muted" mr={2} />
               Windows
             </Table.Cell>
             <Table.Cell>
@@ -323,7 +254,7 @@ function BinaryTable() {
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <Icon as={LuMonitor} color="gray.600" mr={2} />
+              <Icon as={LuMonitor} color="fg.muted" mr={2} />
               macOS
             </Table.Cell>
             <Table.Cell>
@@ -339,7 +270,7 @@ function BinaryTable() {
           </Table.Row>
           <Table.Row>
             <Table.Cell>
-              <Icon as={LuTerminal} color="gray.600" mr={2} />
+              <Icon as={LuTerminal} color="fg.muted" mr={2} />
               Ubuntu
             </Table.Cell>
             <Table.Cell>
@@ -370,81 +301,11 @@ const InstallPage: NextPage = () => {
         alignItems="start"
         mt={8}
       >
-        <Box
-          as="aside"
-          display={{ base: "none", lg: "block" }}
-          position="sticky"
-          top="5rem"
-        >
-          <Text
-            color="gray.500"
-            fontFamily="monospace"
-            fontSize="xs"
-            letterSpacing="0.1em"
-            textTransform="uppercase"
-            mb={3}
-          >
-            On this page
-          </Text>
-          <Box borderLeftWidth="1px" borderLeftColor="gray.300">
-            {railItems.map((item, index) =>
-              item.kind === "heading" ? (
-                <Text
-                  key={`${item.label}-${index}`}
-                  color="gray.500"
-                  fontSize="xs"
-                  letterSpacing="0.08em"
-                  textTransform="uppercase"
-                  px={4}
-                  pt={4}
-                  pb={1}
-                  mb={0}
-                >
-                  {item.label}
-                </Text>
-              ) : item.href ? (
-                <CkLink
-                  key={item.id}
-                  asChild
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                >
-                  <NextLink href={item.href}>{item.label}</NextLink>
-                </CkLink>
-              ) : (
-                <CkLink
-                  key={item.id}
-                  href={`#${item.id}`}
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                  onClick={() => setActive(item.id)}
-                >
-                  {item.label}
-                </CkLink>
-              ),
-            )}
-          </Box>
-        </Box>
+        <DocsRail
+          items={railItems}
+          active={active}
+          onActiveChange={setActive}
+        />
 
         <Box as="main">
           <Text color="gray.500" fontSize="sm" mb={2}>
@@ -475,19 +336,7 @@ const InstallPage: NextPage = () => {
           <Flex gap={2} flexWrap="wrap" mb={8}>
             {["Python 3.11+", "CLI included", "macOS / Linux / Windows"].map(
               (tag) => (
-                <Box
-                  key={tag}
-                  as="span"
-                  bg="gray.100"
-                  color="gray.600"
-                  borderRadius="sm"
-                  px={2}
-                  py={1}
-                  fontFamily="monospace"
-                  fontSize="xs"
-                >
-                  {tag}
-                </Box>
+                <Tag key={tag}>{tag}</Tag>
               ),
             )}
           </Flex>
@@ -498,55 +347,30 @@ const InstallPage: NextPage = () => {
             ))}
           </Stack>
 
-          <Box
-            as="section"
-            id="Running"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
-            mt={8}
-            mb={12}
-            scrollMarginTop="6rem"
-          >
-            <Heading as="h2" size="md" mb={3}>
-              Run Infomap
-            </Heading>
-            <Text color="gray.600">
+          <DocsCard id="Running" title="Run Infomap" mt={8} mb={12}>
+            <Text color="fg.muted">
               After installation, the command-line form is:
             </Text>
-            <CodeBlock>infomap [options] network_data destination</CodeBlock>
+            <DocsCodeBlock>
+              infomap [options] network_data destination
+            </DocsCodeBlock>
 
-            <Text color="gray.600" mt={5}>
+            <Text color="fg.muted" mt={5}>
               For example:
             </Text>
-            <CodeBlock>
+            <DocsCodeBlock>
               {
                 "infomap network.net out\ninfomap --two-level --directed network.net out"
               }
-            </CodeBlock>
+            </DocsCodeBlock>
 
-            <Text color="gray.600" mt={5}>
+            <Text color="fg.muted" mt={5}>
               List all available options with:
             </Text>
-            <CodeBlock>infomap --help</CodeBlock>
-          </Box>
+            <DocsCodeBlock>infomap --help</DocsCodeBlock>
+          </DocsCard>
 
-          <Box
-            as="section"
-            id="ReadNext"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
-            mb={12}
-            scrollMarginTop="6rem"
-          >
-            <Heading as="h2" size="md" mb={3}>
-              Read next
-            </Heading>
+          <DocsCard id="ReadNext" title="Read next" mb={12}>
             <Flex gap={4} flexWrap="wrap">
               <CkLink asChild fontWeight={600}>
                 <NextLink href="/infomap/formats">
@@ -554,7 +378,7 @@ const InstallPage: NextPage = () => {
                 </NextLink>
               </CkLink>
             </Flex>
-          </Box>
+          </DocsCard>
         </Box>
       </Grid>
     </Container>

@@ -16,9 +16,9 @@ const system = createSystem(defaultConfig, {
       backgroundSize: "10px 10px",
     },
     a: {
-      color: "#128bc2",
+      color: "link.emphasis",
       _hover: {
-        color: "#096992",
+        color: "link.emphasisHover",
       },
     },
     code: {
@@ -46,6 +46,25 @@ const system = createSystem(defaultConfig, {
   theme: {
     semanticTokens: {
       colors: {
+        brand: {
+          solid: {
+            value: "#b22222",
+          },
+          hover: {
+            value: "#971d1d",
+          },
+          active: {
+            value: "#7f1818",
+          },
+        },
+        link: {
+          emphasis: {
+            value: "#128bc2",
+          },
+          emphasisHover: {
+            value: "#096992",
+          },
+        },
         error: {
           value: "red.100",
         },

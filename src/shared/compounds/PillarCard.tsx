@@ -42,7 +42,7 @@ const PillarCard = ({
         {text}
       </Text>
       {cta && (
-        <Text color="#128bc2" fontWeight={600} fontSize="sm" mb={0}>
+        <Text color="link.emphasis" fontWeight={600} fontSize="sm" mb={0}>
           {cta} →
         </Text>
       )}

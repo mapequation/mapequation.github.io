@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  HStack,
-  Menu,
-  Portal,
-  Spinner,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Button, Stack, Text } from "@chakra-ui/react";
 import {
   type Force,
   type ForceLink,
@@ -22,9 +13,8 @@ import { type Quadtree, quadtree } from "d3-quadtree";
 import { select } from "d3-selection";
 import { type ZoomTransform, zoom, zoomIdentity } from "d3-zoom";
 import {
-  type FC,
   memo,
-  type PropsWithChildren,
+  type RefObject,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -32,6 +22,9 @@ import {
   useState,
 } from "react";
 import { LuDownload, LuExpand, LuMaximize, LuMinimize2 } from "react-icons/lu";
+import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
+import { WorkbenchControlGroup } from "../../shared/components/WorkbenchControlGroup";
+import { WorkbenchOverlay } from "../../shared/components/WorkbenchOverlay";
 import {
   parseFtreeLayout,
   runHierarchicalPrelayout,
@@ -59,20 +52,11 @@ import type {
   Graph,
   HoverState,
   ModuleFlow,
+  ModuleSlice,
   SimLink,
   SimNode,
 } from "./networkPreviewTypes";
 import type { PreviewGraph, PreviewNode } from "./parseInfomapPreview";
-
-// Chakra v3's Menu compound types omit `children` — runtime accepts it.
-const MenuTrigger = Menu.Trigger as FC<
-  PropsWithChildren<{ asChild?: boolean }>
->;
-const MenuPositioner = Menu.Positioner as FC<PropsWithChildren>;
-const MenuContent = Menu.Content as FC<PropsWithChildren>;
-const MenuItem = Menu.Item as FC<
-  PropsWithChildren<{ onClick?: () => void; value: string }>
->;
 
 function hasMatchingModules(
   nodes: PreviewNode[],
@@ -110,6 +94,319 @@ function LevelGranularityIcon({ fine }: { fine?: boolean }) {
           />
         )}
       </svg>
+    </Box>
+  );
+}
+
+function NetworkLevelControl({
+  levelLocked,
+  levelValueLabel,
+  moduleLevelCount,
+  setLevel,
+  sliderLevel,
+}: {
+  levelLocked: boolean;
+  levelValueLabel: string;
+  moduleLevelCount: number;
+  setLevel: (level: number) => void;
+  sliderLevel: number;
+}) {
+  return (
+    <Stack
+      align="center"
+      bg="bg.subtle"
+      borderRadius="l2"
+      bottom={3}
+      boxShadow="0 0 0 1px var(--chakra-colors-border)"
+      color="fg.muted"
+      fontSize="xs"
+      gap={1}
+      minW="2.75rem"
+      position="absolute"
+      px={1.5}
+      py={1.5}
+      right={3}
+    >
+      <Text
+        color="fg"
+        fontWeight={600}
+        lineHeight={1}
+        mb={0}
+        textAlign="center"
+      >
+        {levelValueLabel}
+      </Text>
+      <Box mt={-1}>
+        <LevelGranularityIcon fine />
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <input
+          aria-label={`Module level ${levelValueLabel}`}
+          disabled={levelLocked}
+          max={moduleLevelCount}
+          min={1}
+          onChange={(event) => setLevel(Number(event.target.value))}
+          step={1}
+          style={{
+            writingMode: "vertical-lr",
+            direction: "rtl",
+            height: "7rem",
+            width: "1.25rem",
+          }}
+          type="range"
+          value={sliderLevel}
+        />
+      </Box>
+      <LevelGranularityIcon />
+    </Stack>
+  );
+}
+
+function NetworkPreviewToolbar({
+  downloadPng,
+  downloadSvg,
+  fitToGraph,
+  isDownloading,
+  isFullscreen,
+  toggleFullscreen,
+}: {
+  downloadPng: () => void;
+  downloadSvg: () => void;
+  fitToGraph: () => void;
+  isDownloading: boolean;
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
+}) {
+  return (
+    <WorkbenchControlGroup
+      aria-label="Network preview controls"
+      position="absolute"
+      right={3}
+      top={3}
+    >
+      <WorkbenchActionMenu
+        ariaLabel="Download network"
+        loading={isDownloading}
+        trigger={<LuDownload />}
+        items={[
+          {
+            icon: <LuDownload />,
+            label: "Download PNG",
+            onSelect: downloadPng,
+            value: "download-png",
+          },
+          {
+            icon: <LuDownload />,
+            label: "Download SVG",
+            onSelect: downloadSvg,
+            value: "download-svg",
+          },
+        ]}
+      />
+      <Button aria-label="Fit network preview" onClick={fitToGraph}>
+        <LuMaximize />
+        Fit
+      </Button>
+      <Button
+        aria-label={
+          isFullscreen
+            ? "Exit fullscreen network preview"
+            : "Fullscreen network preview"
+        }
+        onClick={toggleFullscreen}
+        title={
+          isFullscreen
+            ? "Exit fullscreen network preview"
+            : "Fullscreen network preview"
+        }
+      >
+        {isFullscreen ? <LuMinimize2 /> : <LuExpand />}
+      </Button>
+    </WorkbenchControlGroup>
+  );
+}
+
+function NetworkHoverTooltip({
+  activeTooltipModuleId,
+  hiddenHoverSliceCount,
+  hover,
+  hoverCardRef,
+  hoverModuleTotal,
+  hoverPath,
+  hoverSlices,
+  moduleColorFor,
+  moduleId,
+  visibleHoverSlices,
+}: {
+  activeTooltipModuleId?: ModuleId;
+  hiddenHoverSliceCount: number;
+  hover: NonNullable<HoverState>;
+  hoverCardRef: RefObject<HTMLDivElement | null>;
+  hoverModuleTotal: number;
+  hoverPath: string | null;
+  hoverSlices: ModuleSlice[];
+  moduleColorFor: ModuleColorResolver;
+  moduleId?: ModuleId;
+  visibleHoverSlices: ModuleSlice[];
+}) {
+  return (
+    <Box
+      ref={hoverCardRef}
+      bg="gray.900"
+      borderRadius="sm"
+      color="white"
+      left={0}
+      maxW="18rem"
+      minW="7.5rem"
+      pointerEvents="none"
+      position="fixed"
+      px={2.5}
+      py={2}
+      top={0}
+      transform="translate3d(0, 0, 0) translateY(-50%)"
+      zIndex={10}
+      css={{
+        transition:
+          "transform 90ms ease-out, width 90ms ease-out, min-width 90ms ease-out, max-width 90ms ease-out",
+        willChange: "transform, width",
+        "@media (prefers-reduced-motion: reduce)": {
+          transition: "none",
+        },
+        "&::before": {
+          background: "var(--chakra-colors-gray-900)",
+          content: '""',
+          height: "0.5rem",
+          position: "absolute",
+          top: "calc(50% - 0.25rem)",
+          transform: "rotate(45deg)",
+          width: "0.5rem",
+        },
+        '&[data-side="right"]::before': {
+          left: "-0.25rem",
+        },
+        '&[data-side="left"]::before': {
+          right: "-0.25rem",
+        },
+      }}
+    >
+      <Box alignItems="baseline" display="flex" gap={3} mb={1} minW={0}>
+        <Text
+          as="span"
+          fontSize="xs"
+          fontWeight={700}
+          mb={0}
+          minW={0}
+          overflowWrap="anywhere"
+        >
+          {hover.node.label}
+        </Text>
+        {hover.node.label !== hover.node.id && (
+          <Text
+            as="span"
+            color="whiteAlpha.700"
+            flexShrink={0}
+            fontSize="2xs"
+            mb={0}
+          >
+            {hover.node.id}
+          </Text>
+        )}
+      </Box>
+      <Box
+        color="whiteAlpha.900"
+        columnGap={2.5}
+        display="grid"
+        fontSize="xs"
+        gridTemplateColumns="max-content 1fr"
+        mt={1.5}
+        rowGap={0.5}
+      >
+        <Text as="span" color="whiteAlpha.700" mb={0}>
+          Flow
+        </Text>
+        <Text as="span" mb={0}>
+          {(hover.node.flow * 100).toFixed(2)}%
+        </Text>
+        {hover.node.degree > 0 && (
+          <>
+            <Text as="span" color="whiteAlpha.700" mb={0}>
+              Degree
+            </Text>
+            <Text as="span" mb={0}>
+              {hover.node.degree}
+            </Text>
+          </>
+        )}
+        {hoverSlices.length === 1 && !hoverPath ? (
+          <>
+            <Text as="span" color="whiteAlpha.700" mb={0}>
+              Module
+            </Text>
+            <Text as="span" mb={0}>
+              {hoverSlices[0].moduleId}
+            </Text>
+          </>
+        ) : moduleId !== undefined && hoverSlices.length === 0 && !hoverPath ? (
+          <>
+            <Text as="span" color="whiteAlpha.700" mb={0}>
+              Module
+            </Text>
+            <Text as="span" mb={0}>
+              {moduleId}
+            </Text>
+          </>
+        ) : null}
+        {hoverPath && (
+          <>
+            <Text as="span" color="whiteAlpha.700" mb={0}>
+              Path
+            </Text>
+            <Text as="span" mb={0} overflowWrap="anywhere">
+              {hoverPath}
+            </Text>
+          </>
+        )}
+      </Box>
+      {hoverSlices.length > 1 && (
+        <Box mt={1}>
+          {visibleHoverSlices.map((slice) => {
+            const share =
+              hoverModuleTotal > 0
+                ? Math.round((slice.flow / hoverModuleTotal) * 100)
+                : 0;
+            return (
+              <Text
+                key={String(slice.moduleId)}
+                color={
+                  activeTooltipModuleId === undefined ||
+                  activeTooltipModuleId === slice.moduleId
+                    ? "whiteAlpha.900"
+                    : "whiteAlpha.600"
+                }
+                fontSize="xs"
+                mb={0}
+              >
+                <Box
+                  as="span"
+                  bg={moduleColorFor(slice.moduleId)}
+                  borderRadius="full"
+                  display="inline-block"
+                  h="0.6rem"
+                  mr={1.5}
+                  verticalAlign="middle"
+                  w="0.6rem"
+                />
+                Module {slice.moduleId} · {share}%
+              </Text>
+            );
+          })}
+          {hiddenHoverSliceCount > 0 && (
+            <Text color="whiteAlpha.700" fontSize="xs" mb={0}>
+              and {hiddenHoverSliceCount} more
+            </Text>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -1758,14 +2055,26 @@ function NetworkPreviewImpl({
     }
     return null;
   }, [hover, levelModules, moduleLevelCount]);
+  const loadingProgressLabel =
+    loadingState === "running"
+      ? "Running Infomap…"
+      : loadingState === "loading"
+        ? "Loading network…"
+        : hierarchicalLayoutPhase === "layout"
+          ? `Arranging hierarchy ${Math.round(
+              hierarchicalLayoutProgress * 100,
+            )}%`
+          : hierarchicalLayoutPhase === "relax"
+            ? `Relaxing layout ${Math.round(hierarchicalLayoutProgress * 100)}%`
+            : `Preparing layout ${Math.round(initialLayoutProgress * 100)}%`;
 
   return (
     <Box
       ref={containerRef}
       aria-label="Interactive network preview"
-      bg="gray.50"
+      bg="bg.subtle"
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="border"
       borderRadius={isFullscreen ? 0 : "md"}
       bottom={isFullscreen ? 0 : undefined}
       flex="1"
@@ -1805,319 +2114,53 @@ function NetworkPreviewImpl({
       />
 
       {hasLevelControl && (
-        <Box
-          bg="gray.subtle"
-          color="gray.fg"
-          borderRadius="l2"
-          boxShadow="0 0 0 1px var(--chakra-colors-gray-muted)"
-          bottom={3}
-          px={1.5}
-          py={1.5}
-          position="absolute"
-          right={3}
-          fontSize="xs"
-          alignItems="center"
-          display="flex"
-          flexDirection="column"
-          gap={1}
-          minW="2.75rem"
-        >
-          <Text color="fg" fontWeight={600} lineHeight={1} textAlign="center">
-            {levelValueLabel}
-          </Text>
-          <Box mt={-1}>
-            <LevelGranularityIcon fine />
-          </Box>
-          <Box display="flex" justifyContent="center">
-            <input
-              aria-label={`Module level ${levelValueLabel}`}
-              disabled={levelLocked}
-              max={moduleLevelCount}
-              min={1}
-              onChange={(event) => setLevel(Number(event.target.value))}
-              step={1}
-              style={{
-                writingMode: "vertical-lr",
-                direction: "rtl",
-                height: "7rem",
-                width: "1.25rem",
-              }}
-              type="range"
-              value={sliderLevel}
-            />
-          </Box>
-          <LevelGranularityIcon />
-        </Box>
+        <NetworkLevelControl
+          levelLocked={levelLocked}
+          levelValueLabel={levelValueLabel}
+          moduleLevelCount={moduleLevelCount}
+          setLevel={setLevel}
+          sliderLevel={sliderLevel}
+        />
       )}
 
-      <ButtonGroup
-        attached
-        aria-label="Network preview controls"
-        size="xs"
-        position="absolute"
-        right={3}
-        top={3}
-        variant="surface"
-      >
-        <Menu.Root>
-          <MenuTrigger asChild>
-            <Button aria-label="Download network" loading={isDownloading}>
-              <LuDownload />
-            </Button>
-          </MenuTrigger>
-          <Portal>
-            <MenuPositioner>
-              <MenuContent>
-                <MenuItem value="download-png" onClick={downloadPng}>
-                  <LuDownload />
-                  Download PNG
-                </MenuItem>
-                <MenuItem value="download-svg" onClick={downloadSvg}>
-                  <LuDownload />
-                  Download SVG
-                </MenuItem>
-              </MenuContent>
-            </MenuPositioner>
-          </Portal>
-        </Menu.Root>
-        <Button aria-label="Fit network preview" onClick={() => fitToGraph()}>
-          <LuMaximize />
-          Fit
-        </Button>
-        <Button
-          aria-label={
-            isFullscreen
-              ? "Exit fullscreen network preview"
-              : "Fullscreen network preview"
-          }
-          onClick={toggleFullscreen}
-          title={
-            isFullscreen
-              ? "Exit fullscreen network preview"
-              : "Fullscreen network preview"
-          }
-        >
-          {isFullscreen ? <LuMinimize2 /> : <LuExpand />}
-        </Button>
-      </ButtonGroup>
+      <NetworkPreviewToolbar
+        downloadPng={downloadPng}
+        downloadSvg={downloadSvg}
+        fitToGraph={fitToGraph}
+        isDownloading={isDownloading}
+        isFullscreen={isFullscreen}
+        toggleFullscreen={toggleFullscreen}
+      />
 
       {(loadingState || layoutOverlayPending) && (
-        <HStack
-          bg="whiteAlpha.700"
-          color="gray.700"
-          inset={0}
-          position="absolute"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          gap={2}
-          zIndex={20}
-          pointerEvents="none"
-        >
-          <Spinner size="sm" />
-          <Text fontSize="sm" fontWeight={600} mb={0}>
-            {loadingState === "running"
-              ? "Running Infomap…"
-              : loadingState === "loading"
-                ? "Loading network…"
-                : hierarchicalLayoutPhase === "layout"
-                  ? `Arranging hierarchy ${Math.round(
-                      hierarchicalLayoutProgress * 100,
-                    )}%`
-                  : hierarchicalLayoutPhase === "relax"
-                    ? `Relaxing layout ${Math.round(
-                        hierarchicalLayoutProgress * 100,
-                      )}%`
-                    : `Preparing layout ${Math.round(initialLayoutProgress * 100)}%`}
-          </Text>
-        </HStack>
+        <WorkbenchOverlay
+          kind="loading"
+          title="Loading network"
+          progressLabel={loadingProgressLabel}
+        />
       )}
 
       {parsed.status !== "ok" && !loadingState && !layoutOverlayPending && (
-        <Box
-          bg="whiteAlpha.900"
-          borderWidth="1px"
-          borderColor="gray.200"
-          borderRadius="md"
-          color="gray.600"
-          left="50%"
-          maxW="24rem"
-          p={4}
-          position="absolute"
-          textAlign="center"
-          top="50%"
-          transform="translate(-50%, -50%)"
-        >
-          <Text fontSize="sm" fontWeight={700} mb={1}>
-            Network preview unavailable
-          </Text>
-          <Text fontSize="sm" mb={0}>
-            {parsed.message}
-          </Text>
-        </Box>
+        <WorkbenchOverlay
+          kind="empty"
+          title="Network preview unavailable"
+          description={parsed.message}
+        />
       )}
 
       {hover && (
-        <Box
-          ref={hoverCardRef}
-          bg="gray.900"
-          borderRadius="sm"
-          color="white"
-          maxW="18rem"
-          minW="7.5rem"
-          pointerEvents="none"
-          position="fixed"
-          px={2.5}
-          py={2}
-          left={0}
-          top={0}
-          transform="translate3d(0, 0, 0) translateY(-50%)"
-          zIndex={10}
-          css={{
-            transition:
-              "transform 90ms ease-out, width 90ms ease-out, min-width 90ms ease-out, max-width 90ms ease-out",
-            willChange: "transform, width",
-            "@media (prefers-reduced-motion: reduce)": {
-              transition: "none",
-            },
-            "&::before": {
-              background: "var(--chakra-colors-gray-900)",
-              content: '""',
-              height: "0.5rem",
-              position: "absolute",
-              top: "calc(50% - 0.25rem)",
-              transform: "rotate(45deg)",
-              width: "0.5rem",
-            },
-            '&[data-side="right"]::before': {
-              left: "-0.25rem",
-            },
-            '&[data-side="left"]::before': {
-              right: "-0.25rem",
-            },
-          }}
-        >
-          <Box alignItems="baseline" display="flex" gap={3} mb={1} minW={0}>
-            <Text
-              as="span"
-              fontSize="xs"
-              fontWeight={700}
-              mb={0}
-              minW={0}
-              overflowWrap="anywhere"
-            >
-              {hover.node.label}
-            </Text>
-            {hover.node.label !== hover.node.id && (
-              <Text
-                as="span"
-                color="whiteAlpha.700"
-                flexShrink={0}
-                fontSize="2xs"
-                mb={0}
-              >
-                {hover.node.id}
-              </Text>
-            )}
-          </Box>
-          <Box
-            color="whiteAlpha.900"
-            columnGap={2.5}
-            display="grid"
-            fontSize="xs"
-            rowGap={0.5}
-            gridTemplateColumns="max-content 1fr"
-            mt={1.5}
-          >
-            <Text as="span" color="whiteAlpha.700" mb={0}>
-              Flow
-            </Text>
-            <Text as="span" mb={0}>
-              {(hover.node.flow * 100).toFixed(2)}%
-            </Text>
-            {hover.node.degree > 0 && (
-              <>
-                <Text as="span" color="whiteAlpha.700" mb={0}>
-                  Degree
-                </Text>
-                <Text as="span" mb={0}>
-                  {hover.node.degree}
-                </Text>
-              </>
-            )}
-            {hoverSlices.length === 1 && !hoverPath ? (
-              <>
-                <Text as="span" color="whiteAlpha.700" mb={0}>
-                  Module
-                </Text>
-                <Text as="span" mb={0}>
-                  {hoverSlices[0].moduleId}
-                </Text>
-              </>
-            ) : moduleId !== undefined &&
-              hoverSlices.length === 0 &&
-              !hoverPath ? (
-              <>
-                <Text as="span" color="whiteAlpha.700" mb={0}>
-                  Module
-                </Text>
-                <Text as="span" mb={0}>
-                  {moduleId}
-                </Text>
-              </>
-            ) : null}
-            {hoverPath && (
-              <>
-                <Text as="span" color="whiteAlpha.700" mb={0}>
-                  Path
-                </Text>
-                <Text as="span" mb={0} overflowWrap="anywhere">
-                  {hoverPath}
-                </Text>
-              </>
-            )}
-          </Box>
-          {hoverSlices.length > 1 && (
-            <Box mt={1}>
-              {visibleHoverSlices.map((slice) => {
-                const share =
-                  hoverModuleTotal > 0
-                    ? Math.round((slice.flow / hoverModuleTotal) * 100)
-                    : 0;
-                return (
-                  <Text
-                    key={String(slice.moduleId)}
-                    color={
-                      activeTooltipModuleId === undefined ||
-                      activeTooltipModuleId === slice.moduleId
-                        ? "whiteAlpha.900"
-                        : "whiteAlpha.600"
-                    }
-                    fontSize="xs"
-                    mb={0}
-                  >
-                    <Box
-                      as="span"
-                      display="inline-block"
-                      w="0.6rem"
-                      h="0.6rem"
-                      borderRadius="full"
-                      mr={1.5}
-                      verticalAlign="middle"
-                      bg={moduleColorFor(slice.moduleId)}
-                    />
-                    Module {slice.moduleId} · {share}%
-                  </Text>
-                );
-              })}
-              {hiddenHoverSliceCount > 0 && (
-                <Text color="whiteAlpha.700" fontSize="xs" mb={0}>
-                  and {hiddenHoverSliceCount} more
-                </Text>
-              )}
-            </Box>
-          )}
-        </Box>
+        <NetworkHoverTooltip
+          activeTooltipModuleId={activeTooltipModuleId}
+          hiddenHoverSliceCount={hiddenHoverSliceCount}
+          hover={hover}
+          hoverCardRef={hoverCardRef}
+          hoverModuleTotal={hoverModuleTotal}
+          hoverPath={hoverPath}
+          hoverSlices={hoverSlices}
+          moduleColorFor={moduleColorFor}
+          moduleId={moduleId}
+          visibleHoverSlices={visibleHoverSlices}
+        />
       )}
     </Box>
   );

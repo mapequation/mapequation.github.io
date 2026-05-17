@@ -15,9 +15,13 @@ import TeX from "@matejmazur/react-katex";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
-import { LuArrowRight, LuCheck, LuCopy } from "react-icons/lu";
+import { LuArrowRight } from "react-icons/lu";
 import * as exampleNetworks from "../../data/networks";
 import * as outputExamples from "../../data/output";
+import { DocsCard } from "../../shared/components/DocsCard";
+import { DocsCodeBlock } from "../../shared/components/DocsCodeBlock";
+import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { Tag } from "../../shared/components/Tag";
 import { infomapVersionLabel } from "../../shared/infomapVersion";
 
 const preview = (content: string, maxLines = 18) => {
@@ -215,11 +219,7 @@ const formats = [
 const inputFormats = formats.filter((format) => format.side === "input");
 const outputFormats = formats.filter((format) => format.side === "output");
 
-type RailItem =
-  | { kind: "heading"; label: string; id?: never; href?: never }
-  | { kind?: never; id: string; label: string; href?: string };
-
-const railItems: RailItem[] = [
+const railItems: DocsRailItem[] = [
   { kind: "heading", label: "Input" },
   ...inputFormats.map(({ id, title }) => ({ id, label: title })),
   { kind: "heading", label: "Output" },
@@ -235,57 +235,13 @@ const railItems: RailItem[] = [
   },
 ];
 
-function CodeBlock({ children }) {
-  const [copied, setCopied] = useState(false);
-  const text = Array.isArray(children) ? children.join("") : String(children);
-
-  return (
-    <Box position="relative" mt={4}>
-      <Box
-        bg="gray.100"
-        borderWidth="1px"
-        borderColor="gray.200"
-        borderRadius="md"
-        p={4}
-        overflowX="auto"
-      >
-        <chakra.pre
-          m={0}
-          fontFamily="monospace"
-          fontSize="sm"
-          lineHeight={1.6}
-          whiteSpace="pre-wrap"
-        >
-          {children}
-        </chakra.pre>
-      </Box>
-      <Button
-        type="button"
-        variant="surface"
-        size="xs"
-        position="absolute"
-        top={2}
-        right={2}
-        onClick={async () => {
-          await navigator?.clipboard?.writeText(text);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1400);
-        }}
-      >
-        {copied ? <LuCheck /> : <LuCopy />}
-        {copied ? "Copied" : "Copy"}
-      </Button>
-    </Box>
-  );
-}
-
 function FigureBlock({ figure }) {
   return (
     <Box
       as="figure"
-      bg="gray.50"
+      bg="bg.subtle"
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="border.emphasized"
       borderRadius="md"
       p={{ base: 4, md: 5 }}
       m={0}
@@ -302,7 +258,7 @@ function FigureBlock({ figure }) {
       />
       <Text
         as="figcaption"
-        color="gray.600"
+        color="fg.muted"
         fontSize="sm"
         lineHeight={1.6}
         mt={3}
@@ -317,12 +273,12 @@ function FigureBlock({ figure }) {
 function FormatDescription({ format }) {
   return (
     <Stack gap={3}>
-      <Text color="gray.600" fontSize="sm" mb={0}>
+      <Text color="fg.muted" fontSize="sm" mb={0}>
         {format.description}
       </Text>
 
       {format.details?.map((detail) => (
-        <Text key={detail} color="gray.600" fontSize="sm" mb={0}>
+        <Text key={detail} color="fg.muted" fontSize="sm" mb={0}>
           {detail}
         </Text>
       ))}
@@ -332,18 +288,7 @@ function FormatDescription({ format }) {
 
 function FormatCard({ format }) {
   return (
-    <Box
-      as="article"
-      id={format.id}
-      bg="white"
-      borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="md"
-      p={{ base: 5, md: 6 }}
-      scrollMarginTop="6rem"
-      minW={0}
-      maxW="100%"
-    >
+    <DocsCard as="article" id={format.id} minW={0} maxW="100%">
       <Flex
         justify="space-between"
         align={{ base: "flex-start", md: "baseline" }}
@@ -355,30 +300,8 @@ function FormatCard({ format }) {
           {format.title}
         </Heading>
         <Flex gap={2} flexWrap="wrap">
-          <Box
-            as="span"
-            bg="gray.100"
-            color="gray.600"
-            borderRadius="sm"
-            px={2}
-            py={1}
-            fontFamily="monospace"
-            fontSize="xs"
-          >
-            {format.chip}
-          </Box>
-          <Box
-            as="span"
-            bg="gray.100"
-            color="gray.600"
-            borderRadius="sm"
-            px={2}
-            py={1}
-            fontFamily="monospace"
-            fontSize="xs"
-          >
-            {format.tag}
-          </Box>
+          <Tag>{format.chip}</Tag>
+          <Tag>{format.tag}</Tag>
         </Flex>
       </Flex>
 
@@ -409,8 +332,8 @@ function FormatCard({ format }) {
         <FormatDescription format={format} />
       )}
 
-      <CodeBlock>{format.example}</CodeBlock>
-    </Box>
+      <DocsCodeBlock mt={4}>{format.example}</DocsCodeBlock>
+    </DocsCard>
   );
 }
 
@@ -427,81 +350,11 @@ const FormatsPage: NextPage = () => {
         mt={8}
         minW={0}
       >
-        <Box
-          as="aside"
-          display={{ base: "none", lg: "block" }}
-          position="sticky"
-          top="5rem"
-        >
-          <Text
-            color="gray.500"
-            fontFamily="monospace"
-            fontSize="xs"
-            letterSpacing="0.1em"
-            textTransform="uppercase"
-            mb={3}
-          >
-            On this page
-          </Text>
-          <Box borderLeftWidth="1px" borderLeftColor="gray.300">
-            {railItems.map((item, index) =>
-              item.kind === "heading" ? (
-                <Text
-                  key={`${item.label}-${index}`}
-                  color="gray.500"
-                  fontSize="xs"
-                  letterSpacing="0.08em"
-                  textTransform="uppercase"
-                  px={4}
-                  pt={index === 0 ? 2 : 4}
-                  pb={1}
-                  mb={0}
-                >
-                  {item.label}
-                </Text>
-              ) : item.href ? (
-                <CkLink
-                  key={item.id}
-                  asChild
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                >
-                  <NextLink href={item.href}>{item.label}</NextLink>
-                </CkLink>
-              ) : (
-                <CkLink
-                  key={item.id}
-                  href={`#${item.id}`}
-                  display="block"
-                  color={active === item.id ? "gray.900" : "gray.500"}
-                  fontWeight={active === item.id ? 700 : 400}
-                  borderLeftWidth="2px"
-                  borderLeftColor={
-                    active === item.id ? "red.600" : "transparent"
-                  }
-                  ml="-1px"
-                  px={4}
-                  py={1.5}
-                  fontSize="sm"
-                  textDecoration="none"
-                  onClick={() => setActive(item.id)}
-                >
-                  {item.label}
-                </CkLink>
-              ),
-            )}
-          </Box>
-        </Box>
+        <DocsRail
+          items={railItems}
+          active={active}
+          onActiveChange={setActive}
+        />
 
         <Box as="main" minW={0}>
           <Text color="gray.500" fontSize="sm" mb={2}>
@@ -553,21 +406,14 @@ const FormatsPage: NextPage = () => {
               ))}
             </Stack>
 
-            <Box
-              bg="white"
-              borderWidth="1px"
-              borderColor="red.100"
-              borderRadius="md"
-              p={4}
-              mt={5}
-            >
+            <DocsCard borderColor="red.200" p={4} mt={5}>
               <Text color="gray.700" fontSize="sm" mb={0}>
                 <strong>Self-links:</strong> since v2.0.0 Infomap counts
                 self-links by default. Pass <code>--no-self-links</code> to
                 exclude them. For undirected networks, Infomap follows the
                 convention of counting self-links once.
               </Text>
-            </Box>
+            </DocsCard>
           </Box>
 
           <Box as="section" mb={10}>
@@ -598,17 +444,7 @@ const FormatsPage: NextPage = () => {
             </Stack>
           </Box>
 
-          <Box
-            as="section"
-            id="OutputHeader"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
-            mb={6}
-            scrollMarginTop="6rem"
-          >
+          <DocsCard id="OutputHeader" mb={6}>
             <Flex
               justify="space-between"
               align={{ base: "flex-start", md: "baseline" }}
@@ -632,21 +468,21 @@ const FormatsPage: NextPage = () => {
               Every output file starts with a header that records the run.
             </Text>
             <SimpleGrid columns={{ base: 1, md: showAnnotations ? 2 : 1 }}>
-              <CodeBlock>{`# ${infomapVersionLabel}
+              <DocsCodeBlock mt={4}>{`# ${infomapVersionLabel}
 # ./Infomap network.net . --ftree --clu
 # started at 2026-05-05, 07:23:30
 # completed in 0.114 s
 # partitioned into 2 levels with 2 top modules
 # codelength 2.32073 bits
-# relative codelength savings 9.22792%`}</CodeBlock>
+# relative codelength savings 9.22792%`}</DocsCodeBlock>
               {showAnnotations && (
                 <Box
                   borderWidth="1px"
-                  borderColor="gray.200"
+                  borderColor="border.emphasized"
                   borderRadius="md"
                   p={4}
                   fontSize="sm"
-                  color="gray.600"
+                  color="fg.muted"
                 >
                   <Stack gap={2}>
                     <Text mb={0}>Infomap version</Text>
@@ -654,33 +490,20 @@ const FormatsPage: NextPage = () => {
                     <Text mb={0}>Run timestamp</Text>
                     <Text mb={0}>Wall time</Text>
                     <Text mb={0}>Hierarchy depth and top-level count</Text>
-                    <Text color="gray.900" fontWeight={700} mb={0}>
+                    <Text color="fg" fontWeight={700} mb={0}>
                       Total description length
                     </Text>
-                    <Text color="gray.900" fontWeight={700} mb={0}>
+                    <Text color="fg" fontWeight={700} mb={0}>
                       Savings versus one-level baseline
                     </Text>
                   </Stack>
                 </Box>
               )}
             </SimpleGrid>
-          </Box>
+          </DocsCard>
 
-          <Box
-            as="section"
-            id="CodelengthSavings"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
-            mb={6}
-            scrollMarginTop="6rem"
-          >
-            <Heading as="h2" size="md" mb={3}>
-              Codelength savings
-            </Heading>
-            <Text color="gray.600" fontSize="sm" maxW="38rem">
+          <DocsCard id="CodelengthSavings" title="Codelength savings" mb={6}>
+            <Text color="fg.muted" fontSize="sm" maxW="38rem">
               The relative savings measures how much shorter Infomap&apos;s
               modular description is compared to the one-level baseline. Higher
               means stronger modular structure.
@@ -688,32 +511,23 @@ const FormatsPage: NextPage = () => {
             <Box textAlign="center" py={3} fontSize={{ base: "lg", md: "xl" }}>
               <TeX math="S_L = 1 - \frac{L}{L_1}" block />
             </Box>
-            <Text color="gray.500" fontSize="sm" textAlign="center" mb={0}>
+            <Text color="fg.muted" fontSize="sm" textAlign="center" mb={0}>
               where <TeX>L</TeX> is the codelength and <TeX>L_1</TeX> is the
               one-level codelength.
             </Text>
-          </Box>
+          </DocsCard>
 
-          <Box
-            as="section"
+          <DocsCard
             id="PhysicalAndStateOutput"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
+            title="Physical and state-level output"
             mb={12}
-            scrollMarginTop="6rem"
           >
-            <Heading as="h2" size="md" mb={3}>
-              Physical and state-level output
-            </Heading>
             <Grid
               templateColumns={{ base: "1fr", md: "3fr 2fr" }}
               gap={5}
               alignItems="start"
             >
-              <Text color="gray.600" fontSize="sm" mb={0}>
+              <Text color="fg.muted" fontSize="sm" mb={0}>
                 For ordinary networks, output rows refer to physical nodes. For
                 memory, state, or multilayer networks, Infomap can also write
                 state-level outputs. State-level files keep internal state nodes
@@ -732,22 +546,9 @@ const FormatsPage: NextPage = () => {
                 }}
               />
             </Grid>
-          </Box>
+          </DocsCard>
 
-          <Box
-            as="section"
-            id="ReadNext"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={{ base: 5, md: 6 }}
-            mb={12}
-            scrollMarginTop="6rem"
-          >
-            <Heading as="h2" size="md" mb={3}>
-              Read next
-            </Heading>
+          <DocsCard id="ReadNext" title="Read next" mb={12}>
             <Flex gap={4} flexWrap="wrap">
               <CkLink asChild fontWeight={600}>
                 <NextLink href="/infomap/how-it-works">
@@ -755,7 +556,7 @@ const FormatsPage: NextPage = () => {
                 </NextLink>
               </CkLink>
             </Flex>
-          </Box>
+          </DocsCard>
         </Box>
       </Grid>
     </Container>

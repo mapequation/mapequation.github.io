@@ -1,30 +1,17 @@
 import {
   Box,
   Button,
+  Card,
   Field,
   Flex,
   Grid,
-  GridItem,
-  Heading,
   HStack,
-  Menu,
-  Portal,
   Stack,
-  Tabs,
   Text,
 } from "@chakra-ui/react";
 import Infomap from "@mapequation/infomap";
 import localforage from "localforage";
-import {
-  type ElementType,
-  type FC,
-  type PropsWithChildren,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   LuChevronDown,
   LuChevronRight,
@@ -46,6 +33,13 @@ import {
   ensurePreviewOutputs,
 } from "../../state/parameters";
 import type { InputFile, InputName, OutputKey } from "../../state/types";
+import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
+import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
+import {
+  WorkbenchPanel,
+  WorkbenchPanelHeader,
+} from "../../shared/components/WorkbenchPanel";
+import { WorkbenchTabs } from "../../shared/components/WorkbenchTabs";
 import ExampleNetworksList from "./ExamplesMenu";
 import { InfomapStatsStrip } from "./InfomapStatsStrip";
 import InputParameters from "./InputParameters";
@@ -69,22 +63,7 @@ import {
 
 localforage.config({ name: "infomap" });
 
-// Chakra v3's Menu compound types omit `children` — runtime accepts it.
-const MenuTrigger = Menu.Trigger as FC<
-  PropsWithChildren<{ asChild?: boolean }>
->;
-const MenuPositioner = Menu.Positioner as FC<PropsWithChildren>;
-const MenuContent = Menu.Content as FC<PropsWithChildren>;
-const MenuItem = Menu.Item as FC<
-  PropsWithChildren<{ onClick?: () => void; value: string }>
->;
-const TabsRoot = Tabs.Root as ElementType;
-const TabsList = Tabs.List as ElementType;
-const TabsTrigger = Tabs.Trigger as ElementType;
 const toolbarControlHeight = "2.75rem";
-
-const useIsomorphicLayoutEffect =
-  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 const inputPlaceholders = {
   network: "Paste network data here…",
@@ -122,6 +101,13 @@ type LastRunSummary = {
   elapsedMs: number;
   networkSignature: string;
   status: "complete" | "error";
+};
+
+type ResultTab = "network" | "console" | "output";
+
+type OutputFileOption = {
+  key: OutputKey;
+  name: string;
 };
 
 function parseEvaluationMetadata(content: Record<string, unknown>) {
@@ -184,99 +170,6 @@ function textSignature(value: string) {
   return `${value.length}:${hash}`;
 }
 
-function OutputViewer({
-  ariaLabel = "Generated output",
-  autoScroll = false,
-  content,
-  fontSize = "xs",
-  isActive = true,
-  onCopy,
-  placeholder = "",
-  variant = "default",
-}: {
-  ariaLabel?: string;
-  autoScroll?: boolean;
-  content: string;
-  fontSize?: string;
-  isActive?: boolean;
-  onCopy: () => void;
-  placeholder?: string;
-  variant?: "default" | "terminal";
-}) {
-  const scrollContainerRef = useRef<HTMLPreElement | null>(null);
-  const isTerminal = variant === "terminal";
-  const selectionStyle = isTerminal
-    ? { background: "#374151", color: "#f9fafb" }
-    : { background: "#1d4ed8", color: "white" };
-
-  useIsomorphicLayoutEffect(() => {
-    if (!autoScroll || !isActive) return;
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
-
-    scrollContainer.scrollTop = scrollContainer.scrollHeight;
-  }, [autoScroll, content.length, isActive]);
-
-  return (
-    <Box
-      aria-label={ariaLabel}
-      as="pre"
-      bg={isTerminal ? "#0b1020" : "gray.50"}
-      borderColor={isTerminal ? "#1f2937" : "gray.300"}
-      borderRadius="md"
-      borderWidth="1px"
-      boxShadow={isTerminal ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "none"}
-      color={isTerminal ? "#d1d5db" : "gray.900"}
-      fontFamily="monospace"
-      fontSize={fontSize}
-      h="100%"
-      lineHeight={1.5}
-      m={0}
-      minH={0}
-      onCopy={onCopy}
-      overflow="auto"
-      p={3}
-      ref={scrollContainerRef}
-      role="textbox"
-      tabIndex={0}
-      whiteSpace="pre"
-      w="100%"
-      css={{
-        "& *::selection": selectionStyle,
-        "&::selection": selectionStyle,
-      }}
-    >
-      {content || placeholder}
-    </Box>
-  );
-}
-
-function PanelHeader({
-  title,
-  description,
-  action,
-}: {
-  title: string;
-  description?: React.ReactNode;
-  action?: React.ReactNode;
-}) {
-  return (
-    <Box flexShrink={0} mb={3}>
-      <Flex align="center" gap={3} justify="space-between">
-        <Heading as="h2" size="sm" mb={0}>
-          {title}
-        </Heading>
-        {action}
-      </Flex>
-      {description && (
-        <Text color="gray.500" fontSize="sm" mb={0} mt={1}>
-          {description}
-        </Text>
-      )}
-    </Box>
-  );
-}
-
 function formatDuration(ms: number) {
   if (ms < 1000) return `${Math.max(1, Math.round(ms))} ms`;
   return `${(ms / 1000).toFixed(ms < 10_000 ? 2 : 1)} s`;
@@ -300,12 +193,12 @@ function RunStatus({
   lastRun: LastRunSummary | null;
 }) {
   const color = isRunning
-    ? "gray.500"
+    ? "fg.muted"
     : lastRun?.status === "complete"
       ? "green.700"
       : lastRun?.status === "error"
         ? "red.700"
-        : "gray.500";
+        : "fg.muted";
   const statusText = isRunning
     ? "Running Infomap…"
     : !lastRun
@@ -330,10 +223,161 @@ function RunStatus({
       >
         {statusText}
       </Text>
-      <Text color="gray.500" fontSize="xs" mb={0}>
+      <Text color="fg.muted" fontSize="xs" mb={0}>
         {detailText}
       </Text>
     </Stack>
+  );
+}
+
+function OutputFileSelector({
+  activeOutputFile,
+  files,
+  hasMultipleFiles,
+  selectedOutputFile,
+  setActiveKey,
+  setTab,
+  tab,
+}: {
+  activeOutputFile?: OutputFileOption;
+  files: OutputFileOption[];
+  hasMultipleFiles: boolean;
+  selectedOutputFile?: OutputFileOption;
+  setActiveKey: (key: OutputKey) => void;
+  setTab: (tab: ResultTab) => void;
+  tab: ResultTab;
+}) {
+  if (files.length === 0) return null;
+
+  const selectedStyles = {
+    "aria-pressed": tab === "output",
+    bg: tab === "output" ? "bg.subtle" : undefined,
+    borderColor: tab === "output" ? "border.emphasized" : undefined,
+    color: tab === "output" ? "fg" : undefined,
+    fontSize: "sm",
+    fontWeight: 600,
+    h: toolbarControlHeight,
+    maxW: { base: "9rem", xl: "12rem" },
+    minW: 0,
+    size: "sm" as const,
+    variant: "outline" as const,
+    _hover: tab === "output" ? { bg: "bg.subtle" } : undefined,
+  };
+
+  if (hasMultipleFiles) {
+    return (
+      <WorkbenchActionMenu
+        ariaLabel="Select output file"
+        trigger={
+          <>
+            <Text
+              as="span"
+              overflow="hidden"
+              textOverflow="ellipsis"
+              whiteSpace="nowrap"
+            >
+              {tab === "output" ? (
+                activeOutputFile?.name || "Output"
+              ) : (
+                <>
+                  <Box as="span" display={{ base: "inline", md: "none" }}>
+                    Output
+                  </Box>
+                  <Box as="span" display={{ base: "none", md: "inline" }}>
+                    Output files
+                  </Box>
+                </>
+              )}
+            </Text>
+            <LuChevronDown />
+          </>
+        }
+        triggerProps={selectedStyles}
+        items={files.map((file) => ({
+          label: file.name,
+          onSelect: () => {
+            setTab("output");
+            setActiveKey(file.key);
+          },
+          value: file.key,
+        }))}
+      />
+    );
+  }
+
+  if (!selectedOutputFile) return null;
+
+  return (
+    <Button
+      {...selectedStyles}
+      onClick={() => {
+        setTab("output");
+        setActiveKey(selectedOutputFile.key);
+      }}
+    >
+      <Text
+        as="span"
+        overflow="hidden"
+        textOverflow="ellipsis"
+        whiteSpace="nowrap"
+      >
+        {selectedOutputFile.name}
+      </Text>
+    </Button>
+  );
+}
+
+function ResultViewControls({
+  activeOutputFile,
+  files,
+  hasMultipleFiles,
+  selectedOutputFile,
+  setActiveKey,
+  setTab,
+  tab,
+}: {
+  activeOutputFile?: OutputFileOption;
+  files: OutputFileOption[];
+  hasMultipleFiles: boolean;
+  selectedOutputFile?: OutputFileOption;
+  setActiveKey: (key: OutputKey) => void;
+  setTab: (tab: ResultTab) => void;
+  tab: ResultTab;
+}) {
+  return (
+    <HStack gap={2} minW={0} w="100%" wrap="wrap">
+      <WorkbenchTabs
+        ariaLabel="Result views"
+        value={tab}
+        onValueChange={setTab}
+        triggerHeight={toolbarControlHeight}
+        items={[
+          {
+            value: "network",
+            label: "Network",
+            icon: <LuShare2 style={{ transform: "rotate(90deg)" }} />,
+            title: "Show network preview (N)",
+          },
+          {
+            value: "console",
+            label: "Console",
+            icon: <LuTerminal />,
+            title: "Show console output (C)",
+          },
+        ]}
+      />
+      <Box display="block" ml={{ base: 0, xl: "auto" }} minW={0}>
+        <OutputFileSelector
+          activeOutputFile={activeOutputFile}
+          files={files}
+          hasMultipleFiles={hasMultipleFiles}
+          selectedOutputFile={selectedOutputFile}
+          setActiveKey={setActiveKey}
+          setTab={setTab}
+          tab={tab}
+        />
+      </Box>
+    </HStack>
   );
 }
 
@@ -355,7 +399,7 @@ export default function InfomapOnline() {
   const { activeKey, setActiveKey, physicalFiles, stateFiles } = store.output;
   const { hasArgsError } = store.params;
 
-  const [tab, setTab] = useState<"network" | "console" | "output">("network");
+  const [tab, setTab] = useState<ResultTab>("network");
   const [mobilePanel, setMobilePanel] = useState<"input" | "parameters" | null>(
     null,
   );
@@ -884,143 +928,16 @@ export default function InfomapOnline() {
   const activeOutputFile = outputFiles.find((file) => file.key === activeKey);
   const selectedOutputFile = activeOutputFile ?? outputFiles[0];
   const hasMultipleOutputFiles = outputFiles.length > 1;
-  const outputFilesControl =
-    outputFiles.length > 0 ? (
-      hasMultipleOutputFiles ? (
-        <Menu.Root>
-          <MenuTrigger asChild>
-            <Button
-              aria-pressed={tab === "output"}
-              bg={tab === "output" ? "gray.100" : undefined}
-              borderColor={tab === "output" ? "gray.300" : undefined}
-              color={tab === "output" ? "gray.900" : undefined}
-              fontSize="sm"
-              fontWeight={600}
-              h={toolbarControlHeight}
-              maxW={{ base: "9rem", xl: "12rem" }}
-              minW={0}
-              size="sm"
-              type="button"
-              variant="outline"
-              _hover={tab === "output" ? { bg: "gray.100" } : undefined}
-            >
-              <Text
-                as="span"
-                overflow="hidden"
-                textOverflow="ellipsis"
-                whiteSpace="nowrap"
-              >
-                {tab === "output" ? (
-                  activeOutputFile?.name || "Output"
-                ) : (
-                  <>
-                    <Box as="span" display={{ base: "inline", md: "none" }}>
-                      Output
-                    </Box>
-                    <Box as="span" display={{ base: "none", md: "inline" }}>
-                      Output files
-                    </Box>
-                  </>
-                )}
-              </Text>
-              <LuChevronDown />
-            </Button>
-          </MenuTrigger>
-          <Portal>
-            <MenuPositioner>
-              <MenuContent>
-                {outputFiles.map((file) => (
-                  <MenuItem
-                    key={file.key}
-                    value={file.key}
-                    onClick={() => {
-                      setTab("output");
-                      setActiveKey(file.key);
-                    }}
-                  >
-                    {file.name}
-                  </MenuItem>
-                ))}
-              </MenuContent>
-            </MenuPositioner>
-          </Portal>
-        </Menu.Root>
-      ) : (
-        selectedOutputFile && (
-          <Button
-            aria-pressed={tab === "output"}
-            bg={tab === "output" ? "gray.100" : undefined}
-            borderColor={tab === "output" ? "gray.300" : undefined}
-            color={tab === "output" ? "gray.900" : undefined}
-            fontSize="sm"
-            fontWeight={600}
-            h={toolbarControlHeight}
-            maxW={{ base: "9rem", xl: "12rem" }}
-            minW={0}
-            onClick={() => {
-              setTab("output");
-              setActiveKey(selectedOutputFile.key);
-            }}
-            size="sm"
-            variant="outline"
-            _hover={tab === "output" ? { bg: "gray.100" } : undefined}
-          >
-            <Text
-              as="span"
-              overflow="hidden"
-              textOverflow="ellipsis"
-              whiteSpace="nowrap"
-            >
-              {selectedOutputFile.name}
-            </Text>
-          </Button>
-        )
-      )
-    ) : null;
   const resultViewControls = (
-    <HStack gap={2} minW={0} w="100%" wrap="wrap">
-      <TabsRoot
-        value={tab}
-        variant="subtle"
-        onValueChange={(details: { value: "network" | "console" }) =>
-          setTab(details.value)
-        }
-      >
-        <TabsList aria-label="Result views" gap={1}>
-          <TabsTrigger
-            value="network"
-            borderRadius="sm"
-            color="gray.600"
-            fontSize="sm"
-            fontWeight={600}
-            gap={2}
-            h={toolbarControlHeight}
-            px={3}
-            title="Show network preview (N)"
-          >
-            <LuShare2 style={{ transform: "rotate(90deg)" }} />
-            Network
-          </TabsTrigger>
-          <TabsTrigger
-            value="console"
-            borderRadius="sm"
-            color="gray.600"
-            fontSize="sm"
-            fontWeight={600}
-            gap={2}
-            h={toolbarControlHeight}
-            px={3}
-            title="Show console output (C)"
-          >
-            <LuTerminal />
-            Console
-          </TabsTrigger>
-        </TabsList>
-      </TabsRoot>
-      <Box display="block" ml={{ base: 0, xl: "auto" }} minW={0}>
-        {outputFilesControl}
-      </Box>
-    </HStack>
+    <ResultViewControls
+      activeOutputFile={activeOutputFile}
+      files={outputFiles}
+      hasMultipleFiles={hasMultipleOutputFiles}
+      selectedOutputFile={selectedOutputFile}
+      setActiveKey={setActiveKey}
+      setTab={setTab}
+      tab={tab}
+    />
   );
 
   useEffect(() => {
@@ -1036,10 +953,10 @@ export default function InfomapOnline() {
       : "Ctrl + Enter";
   const runButton = (
     <Button
-      bg="#b22222"
+      bg="brand.solid"
       color="white"
-      _hover={{ bg: "#971d1d" }}
-      _active={{ bg: "#7f1818" }}
+      _hover={{ bg: "brand.hover" }}
+      _active={{ bg: "brand.active" }}
       _disabled={{ bg: "gray.300", color: "gray.500" }}
       disabled={hasArgsError || isRunning}
       loading={isRunning}
@@ -1053,7 +970,7 @@ export default function InfomapOnline() {
   );
   const renderInputPanel = () => (
     <>
-      <PanelHeader
+      <WorkbenchPanelHeader
         title="Input data"
         description="Paste, upload, or try an example below."
       />
@@ -1074,69 +991,73 @@ export default function InfomapOnline() {
             const display = getInputDisplayValue(file.value);
 
             return (
-              <Box
+              <Card.Root
                 key={key}
-                bg="white"
-                borderColor="gray.200"
-                borderRadius="md"
-                borderWidth="1px"
+                bg="bg.panel"
+                borderColor="border"
                 overflow="hidden"
+                size="sm"
+                variant="outline"
               >
-                <HStack gap={1} p={2}>
-                  <Button
-                    aria-expanded={isOpen}
-                    flex="1"
-                    justifyContent="flex-start"
-                    minH="3rem"
-                    minW={0}
-                    onClick={() => toggleInputCard(key)}
-                    px={2}
-                    py={2}
-                    size="sm"
-                    type="button"
-                    variant="ghost"
-                    _hover={{ bg: "gray.50" }}
-                  >
-                    <HStack gap={2} minW={0}>
-                      {isOpen ? <LuChevronDown /> : <LuChevronRight />}
-                      <Box minW={0} textAlign="left">
-                        <HStack gap={1.5}>
-                          <Text as="span" fontWeight={700}>
-                            {label}
-                          </Text>
-                        </HStack>
-                        <Text
-                          as="span"
-                          color="gray.500"
-                          display="block"
-                          fontSize="xs"
-                          fontWeight={400}
-                          overflow="hidden"
-                          textOverflow="ellipsis"
-                          whiteSpace="nowrap"
-                        >
-                          {getInputSummary(key, file)}
-                        </Text>
-                      </Box>
-                    </HStack>
-                  </Button>
-                  {key === "network" && !isOpen && (
-                    <LoadButton
-                      onDrop={onLoad(key)}
-                      accept={inputAccept[key]}
-                      disabled={isInputLoading}
-                      flexShrink={0}
-                      size="xs"
-                      variant={hasInput ? "outline" : "surface"}
+                <Card.Body p={2}>
+                  <HStack gap={1}>
+                    <Button
+                      aria-expanded={isOpen}
+                      flex="1"
+                      justifyContent="flex-start"
+                      minH="3rem"
+                      minW={0}
+                      onClick={() => toggleInputCard(key)}
+                      px={2}
+                      py={2}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                      _hover={{ bg: "bg.subtle" }}
                     >
-                      {hasInput ? "Change" : "Browse"}
-                    </LoadButton>
-                  )}
-                </HStack>
+                      <HStack gap={2} minW={0}>
+                        {isOpen ? <LuChevronDown /> : <LuChevronRight />}
+                        <Box minW={0} textAlign="left">
+                          <HStack gap={1.5}>
+                            <Text as="span" fontWeight={700}>
+                              {label}
+                            </Text>
+                          </HStack>
+                          <Text
+                            as="span"
+                            color="fg.muted"
+                            display="block"
+                            fontSize="xs"
+                            fontWeight={400}
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                          >
+                            {getInputSummary(key, file)}
+                          </Text>
+                        </Box>
+                      </HStack>
+                    </Button>
+                    {key === "network" && !isOpen && (
+                      <LoadButton
+                        onDrop={onLoad(key)}
+                        accept={inputAccept[key]}
+                        disabled={isInputLoading}
+                        flexShrink={0}
+                        size="xs"
+                        variant={hasInput ? "outline" : "surface"}
+                      >
+                        {hasInput ? "Change" : "Browse"}
+                      </LoadButton>
+                    )}
+                  </HStack>
+                </Card.Body>
                 {isOpen && (
-                  <Stack
+                  <Card.Body
                     borderTopWidth="1px"
-                    borderColor="gray.100"
+                    borderColor="border"
+                    display="flex"
+                    flexDirection="column"
                     gap={3}
                     p={3}
                   >
@@ -1147,7 +1068,7 @@ export default function InfomapOnline() {
                             (detail) => (
                               <Text
                                 key={detail}
-                                color="gray.500"
+                                color="fg.muted"
                                 fontSize="xs"
                                 fontWeight={400}
                                 mb={0}
@@ -1186,8 +1107,8 @@ export default function InfomapOnline() {
                       </HStack>
                     ) : (
                       <Box
-                        bg="gray.50"
-                        borderColor="gray.200"
+                        bg="bg.subtle"
+                        borderColor="border"
                         borderRadius="md"
                         borderStyle="dashed"
                         borderWidth="1px"
@@ -1203,7 +1124,7 @@ export default function InfomapOnline() {
                             >
                               Add {label.toLowerCase()} input
                             </Text>
-                            <Text color="gray.500" fontSize="xs" mb={0}>
+                            <Text color="fg.muted" fontSize="xs" mb={0}>
                               {description}
                             </Text>
                           </Box>
@@ -1241,12 +1162,12 @@ export default function InfomapOnline() {
                       minH="9rem"
                       maxH={{ base: "16rem", lg: "22rem" }}
                       variant="outline"
-                      bg="gray.50"
+                      bg="bg.subtle"
                       fontSize="sm"
                     />
-                  </Stack>
+                  </Card.Body>
                 )}
-              </Box>
+              </Card.Root>
             );
           })}
         </Stack>
@@ -1262,7 +1183,7 @@ export default function InfomapOnline() {
   );
   const renderParametersPanel = () => (
     <>
-      <PanelHeader
+      <WorkbenchPanelHeader
         title="Parameters"
         description="Configure how Infomap runs."
         action={
@@ -1327,38 +1248,27 @@ export default function InfomapOnline() {
         xl: "minmax(0, 1fr)",
       }}
     >
-      <GridItem
-        area="input"
+      <WorkbenchPanel
+        gridArea="input"
         minH={0}
         minW={0}
         display={{ base: "none", xl: "flex" }}
         flexDirection="column"
         overflowY="auto"
         overflowX="hidden"
-        bg="gray.50"
-        borderWidth="1px"
-        borderColor="gray.300"
-        borderRadius="md"
-        boxShadow="inner"
-        p={4}
       >
         {renderInputPanel()}
-      </GridItem>
-      <GridItem
-        area="console"
+      </WorkbenchPanel>
+      <WorkbenchPanel
+        gridArea="console"
         minH={0}
         minW={0}
         display="flex"
         flexDirection="column"
         overflow="hidden"
-        bg="white"
-        borderWidth="1px"
-        borderColor="gray.300"
-        borderRadius="md"
-        boxShadow="xl"
-        p={4}
+        tone="raised"
       >
-        <PanelHeader
+        <WorkbenchPanelHeader
           title="Results"
           description="Network, run log, and output files from the latest run."
         />
@@ -1477,7 +1387,7 @@ export default function InfomapOnline() {
           />
         </Box>
         <Box display={tab === "console" ? "flex" : "none"} flex="1" minH={0}>
-          <OutputViewer
+          <PreformattedOutput
             ariaLabel="Infomap console output"
             autoScroll
             content={consoleContent}
@@ -1492,66 +1402,49 @@ export default function InfomapOnline() {
           <Field.Root flex="1" minH={0} position="relative">
             {output.activeContent && (
               <Box position="absolute" right={3} top={3} zIndex={1}>
-                <Menu.Root>
-                  <MenuTrigger asChild>
-                    <Button
-                      aria-label="Download output"
-                      disabled={isRunning}
-                      size="xs"
-                      variant="surface"
-                    >
-                      <LuDownload />
-                    </Button>
-                  </MenuTrigger>
-                  <Portal>
-                    <MenuPositioner>
-                      <MenuContent>
-                        <MenuItem
-                          value="download-file"
-                          onClick={output.downloadActiveContent}
-                        >
-                          <LuDownload />
-                          Download file
-                        </MenuItem>
-                        {hasMultipleOutputFiles && (
-                          <MenuItem
-                            value="download-all"
-                            onClick={store.output.downloadAll}
-                          >
-                            <LuFiles />
-                            Download all
-                          </MenuItem>
-                        )}
-                      </MenuContent>
-                    </MenuPositioner>
-                  </Portal>
-                </Menu.Root>
+                <WorkbenchActionMenu
+                  ariaLabel="Download output"
+                  disabled={isRunning}
+                  trigger={<LuDownload />}
+                  items={[
+                    {
+                      icon: <LuDownload />,
+                      label: "Download file",
+                      onSelect: output.downloadActiveContent,
+                      value: "download-file",
+                    },
+                    ...(hasMultipleOutputFiles
+                      ? [
+                          {
+                            icon: <LuFiles />,
+                            label: "Download all",
+                            onSelect: store.output.downloadAll,
+                            value: "download-all",
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
               </Box>
             )}
-            <OutputViewer
+            <PreformattedOutput
               content={output.activeContent}
               onCopy={onCopyClusters}
             />
           </Field.Root>
         </Box>
-      </GridItem>
-      <GridItem
-        area="output"
+      </WorkbenchPanel>
+      <WorkbenchPanel
+        gridArea="output"
         minH={0}
         minW={0}
         maxH="100%"
         display={{ base: "none", lg: "flex" }}
         flexDirection="column"
         overflow="hidden"
-        bg="gray.50"
-        borderWidth="1px"
-        borderColor="gray.300"
-        borderRadius="md"
-        boxShadow="inner"
-        p={4}
       >
         {renderParametersPanel()}
-      </GridItem>
+      </WorkbenchPanel>
       {mobilePanel && (
         <Box
           display={{ base: "block", xl: "none" }}
@@ -1566,8 +1459,7 @@ export default function InfomapOnline() {
             position="absolute"
             zIndex={0}
           />
-          <Box
-            bg="white"
+          <WorkbenchPanel
             bottom={0}
             boxShadow="xl"
             display="flex"
@@ -1580,6 +1472,7 @@ export default function InfomapOnline() {
             position="absolute"
             right={mobilePanel === "parameters" ? 0 : undefined}
             top={0}
+            tone="raised"
             w="100%"
             zIndex={1}
           >
@@ -1596,7 +1489,7 @@ export default function InfomapOnline() {
             {mobilePanel === "parameters"
               ? renderParametersPanel()
               : renderInputPanel()}
-          </Box>
+          </WorkbenchPanel>
         </Box>
       )}
     </Grid>

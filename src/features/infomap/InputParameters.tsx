@@ -52,7 +52,7 @@ export default function InputParameters({
             onChange={(event) => setArgs_(event.target.value)}
             borderRadius="md"
             size="sm"
-            bg="white"
+            bg="bg.panel"
           />
         </InputGroup>
         <FieldErrorText>{argsError}</FieldErrorText>

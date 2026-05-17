@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  chakra,
   CloseButton,
   HStack,
   IconButton,
@@ -18,9 +19,32 @@ import { LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import useStore from "../../state";
 import { applyArgsToParams, createParams } from "../../state/parameters";
 import type { InfomapParameter } from "../../state/types";
+import { ToggleField } from "../../shared/components/ToggleField";
 
 const parameterGroups = ["Input", "Output", "Algorithm", "Accuracy", "About"];
 const parameterControlWidth = "8.5rem";
+const parameterSelectStyles = {
+  container: (provided) => ({
+    ...provided,
+    minW: "10rem",
+  }),
+  control: (provided) => ({
+    ...provided,
+    bg: "bg.panel",
+    fontSize: "0.75rem",
+    minH: "1.875rem",
+  }),
+  dropdownIndicator: (provided) => ({ ...provided, p: 1 }),
+  input: (provided) => ({ ...provided, fontSize: "0.75rem" }),
+  placeholder: (provided) => ({ ...provided, fontSize: "0.75rem" }),
+  singleValue: (provided) => ({ ...provided, fontSize: "0.75rem" }),
+  valueContainer: (provided) => ({
+    ...provided,
+    bg: "bg.panel",
+    px: 2,
+    w: "100%",
+  }),
+};
 
 const normalizeSearch = (value: string) => value.trim().toLowerCase();
 
@@ -76,75 +100,21 @@ function HighlightedText({ text, query }: { text: string; query: string }) {
   while (index !== -1) {
     if (index > cursor) parts.push(text.slice(cursor, index));
     parts.push(
-      <mark
+      <chakra.mark
         key={parts.length}
-        style={{
-          backgroundColor: "hsl(48, 95%, 75%)",
-          color: "inherit",
-          padding: 0,
-          borderRadius: "2px",
-        }}
+        bg="yellow.200"
+        borderRadius="2px"
+        color="inherit"
+        p={0}
       >
         {text.slice(index, index + query.length)}
-      </mark>,
+      </chakra.mark>,
     );
     cursor = index + query.length;
     index = lower.indexOf(query, cursor);
   }
   if (cursor < text.length) parts.push(text.slice(cursor));
   return <>{parts}</>;
-}
-
-function ToggleSwitch({
-  id,
-  checked,
-  onChange,
-  ariaLabel,
-}: {
-  id: string;
-  checked: boolean;
-  onChange: () => void;
-  ariaLabel: string;
-}) {
-  return (
-    <Box
-      as="button"
-      id={id}
-      role="switch"
-      aria-checked={checked}
-      aria-label={ariaLabel}
-      onClick={onChange}
-      bg="transparent"
-      border={0}
-      p={0}
-      cursor="pointer"
-      display="inline-flex"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Box
-        aria-hidden="true"
-        bg={checked ? "blue.500" : "gray.300"}
-        borderRadius="full"
-        boxShadow="inset 0 0 0 1px rgba(0, 0, 0, 0.08)"
-        h="1.125rem"
-        p="0.125rem"
-        position="relative"
-        transition="background 120ms ease"
-        w="2rem"
-      >
-        <Box
-          bg="white"
-          borderRadius="full"
-          boxShadow="0 1px 2px rgba(0, 0, 0, 0.2)"
-          h="0.875rem"
-          transform={checked ? "translateX(0.875rem)" : "translateX(0)"}
-          transition="transform 120ms ease"
-          w="0.875rem"
-        />
-      </Box>
-    </Box>
-  );
 }
 
 export function AdvancedParametersToggle({
@@ -155,17 +125,14 @@ export function AdvancedParametersToggle({
   onToggle: () => void;
 }) {
   return (
-    <HStack as="label" color="gray.700" flexShrink={0} gap={2}>
-      <ToggleSwitch
-        id="show-advanced"
-        checked={advanced}
-        ariaLabel="Show advanced parameters"
-        onChange={onToggle}
-      />
-      <Text fontSize="xs" fontWeight={700} mb={0}>
-        Advanced
-      </Text>
-    </HStack>
+    <ToggleField
+      id="show-advanced"
+      checked={advanced}
+      ariaLabel="Show advanced parameters"
+      onChange={onToggle}
+    >
+      Advanced
+    </ToggleField>
   );
 }
 
@@ -204,7 +171,7 @@ export function ParametersSearch({
         pl={9}
         pr={search ? 9 : 3}
         size="sm"
-        bg="white"
+        bg="bg.panel"
       />
     </InputGroup>
   );
@@ -212,29 +179,6 @@ export function ParametersSearch({
 
 const DropdownParameter = ({ param }: { param: any }) => {
   const store = useStore();
-
-  const selectStyle = {
-    container: (provided) => ({
-      ...provided,
-      minW: "10rem",
-    }),
-    control: (provided) => ({
-      ...provided,
-      bg: "white",
-      fontSize: "0.75rem",
-      minH: "1.875rem",
-    }),
-    dropdownIndicator: (provided) => ({ ...provided, p: 1 }),
-    input: (provided) => ({ ...provided, fontSize: "0.75rem" }),
-    placeholder: (provided) => ({ ...provided, fontSize: "0.75rem" }),
-    singleValue: (provided) => ({ ...provided, fontSize: "0.75rem" }),
-    valueContainer: (provided) => ({
-      ...provided,
-      bg: "white",
-      px: 2,
-      w: "100%",
-    }),
-  };
 
   const isMulti = param.longType === "list";
 
@@ -267,7 +211,7 @@ const DropdownParameter = ({ param }: { param: any }) => {
     <Select
       id={param.long}
       ref={(ref) => store.params.setRef(param.long, ref)}
-      chakraStyles={selectStyle}
+      chakraStyles={parameterSelectStyles}
       placeholder={param.longType}
       isMulti={isMulti}
       isClearable={param.clearable}
@@ -287,11 +231,11 @@ const InputParameter = ({ param }: { param: any }) => {
       id={param.long}
       name={param.long}
       w={parameterControlWidth}
-      bg="white"
-      borderColor={param.active ? "blue.300" : "gray.300"}
+      bg="bg.panel"
+      borderColor={param.active ? "blue.300" : "border.emphasized"}
       borderWidth="1px"
-      _hover={{ bg: "white", borderColor: "gray.400" }}
-      _focus={{ bg: "white", borderColor: "blue.500", boxShadow: "outline" }}
+      _hover={{ bg: "bg.panel", borderColor: "border.emphasized" }}
+      _focus={{ bg: "bg.panel", borderColor: "blue.500", boxShadow: "outline" }}
       fontSize="xs"
       h="1.875rem"
       variant="outline"
@@ -352,7 +296,7 @@ const ToggleParameter = ({ param }: { param: InfomapParameter }) => {
   const store = useStore();
 
   return (
-    <ToggleSwitch
+    <ToggleField
       id={param.long}
       checked={param.active}
       ariaLabel={param.longString}
@@ -445,23 +389,178 @@ function ParamName({
   const parts = name.split(/(<[^>]+>)/g);
 
   return (
-    <code
-      style={{
-        backgroundColor: "transparent",
-        border: 0,
-        fontSize: "0.78rem",
-        fontWeight: 500,
-        lineHeight: 1.4,
-        padding: 0,
-        userSelect: "none",
-        color: "rgb(45, 55, 72)",
-      }}
+    <chakra.code
+      bg="transparent"
+      border={0}
+      color="fg"
+      fontSize="0.78rem"
+      fontWeight={500}
+      lineHeight={1.4}
+      p={0}
       title={param.longString}
+      userSelect="none"
     >
       {parts.map((part) =>
         part.startsWith("<") && part.endsWith(">") ? null : part,
       )}
-    </code>
+    </chakra.code>
+  );
+}
+
+function ParameterGroupHeader({
+  activeCount,
+  count,
+  id,
+  title,
+}: {
+  activeCount: number;
+  count: number;
+  id: string;
+  title: string;
+}) {
+  return (
+    <HStack align="center" justify="space-between" mb={1.5} gap={3}>
+      <Text
+        id={id}
+        color="fg.muted"
+        fontFamily="monospace"
+        fontSize="0.68rem"
+        fontWeight={700}
+        letterSpacing="0.12em"
+        textTransform="uppercase"
+        mb={0}
+      >
+        {title}
+      </Text>
+      <Text color="fg.muted" fontSize="0.68rem" mb={0}>
+        <Box as="span" color="blue.600" fontWeight="600">
+          {activeCount}
+        </Box>
+        /{count} active
+      </Text>
+    </HStack>
+  );
+}
+
+function ParameterActiveIndicator() {
+  return (
+    <Box
+      aria-hidden="true"
+      bg="blue.500"
+      borderRadius="full"
+      boxShadow="0 0 0 2px color-mix(in srgb, var(--chakra-colors-blue-500) 14%, transparent)"
+      h="0.375rem"
+      title="Active"
+      w="0.375rem"
+    />
+  );
+}
+
+function ParameterDescription({
+  changed,
+  description,
+  query,
+}: {
+  changed: boolean;
+  description?: string;
+  query: string;
+}) {
+  return (
+    <>
+      <Box color="fg.muted" fontSize="xs" lineHeight={1.38} mt={0.5}>
+        {description ? (
+          <HighlightedText text={description} query={query} />
+        ) : null}
+      </Box>
+      {changed && (
+        <Text
+          color="fg.muted"
+          fontFamily="monospace"
+          fontSize="0.68rem"
+          mb={0}
+          mt={0.5}
+        >
+          changed since last run
+        </Text>
+      )}
+    </>
+  );
+}
+
+function ParameterRow({
+  changed,
+  children,
+  onToggle,
+  param,
+  query,
+  textToggles,
+}: {
+  changed: boolean;
+  children: React.ReactNode;
+  onToggle: () => void;
+  param: InfomapParameter;
+  query: string;
+  textToggles: boolean;
+}) {
+  return (
+    <HStack
+      alignItems="flex-start"
+      bg={param.active ? "blue.50" : "transparent"}
+      borderLeftColor={changed ? "blue.500" : "transparent"}
+      borderLeftWidth="2px"
+      borderRadius="md"
+      flexWrap="wrap"
+      gap={2}
+      justifyContent="space-between"
+      px={2}
+      py={2}
+      _hover={{ bg: param.active ? "blue.50" : "bg.subtle" }}
+    >
+      <Box flex="1 1 13rem" minW={0}>
+        <Box
+          aria-label={textToggles ? `Toggle ${param.longString}` : undefined}
+          as={textToggles ? "button" : "div"}
+          bg="transparent"
+          border={0}
+          cursor={textToggles ? "pointer" : undefined}
+          display="block"
+          onClick={textToggles ? onToggle : undefined}
+          p={0}
+          textAlign="left"
+          w="100%"
+        >
+          <HStack lineHeight={1.35} gap={1.5}>
+            <Box fontSize="xs">
+              <ParamName param={param} />
+            </Box>
+            {paramShortcut(param.long) && (
+              <Kbd
+                fontSize="0.65rem"
+                title={`Press ${paramShortcut(param.long)} to toggle`}
+              >
+                {paramShortcut(param.long)}
+              </Kbd>
+            )}
+            {param.active && <ParameterActiveIndicator />}
+          </HStack>
+          <ParameterDescription
+            changed={changed}
+            description={param.description}
+            query={query}
+          />
+        </Box>
+      </Box>
+      <Box
+        flex="0 0 auto"
+        maxW="100%"
+        minW="4rem"
+        display="flex"
+        pt={0.5}
+        justifyContent="flex-end"
+      >
+        {children}
+      </Box>
+    </HStack>
   );
 }
 
@@ -500,131 +599,28 @@ const ParameterGroup = ({
 
   return (
     <Box as="section" mt={4} mb={5}>
-      <HStack align="center" justify="space-between" mb={1.5} gap={3}>
-        <Text
-          id={id}
-          color="gray.500"
-          fontFamily="monospace"
-          fontSize="0.68rem"
-          fontWeight={700}
-          letterSpacing="0.12em"
-          textTransform="uppercase"
-          mb={0}
-        >
-          {group}
-        </Text>
-        <Text color="gray.500" fontSize="0.68rem" mb={0}>
-          <Box as="span" color="blue.600" fontWeight="600">
-            {activeCount}
-          </Box>
-          /{params.length} active
-        </Text>
-      </HStack>
+      <ParameterGroupHeader
+        activeCount={activeCount}
+        count={params.length}
+        id={id}
+        title={group}
+      />
       <Box>
         {params.map(({ param }, key) => {
           const textToggles = isToggleOnlyParameter(param);
           const changed = parameterIsChanged(param, baseline);
 
           return (
-            <HStack
+            <ParameterRow
               key={key}
-              alignItems="flex-start"
-              justifyContent="space-between"
-              flexWrap="wrap"
-              gap={2}
-              bg={
-                param.active
-                  ? "linear-gradient(180deg, rgba(49, 130, 206, 0.05), rgba(49, 130, 206, 0))"
-                  : undefined
-              }
-              px={2}
-              py={2}
-              borderRadius="md"
-              borderLeftWidth={changed ? "2px" : 0}
-              borderLeftColor={changed ? "blue.500" : undefined}
-              _hover={{
-                bg: param.active
-                  ? "linear-gradient(180deg, rgba(49, 130, 206, 0.07), rgba(49, 130, 206, 0.02))"
-                  : "linear-gradient(180deg, rgba(49, 130, 206, 0.05), rgba(49, 130, 206, 0))",
-              }}
+              changed={changed}
+              onToggle={() => store.params.toggle(param.long)}
+              param={param}
+              query={query}
+              textToggles={textToggles}
             >
-              <Box flex="1 1 13rem" minW={0}>
-                <Box
-                  aria-label={
-                    textToggles ? `Toggle ${param.longString}` : undefined
-                  }
-                  as={textToggles ? "button" : "div"}
-                  bg="transparent"
-                  border={0}
-                  cursor={textToggles ? "pointer" : undefined}
-                  display="block"
-                  onClick={
-                    textToggles
-                      ? () => store.params.toggle(param.long)
-                      : undefined
-                  }
-                  p={0}
-                  textAlign="left"
-                  w="100%"
-                >
-                  <HStack lineHeight={1.35} gap={1.5}>
-                    <Box fontSize="xs">
-                      <ParamName param={param} />
-                    </Box>
-                    {paramShortcut(param.long) && (
-                      <Kbd
-                        fontSize="0.65rem"
-                        title={`Press ${paramShortcut(param.long)} to toggle`}
-                      >
-                        {paramShortcut(param.long)}
-                      </Kbd>
-                    )}
-                    {param.active && (
-                      <Box
-                        aria-hidden="true"
-                        bg="blue.500"
-                        borderRadius="full"
-                        boxShadow="0 0 0 2px rgba(49, 130, 206, 0.14)"
-                        h="0.375rem"
-                        title="Active"
-                        w="0.375rem"
-                      />
-                    )}
-                  </HStack>
-                  <Box
-                    color="gray.500"
-                    fontSize="xs"
-                    lineHeight={1.38}
-                    mt={0.5}
-                  >
-                    {param.description ? (
-                      <HighlightedText text={param.description} query={query} />
-                    ) : null}
-                  </Box>
-                  {changed && (
-                    <Text
-                      color="gray.500"
-                      fontFamily="monospace"
-                      fontSize="0.68rem"
-                      mb={0}
-                      mt={0.5}
-                    >
-                      changed since last run
-                    </Text>
-                  )}
-                </Box>
-              </Box>
-              <Box
-                flex="0 0 auto"
-                maxW="100%"
-                minW="4rem"
-                display="flex"
-                pt={0.5}
-                justifyContent="flex-end"
-              >
-                <ParameterControl param={param} />
-              </Box>
-            </HStack>
+              <ParameterControl param={param} />
+            </ParameterRow>
           );
         })}
       </Box>
@@ -724,7 +720,7 @@ export default function Parameters({
           />
         ))
       ) : (
-        <Text color="gray.500" fontSize="xs" mt={4}>
+        <Text color="fg.muted" fontSize="xs" mt={4}>
           No parameters match "{search}".
         </Text>
       )}

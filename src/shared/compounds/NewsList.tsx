@@ -22,7 +22,7 @@ export default function NewsList({ items }: { items: NewsItem[] }) {
                 w="6px"
                 h="6px"
                 borderRadius="full"
-                bg="#b22222"
+                bg="brand.solid"
                 flexShrink={0}
                 aria-label="Featured"
               />
@@ -56,7 +56,7 @@ export default function NewsList({ items }: { items: NewsItem[] }) {
                   target="_blank"
                   rel="noreferrer"
                   color="inherit"
-                  _hover={{ color: "#128bc2" }}
+                  _hover={{ color: "link.emphasis" }}
                 >
                   {n.title}
                 </chakra.a>

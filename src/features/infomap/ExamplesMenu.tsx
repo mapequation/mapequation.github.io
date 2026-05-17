@@ -1,8 +1,9 @@
-import { Button, Flex, Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { LuCheck } from "react-icons/lu";
 import * as networks from "../../data/networks";
 import useStore from "../../state";
+import { WorkbenchChip } from "../../shared/components/WorkbenchChip";
 
 type ExampleNetwork = {
   name: string;
@@ -268,7 +269,7 @@ export default function ExampleNetworksList({
       {categories.map((category) => (
         <Flex key={category.label} direction="column" gap={1.5}>
           <Text
-            color="gray.500"
+            color="fg.muted"
             fontSize="0.6875rem"
             fontWeight={700}
             letterSpacing="0.06em"
@@ -290,28 +291,14 @@ export default function ExampleNetworksList({
 
               return (
                 <Flex as="li" key={network.name}>
-                  <Button
-                    type="button"
-                    size="xs"
-                    variant="outline"
-                    bg="gray.50"
-                    borderColor={isSelected ? "blue.400" : "gray.200"}
-                    color={isSelected ? "blue.800" : undefined}
-                    shadow={isSelected ? "md" : undefined}
+                  <WorkbenchChip
+                    selected={isSelected}
                     disabled={disabled || loading !== null}
-                    justifyContent="flex-start"
                     onClick={() => onSelect(network)}
-                    px={2}
-                    _hover={{
-                      bg: "white",
-                      borderColor: isSelected ? "blue.500" : "gray.300",
-                    }}
-                    w="auto"
-                    whiteSpace="nowrap"
                   >
-                    {isSelected && <LuCheck color="#2563eb" />}
+                    {isSelected && <LuCheck />}
                     {network.label}
-                  </Button>
+                  </WorkbenchChip>
                 </Flex>
               );
             })}

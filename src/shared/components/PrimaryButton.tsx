@@ -13,10 +13,10 @@ export function PrimaryButton({ children, href }: PrimaryButtonProps) {
       asChild
       size="lg"
       {...{
-        bg: "#b22222",
+        bg: "brand.solid",
         color: "white",
-        _hover: { bg: "#971d1d" },
-        _active: { bg: "#7f1818" },
+        _hover: { bg: "brand.hover" },
+        _active: { bg: "brand.active" },
       }}
     >
       <NextLink href={href}>{children}</NextLink>

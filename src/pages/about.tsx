@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Card,
   Container,
   chakra,
   Flex,
@@ -164,8 +165,8 @@ const PersonLinkIcons = ({
           target="_blank"
           rel="noreferrer"
           aria-label={label}
-          color="gray.400"
-          _hover={{ color: "gray.600" }}
+          color="fg.muted"
+          _hover={{ color: "fg" }}
           display="inline-flex"
           alignItems="center"
         >
@@ -177,8 +178,8 @@ const PersonLinkIcons = ({
           user={email.user}
           domain={email.domain}
           aria-label="Email"
-          color="gray.400"
-          _hover={{ color: "gray.600" }}
+          color="fg.muted"
+          _hover={{ color: "fg" }}
           display="inline-flex"
           alignItems="center"
         >
@@ -196,15 +197,61 @@ const Avatar = ({ person }: { person: Person }) => {
       h="80px"
       borderRadius="md"
       flexShrink={0}
-      bg="gray.100"
-      style={{
-        background: `gray url(${person.image}) no-repeat ${person.imagePosition ?? "center"} / ${person.imageZoom ?? "cover"}`,
-      }}
+      bg="bg.subtle"
+      bgImage={person.image ? `url(${person.image})` : undefined}
+      backgroundRepeat="no-repeat"
+      backgroundPosition={person.imagePosition ?? "center"}
+      backgroundSize={person.imageZoom ?? "cover"}
       role="img"
       aria-label={person.name}
     />
   );
 };
+
+const PersonCard = ({ person }: { person: Person }) => (
+  <Card.Root as="article" variant="outline" bg="bg.panel" borderRadius="md">
+    <Card.Body p={4}>
+      <Flex gap={4} align="center">
+        <Avatar person={person} />
+        <Box minW={0} flex="1">
+          <Text fontSize="md" mb={0}>
+            {person.name}
+          </Text>
+          <Text
+            color="fg.muted"
+            fontFamily="monospace"
+            fontSize="xs"
+            letterSpacing="0.04em"
+            textTransform="uppercase"
+            mb={person.links || person.email ? 2 : 0}
+          >
+            {person.role}
+          </Text>
+          <PersonLinkIcons links={person.links} email={person.email} />
+        </Box>
+      </Flex>
+    </Card.Body>
+  </Card.Root>
+);
+
+const PeopleSection = ({
+  title,
+  people,
+}: {
+  title: string;
+  people: Person[];
+}) => (
+  <>
+    <Heading as="h2" size="md" mb={4}>
+      {title}
+    </Heading>
+    <Stack gap={3} mb={8}>
+      {people.map((person) => (
+        <PersonCard key={person.id} person={person} />
+      ))}
+    </Stack>
+  </>
+);
 
 const AboutPage: NextPage = () => (
   <Container>
@@ -220,12 +267,12 @@ const AboutPage: NextPage = () => (
           <Heading as="h1" textStyle="h1" mb={4} maxW="14em">
             We develop methods for mapping flow in complex systems
           </Heading>
-          <Text color="gray.700" textStyle="body" mb={4}>
+          <Text color="fg.muted" textStyle="body" mb={4}>
             We are a research group at Umeå University studying flow-based
             community detection. We build Infomap, visualization tools, and
             methods for higher-order, multilayer, and Bayesian network models.
           </Text>
-          <Text color="gray.700" textStyle="body" mb={6}>
+          <Text color="fg.muted" textStyle="body" mb={6}>
             Our software is open source, and our papers are freely available.
           </Text>
           <Flex gap={3} flexWrap="wrap">
@@ -241,7 +288,7 @@ const AboutPage: NextPage = () => (
           <Heading as="h2" textStyle="h2" mb={4} id="Terms">
             Terms
           </Heading>
-          <Text color="gray.700" textStyle="body" mb={4}>
+          <Text color="fg.muted" textStyle="body" mb={4}>
             The Infomap software is released under a dual licence. To give
             everyone maximum freedom to make use of Infomap and derivative
             works, we make the code open source under the{" "}
@@ -250,7 +297,7 @@ const AboutPage: NextPage = () => (
             </chakra.a>
             .
           </Text>
-          <Text color="gray.700" fontSize="md" mb={4}>
+          <Text color="fg.muted" fontSize="md" mb={4}>
             As this is a{" "}
             <a href="https://en.wikipedia.org/wiki/Copyleft">copyleft</a>{" "}
             license, each distribution of the software, including modified and
@@ -271,77 +318,8 @@ const AboutPage: NextPage = () => (
       </Box>
 
       <Box>
-        <Heading as="h2" size="md" mb={4}>
-          People
-        </Heading>
-        <Stack gap={3} mb={8}>
-          {PEOPLE.map((p) => (
-            <Flex
-              key={p.id}
-              gap={4}
-              align="center"
-              bg="white"
-              borderWidth="1px"
-              borderColor="gray.200"
-              borderRadius="md"
-              p={4}
-            >
-              <Avatar person={p} />
-              <Box minW={0} flex="1">
-                <Text fontSize="md" mb={0}>
-                  {p.name}
-                </Text>
-                <Text
-                  color="gray.500"
-                  fontFamily="monospace"
-                  fontSize="xs"
-                  letterSpacing="0.04em"
-                  textTransform="uppercase"
-                  mb={p.links ? 2 : 0}
-                >
-                  {p.role}
-                </Text>
-                <PersonLinkIcons links={p.links} email={p.email} />
-              </Box>
-            </Flex>
-          ))}
-        </Stack>
-
-        <Heading as="h2" size="md" mb={4}>
-          Alumni
-        </Heading>
-        <Stack gap={3} mb={8}>
-          {ALUMNI.map((p) => (
-            <Flex
-              key={p.id}
-              gap={4}
-              align="center"
-              bg="white"
-              borderWidth="1px"
-              borderColor="gray.200"
-              borderRadius="md"
-              p={4}
-            >
-              <Avatar person={p} />
-              <Box minW={0} flex="1">
-                <Text fontSize="md" mb={0}>
-                  {p.name}
-                </Text>
-                <Text
-                  color="gray.500"
-                  fontFamily="monospace"
-                  fontSize="xs"
-                  letterSpacing="0.04em"
-                  textTransform="uppercase"
-                  mb={p.links ? 2 : 0}
-                >
-                  {p.role}
-                </Text>
-                <PersonLinkIcons links={p.links} email={p.email} />
-              </Box>
-            </Flex>
-          ))}
-        </Stack>
+        <PeopleSection title="People" people={PEOPLE} />
+        <PeopleSection title="Alumni" people={ALUMNI} />
 
         <Heading as="h2" size="md" mb={4}>
           Collaborators
@@ -350,7 +328,7 @@ const AboutPage: NextPage = () => (
           {COLLABORATORS.map((c) => (
             <Box
               key={c.name}
-              bg="gray.50"
+              bg="bg.subtle"
               borderRadius="md"
               px={3}
               py={2}
@@ -359,7 +337,7 @@ const AboutPage: NextPage = () => (
               <Text as="strong" fontWeight={600}>
                 {c.name}
               </Text>
-              <Text as="span" color="gray.500">
+              <Text as="span" color="fg.muted">
                 {" "}
                 · {c.org}
               </Text>

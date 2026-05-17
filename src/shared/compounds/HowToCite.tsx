@@ -1,5 +1,7 @@
 import { Box, chakra, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { CopyButton } from "../components/CopyButton";
+import { DocsCard } from "../components/DocsCard";
+import { Tag } from "../components/Tag";
 import { infomapVersion } from "../infomapVersion";
 
 const currentYear = new Date().getFullYear();
@@ -32,25 +34,18 @@ function Chip({
   tone?: ChipTone;
   children: string;
 }) {
-  const styles =
-    tone === "accent"
-      ? { bg: "green.50", color: "green.800" }
-      : { bg: "gray.100", color: "gray.700" };
   return (
-    <Box
-      as="span"
+    <Tag
       display="inline-block"
       px={2.5}
       py={1}
-      borderRadius="sm"
-      fontFamily="monospace"
-      fontSize="xs"
       letterSpacing="0.08em"
       textTransform="uppercase"
-      {...styles}
+      bg={tone === "accent" ? "green.50" : "bg.subtle"}
+      color={tone === "accent" ? "green.800" : "fg.muted"}
     >
       {children}
-    </Box>
+    </Tag>
   );
 }
 
@@ -66,13 +61,13 @@ function ExternalLink({ href, children }: { href: string; children: string }) {
       py={1.5}
       fontSize="sm"
       fontWeight={500}
-      color="gray.800"
-      bg="white"
+      color="fg"
+      bg="bg.panel"
       borderWidth="1px"
-      borderColor="gray.300"
+      borderColor="border.emphasized"
       borderRadius="md"
       textDecoration="none"
-      _hover={{ borderColor: "gray.500", textDecoration: "none" }}
+      _hover={{ borderColor: "fg.muted", textDecoration: "none" }}
     >
       {children} →
     </chakra.a>
@@ -99,21 +94,11 @@ function CitationCard({
   links?: { label: string; href: string }[];
 }) {
   return (
-    <Box
-      as="section"
-      id={id}
-      bg="white"
-      borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="md"
-      p={{ base: 5, md: 6 }}
-      mb={5}
-      scrollMarginTop="6rem"
-    >
+    <DocsCard id={id} mb={5}>
       <Flex justify="space-between" align="center" mb={4} gap={4}>
         <Chip tone={chipTone}>{chipLabel}</Chip>
         <Text
-          color="gray.500"
+          color="fg.muted"
           fontFamily="monospace"
           fontSize="xs"
           letterSpacing="0.04em"
@@ -127,7 +112,7 @@ function CitationCard({
         {title}
       </Heading>
       <Text
-        color="gray.600"
+        color="fg.muted"
         fontSize="sm"
         mb={4}
         lineHeight={1.55}
@@ -149,7 +134,7 @@ function CitationCard({
           </ExternalLink>
         ))}
       </Flex>
-    </Box>
+    </DocsCard>
   );
 }
 
@@ -160,7 +145,7 @@ export default function HowToCite() {
         How to cite
       </Heading>
       <Text
-        color="gray.700"
+        color="fg.muted"
         fontSize={{ base: "md", md: "lg" }}
         maxW="44rem"
         mb={6}

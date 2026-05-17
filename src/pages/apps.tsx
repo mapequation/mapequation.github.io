@@ -140,11 +140,11 @@ const AppsPage: NextPage = () => (
               {t.desc}
             </Text>
             <Text
-              color="#128bc2"
+              color="link.emphasis"
               fontFamily="monospace"
               fontSize="xs"
               mb={0}
-              _groupHover={{ color: "#096992" }}
+              _groupHover={{ color: "link.emphasisHover" }}
             >
               {t.link} ↗
             </Text>

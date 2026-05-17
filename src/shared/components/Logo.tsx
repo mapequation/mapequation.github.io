@@ -26,7 +26,7 @@ export default function Logo({ size = 40, href = "/" }: Props) {
           whiteSpace="nowrap"
         >
           <chakra.span color="gray.600">Map</chakra.span>
-          <chakra.span color="#b22222">Equation</chakra.span>
+          <chakra.span color="brand.solid">Equation</chakra.span>
         </chakra.span>
       </HStack>
     </NextLink>

@@ -16,7 +16,7 @@ const linkStyles = {
   color: "gray.700",
   fontSize: "sm",
   textDecoration: "none",
-  _hover: { color: "#128bc2" },
+  _hover: { color: "link.emphasis" },
 };
 
 const FootLink = ({
@@ -122,7 +122,7 @@ export default function Footer() {
               domain="umu.se"
               color="gray.500"
               textDecoration="none"
-              _hover={{ color: "#128bc2" }}
+              _hover={{ color: "link.emphasis" }}
             />
             {" · "}
             Made at Umeå University

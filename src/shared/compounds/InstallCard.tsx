@@ -121,9 +121,9 @@ export default function InstallCard() {
   return (
     <Box
       borderWidth="1px"
-      borderColor="gray.200"
+      borderColor="border.emphasized"
       borderRadius="md"
-      bg="white"
+      bg="bg.panel"
       overflow="hidden"
     >
       <TabsRoot
@@ -135,7 +135,7 @@ export default function InstallCard() {
           gap={0}
           overflowX="auto"
           borderBottomWidth="1px"
-          borderBottomColor="gray.200"
+          borderBottomColor="border.emphasized"
         >
           {installOptions.map((option) => (
             <TabsTrigger
@@ -144,13 +144,13 @@ export default function InstallCard() {
               borderRadius={0}
               borderBottomWidth="3px"
               borderBottomColor="transparent"
-              color="gray.500"
+              color="fg.muted"
               fontWeight={400}
               px={{ base: 4, md: 7 }}
               h="64px"
-              _hover={{ bg: "gray.50", color: "gray.900" }}
+              _hover={{ bg: "bg.subtle", color: "fg" }}
               _selected={{
-                color: "gray.900",
+                color: "fg",
                 fontWeight: 700,
               }}
             >
@@ -163,9 +163,9 @@ export default function InstallCard() {
           <TabsContent key={option.id} value={option.id}>
             <Stack gap={5} py={{ base: 4, md: 6 }} px={{ base: 4, md: 8 }}>
               <Box
-                bg="gray.100"
+                bg="bg.subtle"
                 borderWidth="1px"
-                borderColor="gray.200"
+                borderColor="border.emphasized"
                 borderRadius="md"
                 py={2}
                 px={4}
@@ -179,7 +179,7 @@ export default function InstallCard() {
                   bg="transparent"
                   p={0}
                   fontSize={{ base: "sm", md: "md" }}
-                  color="gray.900"
+                  color="fg"
                 >
                   {option.command}
                 </chakra.code>
@@ -196,7 +196,7 @@ export default function InstallCard() {
                 gap={4}
                 flexWrap="wrap"
               >
-                <Text color="gray.500" mb={0}>
+                <Text color="fg.muted" mb={0}>
                   {option.note}
                 </Text>
                 {option.links && option.links.length > 0 && (
@@ -208,10 +208,10 @@ export default function InstallCard() {
                         target="_blank"
                         rel="noreferrer"
                         fontSize="sm"
-                        color="#128bc2"
+                        color="link.emphasis"
                         textDecoration="none"
                         _hover={{
-                          color: "#096992",
+                          color: "link.emphasisHover",
                           textDecoration: "underline",
                         }}
                       >
