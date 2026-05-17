@@ -1,4 +1,4 @@
-import { Button, Flex, Spinner, Text } from "@chakra-ui/react";
+import { Button, Flex, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { LuCheck } from "react-icons/lu";
 import * as networks from "../../data/networks";
@@ -279,7 +279,6 @@ export default function ExampleNetworksList({
           </Text>
           <Flex as="ul" gap={1} listStyleType="none" m={0} p={0} wrap="wrap">
             {category.networks.map((network) => {
-              const isLoading = loading === network.name;
               const cachedValue = network.url
                 ? urlCache.get(network.url)
                 : undefined;
@@ -296,20 +295,21 @@ export default function ExampleNetworksList({
                     size="xs"
                     variant="outline"
                     bg="gray.50"
-                    borderColor="gray.200"
+                    borderColor={isSelected ? "blue.400" : "gray.200"}
+                    color={isSelected ? "blue.800" : undefined}
+                    shadow={isSelected ? "md" : undefined}
                     disabled={disabled || loading !== null}
                     justifyContent="flex-start"
                     onClick={() => onSelect(network)}
                     px={2}
-                    _hover={{ bg: "white", borderColor: "gray.300" }}
+                    _hover={{
+                      bg: "white",
+                      borderColor: isSelected ? "blue.500" : "gray.300",
+                    }}
                     w="auto"
                     whiteSpace="nowrap"
                   >
-                    {isLoading ? (
-                      <Spinner size="xs" />
-                    ) : (
-                      isSelected && <LuCheck />
-                    )}
+                    {isSelected && <LuCheck color="#2563eb" />}
                     {network.label}
                   </Button>
                 </Flex>

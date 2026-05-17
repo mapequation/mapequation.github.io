@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import type { Ref } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { LuMinus, LuPlus, LuSearch } from "react-icons/lu";
 import useStore from "../../state";
@@ -144,6 +144,69 @@ function ToggleSwitch({
         />
       </Box>
     </Box>
+  );
+}
+
+export function AdvancedParametersToggle({
+  advanced,
+  onToggle,
+}: {
+  advanced: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <HStack as="label" color="gray.700" flexShrink={0} gap={2}>
+      <ToggleSwitch
+        id="show-advanced"
+        checked={advanced}
+        ariaLabel="Show advanced parameters"
+        onChange={onToggle}
+      />
+      <Text fontSize="xs" fontWeight={700} mb={0}>
+        Advanced
+      </Text>
+    </HStack>
+  );
+}
+
+export function ParametersSearch({
+  search,
+  setSearch,
+}: {
+  search: string;
+  setSearch: (search: string) => void;
+}) {
+  const endElement = search ? (
+    <CloseButton
+      aria-label="Clear search"
+      size="xs"
+      onClick={() => setSearch("")}
+      me="-2"
+    />
+  ) : undefined;
+
+  return (
+    <InputGroup startElement={<LuSearch />} endElement={endElement}>
+      <Input
+        aria-label="Search parameters"
+        id="parameters-search"
+        name="parameters-search"
+        placeholder="Search parameters…"
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          event.stopPropagation();
+          setSearch("");
+          event.currentTarget.blur();
+        }}
+        pl={9}
+        pr={search ? 9 : 3}
+        size="sm"
+        bg="white"
+      />
+    </InputGroup>
   );
 }
 
@@ -570,13 +633,17 @@ const ParameterGroup = ({
 };
 
 export default function Parameters({
+  advanced,
   changedFromArgs,
+  search,
+  setAdvanced,
 }: {
+  advanced: boolean;
   changedFromArgs?: string;
+  search: string;
+  setAdvanced: (advanced: boolean) => void;
 }) {
   const store = useStore();
-  const [advanced, setAdvanced] = useState(false);
-  const [search, setSearch] = useState("");
   const query = normalizeSearch(search);
   const baseline = useMemo<ParameterBaseline | null>(() => {
     if (!changedFromArgs) return null;
@@ -644,52 +711,8 @@ export default function Parameters({
       ),
   );
 
-  const endElement = search ? (
-    <CloseButton
-      aria-label="Clear search"
-      size="xs"
-      onClick={() => setSearch("")}
-      me="-2"
-    />
-  ) : undefined;
-
   return (
     <>
-      <HStack align="center" gap={3} mb={2}>
-        <InputGroup startElement={<LuSearch />} endElement={endElement}>
-          <Input
-            aria-label="Search parameters"
-            id="parameters-search"
-            name="parameters-search"
-            placeholder="Search parameters…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== "Escape") return;
-              event.preventDefault();
-              event.stopPropagation();
-              setSearch("");
-              event.currentTarget.blur();
-            }}
-            pl={9}
-            pr={search ? 9 : 3}
-            size="sm"
-            bg="white"
-          />
-        </InputGroup>
-        <HStack as="label" color="gray.700" flexShrink={0} gap={2}>
-          <ToggleSwitch
-            id="show-advanced"
-            checked={advanced}
-            ariaLabel="Show advanced parameters"
-            onChange={() => setAdvanced(!advanced)}
-          />
-          <Text fontSize="xs" fontWeight={700} mb={0}>
-            Advanced
-          </Text>
-        </HStack>
-      </HStack>
-
       {hasResults ? (
         parameterGroups.map((group) => (
           <ParameterGroup

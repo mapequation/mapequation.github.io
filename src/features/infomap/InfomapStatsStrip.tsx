@@ -7,7 +7,7 @@ import {
 } from "./moduleColors";
 
 function formatCodeLengthValue(value: number | null) {
-  return value === null ? "—" : value.toFixed(3);
+  return value === null ? "—" : value.toFixed(2);
 }
 
 function parseTrialCount(consoleContent: string) {
@@ -108,6 +108,7 @@ export function InfomapStatsStrip({
       borderColor="gray.200"
       borderRadius="md"
       borderWidth="1px"
+      boxShadow="sm"
     >
       <ResultStat
         value={moduleCount > 0 ? String(moduleCount) : "0"}
@@ -161,10 +162,7 @@ export function InfomapStatsStrip({
             ? "One-level codelength"
             : codelengthSavings === null
               ? "Run Infomap for codelength"
-              : `${new Intl.NumberFormat(undefined, {
-                  maximumFractionDigits: 2,
-                  style: "percent",
-                }).format(codelengthSavings)} savings`
+              : `${(100 * codelengthSavings).toFixed(0)}% lower than one-level`
         }
       />
       <ResultStat

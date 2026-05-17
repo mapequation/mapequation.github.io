@@ -55,7 +55,10 @@ import {
   type ModuleMap,
 } from "./moduleColors";
 import NetworkPreview from "./NetworkPreview";
-import Parameters from "./Parameters";
+import Parameters, {
+  AdvancedParametersToggle,
+  ParametersSearch,
+} from "./Parameters";
 import {
   errorGraph,
   type PreviewGraph,
@@ -302,7 +305,7 @@ function RunStatus({
     : !lastRun
       ? "Not run yet"
       : lastRun.status === "complete"
-        ? `Run complete · ${formatDuration(lastRun.elapsedMs)}`
+        ? `Completed in ${formatDuration(lastRun.elapsedMs)}`
         : `Run failed · ${formatDuration(lastRun.elapsedMs)}`;
   const detailText =
     !isRunning && lastRun
@@ -334,6 +337,8 @@ export default function InfomapOnline() {
   const [isRunning, setIsRunning] = useState(false);
   const [isInputLoading, setIsInputLoading] = useState(false);
   const [lastRun, setLastRun] = useState<LastRunSummary | null>(null);
+  const [showAdvancedParameters, setShowAdvancedParameters] = useState(false);
+  const [parameterSearch, setParameterSearch] = useState("");
   const [openInputCards, setOpenInputCards] = useState<Set<InputName>>(
     () => new Set(),
   );
@@ -827,7 +832,7 @@ export default function InfomapOnline() {
     };
   };
   const getInputSummary = (key: InputName, file: InputFile) => {
-    if (!file.value) return "No input";
+    if (!file.value) return "Optional";
     const fileName = file.name || "Pasted input";
     if (key === "network") return fileName;
     const lineCount = file.value.split("\n").length;
@@ -906,7 +911,7 @@ export default function InfomapOnline() {
     <>
       <PanelHeader
         title="Input data"
-        description="Paste, load, or choose an example."
+        description="Paste, upload, or try an example below."
       />
       <Box
         display="flex"
@@ -1115,7 +1120,13 @@ export default function InfomapOnline() {
     <>
       <PanelHeader
         title="Parameters"
-        description="Edit arguments passed to Infomap."
+        description="Configure how Infomap runs."
+        action={
+          <AdvancedParametersToggle
+            advanced={showAdvancedParameters}
+            onToggle={() => setShowAdvancedParameters(!showAdvancedParameters)}
+          />
+        }
       />
 
       <HStack flexShrink={0} justify="space-between" gap={3} mb={3}>
@@ -1131,8 +1142,20 @@ export default function InfomapOnline() {
         <InputParameters loading={isRunning} onClick={run} />
       </Box>
 
+      <Box flexShrink={0} mb={2}>
+        <ParametersSearch
+          search={parameterSearch}
+          setSearch={setParameterSearch}
+        />
+      </Box>
+
       <Box flex="1" minH={0} overflowY="auto" overflowX="hidden" pr={1}>
-        <Parameters changedFromArgs={lastRun?.args} />
+        <Parameters
+          advanced={showAdvancedParameters}
+          changedFromArgs={lastRun?.args}
+          search={parameterSearch}
+          setAdvanced={setShowAdvancedParameters}
+        />
       </Box>
     </>
   );
@@ -1170,9 +1193,9 @@ export default function InfomapOnline() {
         overflowX="hidden"
         bg="gray.50"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="gray.300"
         borderRadius="md"
-        boxShadow="none"
+        boxShadow="inner"
         p={4}
       >
         {renderInputPanel()}
@@ -1186,14 +1209,14 @@ export default function InfomapOnline() {
         overflow="hidden"
         bg="white"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="gray.300"
         borderRadius="md"
         boxShadow="xl"
         p={4}
       >
         <PanelHeader
           title="Results"
-          description="Inspect the network, run log, and output files."
+          description="Network, run log, and output files from the latest run."
         />
 
         <InfomapStatsStrip
@@ -1467,8 +1490,9 @@ export default function InfomapOnline() {
         overflow="hidden"
         bg="gray.50"
         borderWidth="1px"
-        borderColor="gray.200"
+        borderColor="gray.300"
         borderRadius="md"
+        boxShadow="inner"
         p={4}
       >
         {renderParametersPanel()}
