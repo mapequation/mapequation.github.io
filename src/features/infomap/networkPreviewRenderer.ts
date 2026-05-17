@@ -53,6 +53,16 @@ const arrowStride = 7;
 let arrowFloats = new Float32Array(0);
 let arrowColors: string[] = [];
 
+type ExportLayout = {
+  minX: number;
+  minY: number;
+  pixelH: number;
+  pixelW: number;
+  scale: number;
+  worldH: number;
+  worldW: number;
+};
+
 function ensureArrowBuffers(capacity: number) {
   if (arrowFloats.length / arrowStride < capacity) {
     arrowFloats = new Float32Array(capacity * arrowStride);
@@ -514,10 +524,7 @@ function renderNetworkPreviewExport(
   ctx.restore();
 }
 
-export function createNetworkPreviewExportCanvas(
-  opts: NetworkPreviewExportOptions,
-) {
-  const { graph } = opts;
+function computeExportLayout(graph: Graph): ExportLayout | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -558,6 +565,16 @@ export function createNetworkPreviewExportCanvas(
   const pixelW = Math.max(1, Math.round(worldW * scale));
   const pixelH = Math.max(1, Math.round(worldH * scale));
 
+  return { minX, minY, pixelH, pixelW, scale, worldH, worldW };
+}
+
+export function createNetworkPreviewExportCanvas(
+  opts: NetworkPreviewExportOptions,
+) {
+  const layout = computeExportLayout(opts.graph);
+  if (!layout) return null;
+  const { minX, minY, pixelH, pixelW, scale } = layout;
+
   const exportCanvas = document.createElement("canvas");
   exportCanvas.width = pixelW;
   exportCanvas.height = pixelH;
@@ -574,6 +591,225 @@ export function createNetworkPreviewExportCanvas(
   });
 
   return exportCanvas;
+}
+
+const svgNumber = (value: number) =>
+  Number.isInteger(value) ? String(value) : value.toFixed(3);
+
+const svgText = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+function svgArcPath(
+  cx: number,
+  cy: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+) {
+  const sx = cx + Math.cos(startAngle) * radius;
+  const sy = cy + Math.sin(startAngle) * radius;
+  const ex = cx + Math.cos(endAngle) * radius;
+  const ey = cy + Math.sin(endAngle) * radius;
+  const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+  return [
+    `M ${svgNumber(cx)} ${svgNumber(cy)}`,
+    `L ${svgNumber(sx)} ${svgNumber(sy)}`,
+    `A ${svgNumber(radius)} ${svgNumber(radius)} 0 ${largeArc} 1 ${svgNumber(ex)} ${svgNumber(ey)}`,
+    "Z",
+  ].join(" ");
+}
+
+function renderNetworkPreviewExportSvg(
+  opts: NetworkPreviewExportOptions & ExportLayout,
+) {
+  const {
+    coloredByModules,
+    graph,
+    minX,
+    minY,
+    moduleColorFor,
+    moduleFlows,
+    modules,
+    pixelH,
+    pixelW,
+    scale,
+    showArrows,
+  } = opts;
+  const nodeStrokeWorld = 2;
+  const parts: string[] = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${pixelW}" height="${pixelH}" viewBox="0 0 ${pixelW} ${pixelH}">`,
+    `<rect width="100%" height="100%" fill="#ffffff"/>`,
+    `<g transform="translate(${svgNumber(-minX * scale)} ${svgNumber(-minY * scale)}) scale(${svgNumber(scale)})">`,
+  ];
+  const arrows: string[] = [];
+
+  for (const link of graph.links) {
+    const sharedModule = coloredByModules
+      ? sharedModuleFor(link.source.id, link.target.id, modules, moduleFlows)
+      : undefined;
+    const intraModule = sharedModule !== undefined;
+    const baseStroke =
+      sharedModule !== undefined
+        ? shadeColorCached(moduleColorFor(sharedModule), -42)
+        : linkColor;
+    const fade = intraModule ? 0.42 : 0.26;
+    const stroke = fadeToBackgroundCached(baseStroke, fade);
+    const directedLink = showArrows || link.directed;
+
+    const sx = link.source.x ?? 0;
+    const sy = link.source.y ?? 0;
+    const tx = link.target.x ?? 0;
+    const ty = link.target.y ?? 0;
+    let endX = tx;
+    let endY = ty;
+    let startX = sx;
+    let startY = sy;
+
+    if (directedLink) {
+      const dx = tx - sx;
+      const dy = ty - sy;
+      const length = Math.hypot(dx, dy);
+      if (length > 0) {
+        const ux = dx / length;
+        const uy = dy / length;
+        const tipDistance = link.target.radius + nodeStrokeWorld * 0.5;
+        const reverseTipDistance =
+          link.reverseWidth > 0
+            ? link.source.radius + nodeStrokeWorld * 0.5
+            : 0;
+        const availableForHead = length - tipDistance - reverseTipDistance;
+        const headCap = Math.min(
+          link.target.radius * 1.1,
+          link.reverseWidth > 0
+            ? Math.max(2, availableForHead * 0.4)
+            : length * 0.35,
+        );
+        const head = Math.max(2, Math.min(headCap, link.width * 4));
+        const baseDistance = tipDistance + head;
+        const tipX = tx - ux * tipDistance;
+        const tipY = ty - uy * tipDistance;
+        endX = tx - ux * baseDistance;
+        endY = ty - uy * baseDistance;
+        if (link.reverseWidth > 0) {
+          const reverseHeadCap = Math.min(
+            link.source.radius * 1.1,
+            Math.max(2, availableForHead * 0.4),
+          );
+          const reverseHead = Math.max(
+            2,
+            Math.min(reverseHeadCap, link.reverseWidth * 4),
+          );
+          const startOffset = reverseTipDistance + reverseHead;
+          startX = sx + ux * startOffset;
+          startY = sy + uy * startOffset;
+        }
+        const halfWidth = Math.max(
+          head * 0.45,
+          Math.max(link.width, link.reverseWidth) * 0.7,
+        );
+        const leftX = endX - uy * halfWidth;
+        const leftY = endY + ux * halfWidth;
+        const rightX = endX + uy * halfWidth;
+        const rightY = endY - ux * halfWidth;
+        arrows.push(
+          `<polygon points="${svgNumber(tipX)},${svgNumber(tipY)} ${svgNumber(leftX)},${svgNumber(leftY)} ${svgNumber(rightX)},${svgNumber(rightY)}" fill="${stroke}"/>`,
+        );
+      }
+    }
+
+    parts.push(
+      `<line x1="${svgNumber(startX)}" y1="${svgNumber(startY)}" x2="${svgNumber(endX)}" y2="${svgNumber(endY)}" stroke="${stroke}" stroke-width="${svgNumber(link.width)}" stroke-linecap="butt"/>`,
+    );
+  }
+
+  const centroids = computeModuleCentroids(graph.nodes, moduleFlows, modules);
+  for (const node of graph.nodes) {
+    const nx = node.x ?? 0;
+    const ny = node.y ?? 0;
+    const slices = coloredByModules
+      ? nodeModuleSlices(node, modules, moduleFlows)
+      : [];
+
+    if (slices.length > 1) {
+      const total = slices.reduce((acc, s) => acc + s.flow, 0) || 1;
+      const dominant = slices[0];
+      const centroid = centroids.get(dominant.moduleId);
+      let targetAngle = -Math.PI / 2;
+      if (centroid && (centroid.x !== nx || centroid.y !== ny)) {
+        targetAngle = Math.atan2(centroid.y - ny, centroid.x - nx);
+      }
+      const dominantWidth = (dominant.flow / total) * Math.PI * 2;
+      let startAngle = targetAngle - dominantWidth / 2;
+      for (const slice of slices) {
+        const angle = (slice.flow / total) * Math.PI * 2;
+        const endAngle = startAngle + angle;
+        parts.push(
+          `<path d="${svgArcPath(nx, ny, node.radius, startAngle, endAngle)}" fill="${moduleColorFor(slice.moduleId)}"/>`,
+        );
+        startAngle = endAngle;
+      }
+    } else {
+      const fill =
+        slices.length === 1
+          ? moduleColorFor(slices[0].moduleId)
+          : coloredByModules
+            ? unknownNode
+            : neutralNode;
+      parts.push(
+        `<circle cx="${svgNumber(nx)}" cy="${svgNumber(ny)}" r="${svgNumber(node.radius)}" fill="${fill}"/>`,
+      );
+    }
+    parts.push(
+      `<circle cx="${svgNumber(nx)}" cy="${svgNumber(ny)}" r="${svgNumber(node.radius)}" fill="none" stroke="#ffffff" stroke-width="${nodeStrokeWorld}"/>`,
+    );
+  }
+
+  parts.push(...arrows);
+
+  const maxFlow = graph.nodes[0]?.flow ?? 1;
+  const labelFontSize = (node: SimNode) => {
+    const t = Math.sqrt(Math.max(0, node.flow) / Math.max(maxFlow, 1e-9));
+    const pixelFontSize =
+      exportLabelMinPixelFontSize +
+      (exportLabelMaxPixelFontSize - exportLabelMinPixelFontSize) * t;
+    return pixelFontSize / scale;
+  };
+  const labelGap = exportLabelGapPixel / scale;
+  const labelStrokeWorld = exportLabelStrokePixelWidth / scale;
+  for (const node of graph.nodes) {
+    const fontSize = labelFontSize(node);
+    const slices = coloredByModules
+      ? nodeModuleSlices(node, modules, moduleFlows)
+      : [];
+    const tied = slices.length > 1 && slices[0].flow === slices[1].flow;
+    const labelColor =
+      slices.length > 0 && !tied
+        ? shadeColorCached(moduleColorFor(slices[0].moduleId), -70)
+        : "#2D3748";
+    const x = (node.x ?? 0) + node.radius + labelGap;
+    const y = node.y ?? 0;
+    const label = svgText(node.label);
+    const attrs = `x="${svgNumber(x)}" y="${svgNumber(y)}" font-family="sans-serif" font-size="${svgNumber(fontSize)}" font-weight="500" dominant-baseline="middle" text-anchor="start"`;
+    parts.push(
+      `<text ${attrs} fill="none" stroke="#ffffff" stroke-width="${svgNumber(labelStrokeWorld)}" stroke-linejoin="round">${label}</text>`,
+      `<text ${attrs} fill="${labelColor}">${label}</text>`,
+    );
+  }
+
+  parts.push("</g>", "</svg>");
+  return parts.join("\n");
+}
+
+export function createNetworkPreviewExportSvg(
+  opts: NetworkPreviewExportOptions,
+) {
+  const layout = computeExportLayout(opts.graph);
+  if (!layout) return null;
+  return renderNetworkPreviewExportSvg({ ...opts, ...layout });
 }
 
 export function renderNetworkPreviewFrame(

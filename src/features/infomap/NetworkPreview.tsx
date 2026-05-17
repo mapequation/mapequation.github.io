@@ -47,6 +47,7 @@ import {
 } from "./moduleColors";
 import {
   createNetworkPreviewExportCanvas,
+  createNetworkPreviewExportSvg,
   computeModuleCentroids,
   type ModuleColorResolver,
   nodeModuleSlices,
@@ -1174,6 +1175,48 @@ function NetworkPreviewImpl({
     });
   };
 
+  const downloadSvg = () => {
+    const graph = graphRef.current;
+    if (!graph || graph.nodes.length === 0) return;
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    const finish = () => setIsDownloading(false);
+
+    window.requestAnimationFrame(() => {
+      try {
+        const svg = createNetworkPreviewExportSvg({
+          coloredByModules: coloredByModulesRef.current,
+          graph,
+          moduleColorFor,
+          moduleFlows: moduleFlowsRef.current,
+          modules: modulesRef.current,
+          showArrows: directedRef.current,
+        });
+        if (!svg) {
+          finish();
+          return;
+        }
+
+        const blob = new Blob([svg], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${networkName || "network"}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        finish();
+      } catch (error) {
+        console.error("SVG export failed", error);
+        finish();
+      }
+    });
+  };
+
   const restoreHierarchicalFinalRelaxAlphaDecay = () => {
     const baseAlphaDecay = hierarchicalFinalRelaxBaseAlphaDecayRef.current;
     if (baseAlphaDecay === null) return;
@@ -1828,6 +1871,10 @@ function NetworkPreviewImpl({
                 <MenuItem value="download-png" onClick={downloadPng}>
                   <LuDownload />
                   Download PNG
+                </MenuItem>
+                <MenuItem value="download-svg" onClick={downloadSvg}>
+                  <LuDownload />
+                  Download SVG
                 </MenuItem>
               </MenuContent>
             </MenuPositioner>

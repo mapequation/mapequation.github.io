@@ -1,11 +1,19 @@
-import { Field, Input, Text } from "@chakra-ui/react";
-import { type ComponentProps, useEffect, useState } from "react";
+import { Field, Input, InputGroup } from "@chakra-ui/react";
+import {
+  type ComponentProps,
+  type FC,
+  type ReactNode,
+  useEffect,
+  useState,
+} from "react";
 import useStore from "../../state";
 
 type InputParametersProps = ComponentProps<typeof Field.Root> & {
   loading?: boolean;
   onClick: () => void;
 };
+
+const FieldErrorText = Field.ErrorText as FC<{ children: ReactNode }>;
 
 export default function InputParameters({
   loading,
@@ -31,24 +39,23 @@ export default function InputParameters({
       }}
     >
       <Field.Root invalid={hasArgsError} {...props}>
-        <Input
-          aria-label="Infomap parameters"
-          name="infomap-parameters"
-          placeholder="Add parameters…"
-          value={args_}
-          borderColor={hasArgsError ? "red.600" : undefined}
-          _focus={{ borderColor: hasArgsError ? "red.600" : undefined }}
-          onChange={(event) => setArgs_(event.target.value)}
-          borderLeftRadius="md"
-          borderRightRadius={0}
-          size="sm"
-          bg="white"
-        />
-        {hasArgsError && (
-          <Text color="red.600" fontSize="xs" mt={1}>
-            {argsError}
-          </Text>
-        )}
+        <InputGroup startAddon="CLI">
+          <Input
+            aria-label="Infomap parameters"
+            name="infomap-parameters"
+            placeholder="Add parameters…"
+            textStyle="code"
+            fontSize={12}
+            value={args_}
+            borderColor={hasArgsError ? "red.600" : undefined}
+            _focus={{ borderColor: hasArgsError ? "red.600" : undefined }}
+            onChange={(event) => setArgs_(event.target.value)}
+            borderRadius="md"
+            size="sm"
+            bg="white"
+          />
+        </InputGroup>
+        <FieldErrorText>{argsError}</FieldErrorText>
       </Field.Root>
     </form>
   );

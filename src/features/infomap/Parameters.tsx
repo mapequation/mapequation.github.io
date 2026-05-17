@@ -2,9 +2,11 @@ import {
   Box,
   Button,
   ButtonGroup,
+  CloseButton,
   HStack,
   IconButton,
   Input,
+  InputGroup,
   Kbd,
   Text,
 } from "@chakra-ui/react";
@@ -12,7 +14,7 @@ import { Select } from "chakra-react-select";
 import type { Ref } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { LuMinus, LuPlus, LuSearch, LuX } from "react-icons/lu";
+import { LuMinus, LuPlus, LuSearch, } from "react-icons/lu";
 import useStore from "../../state";
 import { applyArgsToParams, createParams } from "../../state/parameters";
 import type { InfomapParameter } from "../../state/types";
@@ -455,7 +457,7 @@ const ParameterGroup = ({
           /{params.length} active
         </Text>
       </HStack>
-      <Box borderTopWidth="1px" borderTopColor="gray.200">
+      <Box>
         {params.map(({ param }, key) => {
           const textToggles = isToggleOnlyParameter(param);
           const changed = parameterIsChanged(param, baseline);
@@ -474,15 +476,13 @@ const ParameterGroup = ({
               }
               px={2}
               py={2}
+              borderRadius="md"
               borderLeftWidth={changed ? "2px" : 0}
               borderLeftColor={changed ? "blue.500" : undefined}
-              borderBottomWidth="1px"
-              borderBottomColor="gray.200"
-              _last={{ borderBottomWidth: 0 }}
               _hover={{
                 bg: param.active
                   ? "linear-gradient(180deg, rgba(49, 130, 206, 0.07), rgba(49, 130, 206, 0.02))"
-                  : "gray.50",
+                  : "linear-gradient(180deg, rgba(49, 130, 206, 0.05), rgba(49, 130, 206, 0))",
               }}
             >
               <Box flex="1 1 13rem" minW={0}>
@@ -644,21 +644,19 @@ export default function Parameters({
       ),
   );
 
+  const endElement = search ? (
+    <CloseButton
+      aria-label="Clear search"
+      size="xs"
+      onClick={() => setSearch("")}
+      me="-2"
+    />
+  ) : undefined;
+
   return (
     <>
       <HStack align="center" gap={3} mb={2}>
-        <Box flex="1" minW={0} position="relative">
-          <Box
-            position="absolute"
-            left={3}
-            top="50%"
-            transform="translateY(-50%)"
-            color="gray.500"
-            pointerEvents="none"
-            zIndex={1}
-          >
-            <LuSearch size={16} />
-          </Box>
+        <InputGroup startElement={<LuSearch />} endElement={endElement}>
           <Input
             aria-label="Search parameters"
             id="parameters-search"
@@ -678,28 +676,7 @@ export default function Parameters({
             size="sm"
             bg="white"
           />
-          {search && (
-            <Box
-              as="button"
-              aria-label="Clear search"
-              position="absolute"
-              right={2}
-              top="50%"
-              transform="translateY(-50%)"
-              bg="transparent"
-              border={0}
-              p={1}
-              color="gray.500"
-              cursor="pointer"
-              borderRadius="sm"
-              _hover={{ color: "gray.900", bg: "gray.100" }}
-              zIndex={1}
-              onClick={() => setSearch("")}
-            >
-              <LuX size={14} />
-            </Box>
-          )}
-        </Box>
+        </InputGroup>
         <HStack as="label" color="gray.700" flexShrink={0} gap={2}>
           <ToggleSwitch
             id="show-advanced"

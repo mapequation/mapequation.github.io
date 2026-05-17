@@ -8,7 +8,6 @@ import {
   GridItem,
   Heading,
   HStack,
-  IconButton,
   Kbd,
   Menu,
   Portal,
@@ -37,7 +36,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import useStore from "../../state";
-import { type ModuleFlowMap, parseCluModules } from "../../state/output";
+import { parseCluModules } from "../../state/output";
 import {
   argsRequestOutputFormat,
   DEFAULT_INFOMAP_ARGS,
@@ -45,6 +44,7 @@ import {
 } from "../../state/parameters";
 import type { InputFile, InputName, OutputKey } from "../../state/types";
 import ExampleNetworksList from "./ExamplesMenu";
+import { InfomapStatsStrip } from "./InfomapStatsStrip";
 import InputParameters from "./InputParameters";
 import InputTextarea from "./InputTextarea";
 import LoadButton from "./LoadButton";
@@ -52,7 +52,6 @@ import {
   buildHierarchicalModuleColors,
   type ModuleId,
   type ModuleMap,
-  moduleColorFromModel,
 } from "./moduleColors";
 import NetworkPreview from "./NetworkPreview";
 import Parameters from "./Parameters";
@@ -267,338 +266,6 @@ function formatRunTime(timestamp: number) {
     minute: "2-digit",
     second: "2-digit",
   }).format(timestamp);
-}
-
-function formatCodeLengthValue(value: number | null) {
-  return value === null ? "—" : value.toFixed(3);
-}
-
-function parseTrialCount(consoleContent: string) {
-  const match = consoleContent.match(/Summary after\s+(\d+)\s+trials/i);
-  if (!match?.[1]) return null;
-  const value = Number(match[1]);
-  return Number.isFinite(value) ? value : null;
-}
-
-function moduleSegments(modules: ModuleMap, moduleFlows?: ModuleFlowMap) {
-  if (moduleFlows && moduleFlows.size > 0) {
-    const flows = new Map<ModuleId, number>();
-    for (const entries of moduleFlows.values()) {
-      for (const { flow, module } of entries) {
-        if (flow <= 0) continue;
-        flows.set(module, (flows.get(module) ?? 0) + flow);
-      }
-    }
-    if (flows.size > 0) {
-      return [...flows].map(([moduleId, flow]) => ({ moduleId, value: flow }));
-    }
-  }
-
-  const counts = new Map<ModuleId, number>();
-  for (const moduleId of modules.values()) {
-    counts.set(moduleId, (counts.get(moduleId) ?? 0) + 1);
-  }
-
-  return [...counts].map(([moduleId, count]) => ({ moduleId, value: count }));
-}
-
-type ModuleStripSegment = {
-  isRemainder?: boolean;
-  moduleId?: ModuleId;
-  value: number;
-};
-
-const minColoredModuleStripShare = 0.025;
-
-function moduleStripSegments(
-  segments: { moduleId: ModuleId; value: number }[],
-): ModuleStripSegment[] {
-  const total = segments.reduce((sum, segment) => sum + segment.value, 0);
-  if (total <= 0) return [];
-
-  const firstSmallIndex = segments.findIndex(
-    (segment) => segment.value / total < minColoredModuleStripShare,
-  );
-  const coloredCount =
-    firstSmallIndex === -1 ? segments.length : firstSmallIndex;
-  const coloredSegments = segments.slice(0, coloredCount);
-  const remainderValue = segments
-    .slice(coloredCount)
-    .reduce((sum, segment) => sum + segment.value, 0);
-
-  if (remainderValue <= 0) return coloredSegments;
-  return [...coloredSegments, { isRemainder: true, value: remainderValue }];
-}
-
-function InputFileInfoCard({
-  hasValue,
-  disabled,
-  name,
-  onClear,
-  stats,
-}: {
-  hasValue: boolean;
-  disabled?: boolean;
-  name: string;
-  onClear: () => void;
-  stats: string;
-}) {
-  return (
-    <Box
-      alignItems="flex-start"
-      bg="white"
-      borderColor="gray.200"
-      borderRadius="md"
-      borderWidth="1px"
-      display="flex"
-      flexShrink={0}
-      justifyContent={{ base: "center", md: "flex-start" }}
-      mb={3}
-      minH="5.875rem"
-      px={{ base: 2, md: 3 }}
-      py={{ base: 0, md: 3 }}
-    >
-      <Flex align="flex-start" justify="space-between" minW={0} w="100%">
-        <Box minW={0}>
-          <Text
-            color="gray.500"
-            fontSize="0.65rem"
-            fontWeight={700}
-            letterSpacing="0.08em"
-            lineHeight={1}
-            mb={1}
-            textTransform="uppercase"
-          >
-            Network
-          </Text>
-          <HStack align="baseline" gap={1.5} minW={0}>
-            <Text
-              color={hasValue ? "gray.900" : "gray.500"}
-              fontSize="lg"
-              fontWeight={700}
-              lineHeight={1.2}
-              mb={0}
-              truncate
-            >
-              {name}
-            </Text>
-          </HStack>
-          <Text color="gray.500" fontSize="xs" lineClamp={1} mb={0} mt={1}>
-            {stats}
-          </Text>
-          <Box aria-hidden="true" h="0.375rem" mt={1.5} />
-        </Box>
-        <IconButton
-          aria-label="Clear network"
-          disabled={disabled || !hasValue}
-          flexShrink={0}
-          onClick={onClear}
-          size="xs"
-          variant="ghost"
-        >
-          <LuX />
-        </IconButton>
-      </Flex>
-    </Box>
-  );
-}
-
-function InfomapStatsStrip({
-  codeLength,
-  codelengthSavings,
-  consoleContent,
-  moduleColors,
-  moduleFlows,
-  modules,
-  nodeCount,
-  numLevels,
-  trialSetting,
-}: {
-  codeLength: number | null;
-  codelengthSavings: number | null;
-  consoleContent: string;
-  moduleColors: Map<ModuleId, string>;
-  moduleFlows?: ModuleFlowMap;
-  modules: ModuleMap;
-  nodeCount: number;
-  numLevels: number | null;
-  trialSetting: string | null;
-}) {
-  const segments = moduleSegments(modules, moduleFlows).sort(
-    (a, b) => b.value - a.value,
-  );
-  const moduleCount = segments.length;
-  const visibleSegments = moduleStripSegments(segments);
-  const trialCount = parseTrialCount(consoleContent);
-
-  return (
-    <Grid
-      borderColor="gray.200"
-      borderRadius="md"
-      borderWidth="1px"
-      flexShrink={0}
-      gap={0}
-      mb={3}
-      minH={{ base: "3rem", lg: "5.875rem" }}
-      overflow="hidden"
-      templateColumns="repeat(4, minmax(0, 1fr))"
-    >
-      <ResultStat
-        label="Top Modules"
-        value={moduleCount > 0 ? String(moduleCount) : "—"}
-        unit="modules"
-        detail={
-          nodeCount > 0
-            ? `${nodeCount.toLocaleString()} nodes`
-            : "No modules yet"
-        }
-      >
-        <HStack
-          aria-hidden="true"
-          gap={0.5}
-          h="0.375rem"
-          mt={1.5}
-          visibility={visibleSegments.length > 0 ? "visible" : "hidden"}
-          w="100%"
-        >
-          {visibleSegments.map(({ isRemainder, moduleId, value }, index) => (
-            <Box
-              bg={
-                isRemainder || moduleId === undefined
-                  ? "gray.300"
-                  : moduleColorFromModel(moduleColors, moduleId)
-              }
-              borderRadius="full"
-              flex={`${value} 1 0`}
-              h="100%"
-              key={isRemainder ? "remaining-modules" : `${moduleId}-${index}`}
-              minW="0.375rem"
-            />
-          ))}
-        </HStack>
-      </ResultStat>
-      <ResultStat
-        label="Hierarchy"
-        value={numLevels === null ? "—" : String(numLevels)}
-        unit={numLevels === 1 ? "level" : "levels"}
-        detail={
-          numLevels === null
-            ? "Awaiting result"
-            : numLevels > 2
-              ? "Multi-level"
-              : "Two-level"
-        }
-      />
-      <ResultStat
-        label="Codelength"
-        value={formatCodeLengthValue(codeLength)}
-        unit={codeLength === null ? undefined : "bits"}
-        detail={
-          codelengthSavings === null
-            ? "Run Infomap for savings"
-            : `${new Intl.NumberFormat(undefined, {
-                maximumFractionDigits: 2,
-                style: "percent",
-              }).format(codelengthSavings)} savings`
-        }
-      />
-      <ResultStat
-        label="Trials"
-        value={trialCount === null ? (trialSetting ?? "—") : String(trialCount)}
-        unit="trials"
-        detail={trialCount === null ? "Current setting" : "Latest run"}
-      />
-    </Grid>
-  );
-}
-
-function ResultStat({
-  children,
-  detail,
-  label,
-  unit,
-  value,
-}: {
-  children?: React.ReactNode;
-  detail: string;
-  label: string;
-  unit?: string;
-  value: string;
-}) {
-  return (
-    <Box
-      bg="white"
-      borderRightWidth="1px"
-      borderBottomWidth={0}
-      borderColor="gray.200"
-      display="flex"
-      flexDirection="column"
-      h="100%"
-      justifyContent={{ base: "center", md: "flex-start" }}
-      minW={0}
-      px={{ base: 2, md: 3 }}
-      py={{ base: 0, md: 3 }}
-      _last={{ borderRightWidth: 0, borderBottomWidth: 0 }}
-    >
-      <HStack
-        align="center"
-        display={{ base: "flex", md: "none" }}
-        gap={1}
-        justify="center"
-        minH="100%"
-        minW={0}
-      >
-        <Text
-          color="gray.900"
-          fontSize="sm"
-          fontVariantNumeric="tabular-nums"
-          fontWeight={700}
-          mb={0}
-        >
-          {value}
-        </Text>
-        {unit && (
-          <Text color="gray.500" fontSize="sm" mb={0}>
-            {unit}
-          </Text>
-        )}
-      </HStack>
-      <Box display={{ base: "none", md: "block" }}>
-        <Text
-          color="gray.500"
-          fontSize="0.65rem"
-          fontWeight={700}
-          letterSpacing="0.08em"
-          lineHeight={1}
-          mb={1}
-          textTransform="uppercase"
-        >
-          {label}
-        </Text>
-        <HStack align="baseline" gap={1.5} minW={0}>
-          <Text
-            color="gray.900"
-            fontSize="lg"
-            fontVariantNumeric="tabular-nums"
-            fontWeight={700}
-            lineHeight={1.1}
-            mb={0}
-          >
-            {value}
-          </Text>
-          {unit && (
-            <Text color="gray.500" fontSize="xs" mb={0}>
-              {unit}
-            </Text>
-          )}
-        </HStack>
-        <Text color="gray.500" fontSize="xs" lineClamp={1} mb={0} mt={1}>
-          {detail}
-        </Text>
-        {children}
-      </Box>
-    </Box>
-  );
 }
 
 function RunStatus({
@@ -1130,10 +797,10 @@ export default function InfomapOnline() {
   const hasActiveInputValue = Boolean(inputValue);
   const inputLineCount = inputValue ? inputValue.split("\n").length : 0;
   const hasNetworkValue = Boolean(network.value);
-  const networkCardName = hasNetworkValue
+  const _networkCardName = hasNetworkValue
     ? network.name || "Current network"
     : "—";
-  const networkCardStats = !hasNetworkValue
+  const _networkCardStats = !hasNetworkValue
     ? "No input"
     : previewGraph.status === "ok"
       ? `${previewGraph.nodes.length.toLocaleString()} nodes · ${previewGraph.links.length.toLocaleString()} links`
@@ -1198,15 +865,6 @@ export default function InfomapOnline() {
         title="Input data"
         description="Paste, load, or choose an example."
       />
-
-      <InputFileInfoCard
-        disabled={isInputLoading}
-        hasValue={hasNetworkValue}
-        name={networkCardName}
-        onClear={() => onInputChange("network")({ name: "", value: "" })}
-        stats={networkCardStats}
-      />
-
       <Box
         display="flex"
         flex="1"
@@ -1356,10 +1014,11 @@ export default function InfomapOnline() {
         flexDirection="column"
         overflowY="auto"
         overflowX="hidden"
-        bg="white"
+        bg="gray.50"
         borderWidth="1px"
         borderColor="gray.200"
         borderRadius="md"
+        boxShadow="none"
         p={4}
       >
         {renderInputPanel()}
@@ -1375,6 +1034,7 @@ export default function InfomapOnline() {
         borderWidth="1px"
         borderColor="gray.200"
         borderRadius="md"
+        boxShadow="xl"
         p={4}
       >
         <PanelHeader
@@ -1646,7 +1306,7 @@ export default function InfomapOnline() {
         display={{ base: "none", lg: "flex" }}
         flexDirection="column"
         overflow="hidden"
-        bg="white"
+        bg="gray.50"
         borderWidth="1px"
         borderColor="gray.200"
         borderRadius="md"
