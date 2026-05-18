@@ -6,6 +6,8 @@ date: "2023-06-29"
 arxiv: "2306.17259"
 links:
   - { label: "App", href: "https://github.com/mapequation/bioregions" }
+figure:
+  caption: "Community detection in bipartite occurrence networks including evolutionary relationships. To find biogeographical regions that capture the spatial structuring of species, we apply community detection on the bipartite network composed of species linked to grid cells where they occur. Grid cells are indirectly connected through shared species (a). The two bottom grid cells end up in different bioregions because of no shared species. By connecting each ancestral node in a phylogenetic tree to the grid cells where its descendant species occur, weighted by their spatial information, we can form bioregions connected not only by shared species but by shared evolutionary history (b). We can indirectly connect grid cells by their shared ancestry at a selected time (c)-(d) for a more detailed analysis. With a recent time, we can use it to solve fragmented bioregions due to sparse data and make it robust against shifting taxonomic resolutions due to the so-called lumper-splitter problem. We uncover unique bioregions by sweeping the selected integration point back in time."
 ---
 
 Identifying and understanding the large-scale biodiversity patterns in

@@ -4,6 +4,8 @@ authors: "Daniel Edler, Jelena Smiljanić, Anton Holmgren, Alexandre Antonelli, 
 year: 2022
 date: "2022-11-08"
 arxiv: "2211.04287"
+figure:
+  caption: "Constant and variable Markov time in a toy network. Colors show detected communities, which capture nodes where a random walker tends to spend a relatively long time before exiting. Markov time describes the number of steps before reporting the node. With a default one-step random walk, the chain is optimally partitioned into two communities. With Markov time 2, the random walker takes two steps per recording which double the flow between nodes, indicated by the wider links. This increases the field-of-view limit and enables the random walker to optimally explore the chain as a single community. However, this comes with the cost of an increased resolution limit, which makes it harder to detect modular patterns in denser areas. Variable Markov time relaxes the constraint of moving with a constant encoding rate and adapts the encoding rate to the level of sparsity. Variable Markov time increases the gap between the lower resolution limit and upper field-of-view limit and enables us to detect community structures with a broader range of scales than was previously possible."
 ---
 
 From traffic flows on road networks to electrical signals in brain networks,

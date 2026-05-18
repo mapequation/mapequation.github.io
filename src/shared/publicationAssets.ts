@@ -80,6 +80,48 @@ function parseJpegDimensions(buffer: Buffer): ImageDimensions | undefined {
   return undefined;
 }
 
+function parseSvgDimensions(buffer: Buffer): ImageDimensions | undefined {
+  const svgTag = buffer.toString("utf8").match(/<svg\b[^>]*>/i)?.[0];
+  if (!svgTag) return undefined;
+
+  const viewBox = svgTag.match(/\bviewBox=["']([^"']+)["']/i)?.[1];
+  const viewBoxParts = viewBox
+    ?.trim()
+    .split(/[\s,]+/)
+    .map(Number);
+  if (viewBoxParts?.length === 4) {
+    const [, , viewBoxWidth, viewBoxHeight] = viewBoxParts;
+    if (
+      Number.isFinite(viewBoxWidth) &&
+      Number.isFinite(viewBoxHeight) &&
+      viewBoxWidth > 0 &&
+      viewBoxHeight > 0
+    ) {
+      return {
+        width: viewBoxWidth,
+        height: viewBoxHeight,
+      };
+    }
+  }
+
+  const width = Number.parseFloat(
+    svgTag.match(/\bwidth=["']([^"']+)["']/i)?.[1] ?? "",
+  );
+  const height = Number.parseFloat(
+    svgTag.match(/\bheight=["']([^"']+)["']/i)?.[1] ?? "",
+  );
+  if (
+    Number.isFinite(width) &&
+    Number.isFinite(height) &&
+    width > 0 &&
+    height > 0
+  ) {
+    return { width, height };
+  }
+
+  return undefined;
+}
+
 export function getPublicationImageDimensions(
   src: string | undefined,
 ): ImageDimensions | undefined {
@@ -90,6 +132,7 @@ export function getPublicationImageDimensions(
   if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) {
     return parseJpegDimensions(buffer);
   }
+  if (lower.endsWith(".svg")) return parseSvgDimensions(buffer);
   return undefined;
 }
 

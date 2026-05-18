@@ -1,4 +1,11 @@
-import { Box, Flex, Heading, Link, Text } from "@chakra-ui/react";
+import {
+  Box,
+  type BoxProps,
+  Flex,
+  Heading,
+  Link,
+  Text,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import type { ReactNode } from "react";
 import { LuArrowRight } from "react-icons/lu";
@@ -24,6 +31,7 @@ export const PortalSection = ({
   linkText,
   extra,
   children,
+  ...props
 }: {
   id?: string;
   eyebrow?: string;
@@ -32,8 +40,8 @@ export const PortalSection = ({
   linkText?: string;
   extra?: ReactNode;
   children: ReactNode;
-}) => (
-  <Box as="section" id={id} mt={{ base: 10, md: 12 }}>
+} & BoxProps) => (
+  <Box as="section" id={id} mt={{ base: 10, md: 12 }} {...props}>
     {eyebrow && <PortalEyebrow>{eyebrow}</PortalEyebrow>}
     <Flex
       align={{ base: "flex-start", md: "baseline" }}

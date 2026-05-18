@@ -6,9 +6,12 @@ import {
   chakra,
   Dialog,
   Flex,
+  Grid,
   Heading,
   HStack,
   IconButton,
+  LinkBox,
+  LinkOverlay,
   Portal,
   SimpleGrid,
   Stack,
@@ -16,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import type { GetStaticProps, NextPage } from "next";
 import type { FC, PropsWithChildren } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FaRegFilePdf } from "react-icons/fa6";
 import { LuX } from "react-icons/lu";
 import { SiGooglescholar } from "react-icons/si";
@@ -108,91 +111,175 @@ const ActionLink = ({
   </chakra.a>
 );
 
+const FigureCaption = ({ children }: { children: string }) => {
+  const captionRef = useRef<HTMLElement | null>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const caption = captionRef.current;
+    if (!caption) return;
+
+    const updateTruncation = () => {
+      setIsTruncated(caption.scrollHeight > caption.clientHeight + 1);
+    };
+
+    updateTruncation();
+
+    const resizeObserver = new ResizeObserver(updateTruncation);
+    resizeObserver.observe(caption);
+    window.addEventListener("resize", updateTruncation);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateTruncation);
+    };
+  }, [children]);
+
+  return (
+    <Box
+      position="relative"
+      mt={2}
+      flex={{ md: 1 }}
+      minH={{ md: 0 }}
+      overflow="hidden"
+      display={{ base: "none", md: "block" }}
+    >
+      <chakra.figcaption
+        ref={captionRef}
+        color="fg.muted"
+        fontSize="xs"
+        mb={0}
+        lineHeight={1.5}
+        h="100%"
+        overflow="hidden"
+        lineClamp={{ base: 4, md: "none" }}
+      >
+        {children}
+      </chakra.figcaption>
+      {isTruncated && (
+        <Box
+          aria-hidden="true"
+          display={{ base: "none", md: "inline" }}
+          position="absolute"
+          insetInline={0}
+          right={0}
+          bottom={0}
+          h="2.25em"
+          bgGradient="to-b"
+          gradientFrom="transparent"
+          gradientTo="bg.subtle"
+          pointerEvents="none"
+        />
+      )}
+    </Box>
+  );
+};
+
 const PublicationFigureModal = ({
   publication,
   onClose,
 }: {
   publication?: Publication;
   onClose: () => void;
-}) => (
-  <Dialog.Root
-    open={Boolean(publication)}
-    onOpenChange={(details) => {
-      if (!details.open) onClose();
-    }}
-    placement="center"
-  >
-    <Portal>
-      <DialogBackdrop bg="blackAlpha.700" />
-      <DialogPositioner p={{ base: 3, md: 6 }}>
-        <DialogContent
-          bg="bg.panel"
-          borderRadius="md"
-          boxShadow="2xl"
-          color="fg"
-          w="fit-content"
-          maxW="calc(100vw - 2rem)"
-          maxH="calc(100dvh - 2rem)"
-          p={{ base: 3, md: 4 }}
-          position="relative"
-        >
-          <DialogTitle srOnly>{publication?.title}</DialogTitle>
-          <DialogCloseTrigger asChild>
-            <IconButton
-              aria-label="Close figure"
-              position="absolute"
-              top={2}
-              right={2}
-              size="sm"
-              variant="ghost"
-              color="fg.muted"
-              zIndex={1}
-            >
-              <LuX />
-            </IconButton>
-          </DialogCloseTrigger>
-          <DialogBody
-            p={0}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            gap={3}
+}) => {
+  const figureAspectRatio =
+    publication?.figureWidth && publication.figureHeight
+      ? publication.figureWidth / publication.figureHeight
+      : undefined;
+  const figureMaxHeight = "38rem";
+  const figureMaxWidth = figureAspectRatio
+    ? `min(calc(100vw - 4rem), calc(${figureMaxHeight} * ${figureAspectRatio}))`
+    : "min(72rem, calc(100vw - 4rem))";
+
+  return (
+    <Dialog.Root
+      open={Boolean(publication)}
+      onOpenChange={(details) => {
+        if (!details.open) onClose();
+      }}
+      placement="center"
+    >
+      <Portal>
+        <DialogBackdrop bg="blackAlpha.700" />
+        <DialogPositioner p={{ base: 3, md: 6 }}>
+          <DialogContent
+            bg="bg.panel"
+            borderRadius="md"
+            boxShadow="2xl"
+            color="fg"
+            w="fit-content"
+            maxW="calc(100vw - 2rem)"
+            maxH="calc(100dvh - 2rem)"
+            p={{ base: 3, md: 4 }}
+            position="relative"
+            overflow="hidden"
           >
-            {publication?.figureSrc && (
-              <chakra.img
-                src={publication.figureSrc}
-                alt={publication.figure?.caption ?? publication.title}
-                width={publication.figureWidth}
-                height={publication.figureHeight}
-                display="block"
-                style={{
-                  maxWidth: "min(72rem, calc(100vw - 4rem))",
-                  maxHeight: publication.figure?.caption
-                    ? "calc(100dvh - 11rem)"
-                    : "calc(100dvh - 6rem)",
-                  width: "auto",
-                  height: "auto",
-                  objectFit: "contain",
-                }}
-              />
-            )}
-            {publication?.figure?.caption && (
-              <DialogDescription
+            <DialogTitle srOnly>{publication?.title}</DialogTitle>
+            <DialogCloseTrigger asChild>
+              <IconButton
+                aria-label="Close figure"
+                position="absolute"
+                top={2}
+                right={2}
+                size="sm"
+                variant="ghost"
                 color="fg.muted"
-                fontSize="sm"
-                lineHeight={1.5}
-                mb={0}
-                maxW="min(72ch, calc(100vw - 4rem))"
+                zIndex={1}
               >
-                {publication.figure.caption}
-              </DialogDescription>
-            )}
-          </DialogBody>
-        </DialogContent>
-      </DialogPositioner>
-    </Portal>
-  </Dialog.Root>
-);
+                <LuX />
+              </IconButton>
+            </DialogCloseTrigger>
+            <DialogBody
+              p={0}
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={3}
+              maxH="calc(100dvh - 4rem)"
+              overflowY="auto"
+            >
+              {publication?.figureSrc && (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  flex="0 1 auto"
+                  minH={0}
+                  w={figureMaxWidth}
+                  maxW={figureMaxWidth}
+                >
+                  <chakra.img
+                    src={publication.figureSrc}
+                    alt={publication.figure?.caption ?? publication.title}
+                    htmlWidth={publication.figureWidth}
+                    htmlHeight={publication.figureHeight}
+                    display="block"
+                    maxW="100%"
+                    maxH={figureMaxHeight}
+                    w="auto"
+                    h="auto"
+                    objectFit="contain"
+                  />
+                </Box>
+              )}
+              {publication?.figure?.caption && (
+                <DialogDescription
+                  color="fg.muted"
+                  fontSize="sm"
+                  lineHeight={1.5}
+                  flexShrink={0}
+                  mb={0}
+                  maxW={figureMaxWidth}
+                >
+                  {publication.figure.caption}
+                </DialogDescription>
+              )}
+            </DialogBody>
+          </DialogContent>
+        </DialogPositioner>
+      </Portal>
+    </Dialog.Root>
+  );
+};
 
 const PublicationsAccordion = ({
   publications,
@@ -278,17 +365,88 @@ const PublicationsAccordion = ({
           </AccTrigger>
           <AccContent>
             <AccBody px={6} pb={6} pt={0}>
-              <Flex
-                direction={{ base: "column", md: "row" }}
-                gap={{ base: 6, md: 12 }}
-                align="flex-start"
+              <Grid
+                templateColumns={{
+                  base: "minmax(0, 1fr)",
+                  md: "14.75rem minmax(0, 1fr)",
+                }}
+                gap={6}
+                alignItems="flex-start"
+                position="relative"
               >
-                <Box
-                  w={{ base: "100%", md: "calc(60% - 1.5rem)" }}
-                  flexShrink={0}
-                  minW={0}
-                  order={{ base: 1, md: 0 }}
-                >
+                {p.figureSrc && (
+                  <LinkBox
+                    as="figure"
+                    gridColumn={{ base: "1", md: "1" }}
+                    position={{ base: "static", md: "absolute" }}
+                    insetBlock={{ md: 0 }}
+                    insetInlineStart={{ md: 0 }}
+                    display="flex"
+                    flexDirection="column"
+                    w={{ base: "100%", md: "14.75rem" }}
+                    minW={0}
+                    minH={0}
+                    overflow="hidden"
+                    borderWidth="1px"
+                    borderColor="transparent"
+                    borderRadius="sm"
+                    cursor="zoom-in"
+                    transition="border-color 150ms, box-shadow 150ms, opacity 150ms"
+                    _hover={{
+                      borderColor: "border.emphasized",
+                      opacity: 0.9,
+                    }}
+                    _focusWithin={{
+                      borderColor: "link.emphasis",
+                      outline: "none",
+                    }}
+                    m={0}
+                  >
+                    <LinkOverlay asChild>
+                      <chakra.button
+                        type="button"
+                        aria-label={`Open figure for ${p.title}`}
+                        onClick={() => onFigureOpen(p)}
+                        position="absolute"
+                        inset={0}
+                        zIndex={1}
+                        p={0}
+                        bg="transparent"
+                        borderWidth={0}
+                        cursor="zoom-in"
+                      />
+                    </LinkOverlay>
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      flexShrink={0}
+                      w="100%"
+                      mx="auto"
+                      p={0}
+                      pointerEvents="none"
+                    >
+                      <chakra.img
+                        src={p.figureSrc}
+                        alt={p.figure?.caption ?? p.title}
+                        htmlWidth={p.figureWidth}
+                        htmlHeight={p.figureHeight}
+                        loading="lazy"
+                        display="block"
+                        maxW="100%"
+                        maxH={{ base: "20rem", md: "10rem" }}
+                        w="auto"
+                        h="auto"
+                        objectFit="contain"
+                        mx="auto"
+                      />
+                    </Box>
+                    {p.figure?.caption && (
+                      <FigureCaption>{p.figure.caption}</FigureCaption>
+                    )}
+                  </LinkBox>
+                )}
+                <Box gridColumn={{ base: "1", md: "2" }} minW={0}>
                   {p.bodyHtml && (
                     <Box
                       color="fg"
@@ -331,68 +489,7 @@ const PublicationsAccordion = ({
                     ))}
                   </HStack>
                 </Box>
-                {p.figureSrc && (
-                  <Box
-                    flexShrink={0}
-                    w={{ base: "100%", md: "calc(40% - 1.5rem)" }}
-                    alignSelf="flex-start"
-                    order={{ base: 0, md: 1 }}
-                  >
-                    <chakra.button
-                      type="button"
-                      aria-label={`Open figure for ${p.title}`}
-                      onClick={() => onFigureOpen(p)}
-                      display="block"
-                      mx="auto"
-                      p={0}
-                      bg="transparent"
-                      borderWidth="1px"
-                      borderColor="transparent"
-                      borderRadius="sm"
-                      cursor="zoom-in"
-                      transition="border-color 150ms, opacity 150ms"
-                      _hover={{
-                        borderColor: "border.emphasized",
-                        opacity: 0.9,
-                      }}
-                      _focusVisible={{
-                        outline: "2px solid",
-                        outlineColor: "link.emphasis",
-                        outlineOffset: "3px",
-                      }}
-                    >
-                      <chakra.img
-                        src={p.figureSrc}
-                        alt={p.figure?.caption ?? p.title}
-                        width={p.figureWidth}
-                        height={p.figureHeight}
-                        loading="lazy"
-                        display="block"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "20rem",
-                          width: "auto",
-                          height: "auto",
-                          objectFit: "contain",
-                          marginLeft: "auto",
-                          marginRight: "auto",
-                        }}
-                      />
-                    </chakra.button>
-                    {p.figure?.caption && (
-                      <Text
-                        color="fg.muted"
-                        fontSize="xs"
-                        mt={2}
-                        mb={0}
-                        lineHeight={1.5}
-                      >
-                        {p.figure.caption}
-                      </Text>
-                    )}
-                  </Box>
-                )}
-              </Flex>
+              </Grid>
             </AccBody>
           </AccContent>
         </AccItem>
@@ -450,19 +547,18 @@ const FeaturedPublicationCard = ({
           <chakra.img
             src={publication.figureSrc}
             alt={publication.figure?.caption ?? publication.title}
-            width={publication.figureWidth}
-            height={publication.figureHeight}
+            htmlWidth={publication.figureWidth}
+            htmlHeight={publication.figureHeight}
             loading="lazy"
             display="block"
-            w="100%"
+            maxW="100%"
+            maxH="18rem"
+            w="auto"
             h="auto"
+            objectFit="contain"
+            mx="auto"
           />
         </Box>
-      )}
-      {publication.figure?.caption && (
-        <Text color="fg.muted" fontSize="xs" lineHeight={1.5} mb={0}>
-          {publication.figure.caption}
-        </Text>
       )}
     </chakra.a>
   </Card.Root>
@@ -515,7 +611,11 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
       </Box>
 
       {featured.length > 0 && (
-        <PortalSection eyebrow="Featured" title="Featured papers">
+        <PortalSection
+          eyebrow="Featured"
+          title="Featured papers"
+          display={{ base: "none", lg: "block" }}
+        >
           <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
             {featured.map((p) => (
               <FeaturedPublicationCard
