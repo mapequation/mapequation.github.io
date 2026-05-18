@@ -105,10 +105,13 @@ const shikiAdapter = createShikiAdapter<HighlighterGeneric<any, any>>({
       themes: ["github-dark", "github-light"],
     });
   },
-  theme: "github-light",
+  theme: {
+    light: "github-light",
+    dark: "github-dark",
+  },
 });
 
-type DocsCodeBlockProps = Omit<CkCodeBlock.RootProps, "children" | "code"> & {
+type CodeBlockProps = Omit<CkCodeBlock.RootProps, "children" | "code"> & {
   children: ReactNode;
 };
 
@@ -153,11 +156,19 @@ function CodeBlockContent() {
       <CkCodeBlock.Code>
         <CkCodeBlock.CodeText />
       </CkCodeBlock.Code>
+      <CkCodeBlock.Overlay
+        bgImage="linear-gradient(0deg, var(--chakra-colors-bg) 25%, transparent 100%)"
+        color="fg"
+      >
+        <CkCodeBlock.CollapseTrigger>
+          <CkCodeBlock.CollapseText textStyle="sm" />
+        </CkCodeBlock.CollapseTrigger>
+      </CkCodeBlock.Overlay>
     </CkCodeBlock.Content>
   );
 }
 
-export function CodeBlock({ children, meta, ...props }: DocsCodeBlockProps) {
+export function CodeBlock({ children, meta, ...props }: CodeBlockProps) {
   return (
     <CkCodeBlock.AdapterProvider value={shikiAdapter}>
       <CkCodeBlock.Root

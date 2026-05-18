@@ -24,12 +24,6 @@ import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 import { Tag } from "../../shared/components/Tag";
 import { infomapVersionLabel } from "../../shared/infomapVersion";
 
-const preview = (content: string, maxLines = 18) => {
-  const lines = content.trim().split("\n");
-  if (lines.length <= maxLines) return content.trim();
-  return `${lines.slice(0, maxLines).join("\n")}\n# ...`;
-};
-
 const formats = [
   {
     id: "InputLinkList",
@@ -51,7 +45,7 @@ const formats = [
           "Network generated from a Sierpinski fractal of three levels with nine triangles at the bottom level. The optimal solution is not the symmetric case with three modules in each supermodule.",
       },
     ],
-    example: preview(exampleNetworks.twoTriangles),
+    example: exampleNetworks.nineTriangles,
     language: "infomap",
   },
   {
@@ -66,7 +60,7 @@ const formats = [
       "The node section starts with *Vertices N and the link section with *Edges N, *Links N, or *Arcs N, where N is the number of nodes or links.",
       "Text inside quotation marks gives the node name. You can assign node weights by adding a third column with positive numbers. Links are interpreted like the link-list format.",
     ],
-    example: preview(exampleNetworks.pajek),
+    example: exampleNetworks.pajek,
     language: "infomap",
   },
   {
@@ -90,7 +84,7 @@ const formats = [
         maxW: "7rem",
       },
     ],
-    example: preview(exampleNetworks.bipartite),
+    example: exampleNetworks.bipartite,
     language: "infomap",
   },
   {
@@ -116,7 +110,7 @@ const formats = [
       },
     ],
     figuresFullWidth: true,
-    example: preview(exampleNetworks.multilayer, 20),
+    example: exampleNetworks.multilayer,
     language: "infomap",
   },
   {
@@ -148,7 +142,7 @@ const formats = [
         maxW: "38rem",
       },
     ],
-    example: preview(exampleNetworks.states, 18),
+    example: exampleNetworks.states,
     figuresFullWidth: true,
     language: "infomap",
   },
@@ -194,7 +188,7 @@ const formats = [
       "It extends .tree with *Links sections for child-node flow within modules. The first line states whether the links are undirected or directed.",
       "Links entering or leaving a module are not listed directly, but the corresponding flow is aggregated into enterFlow and exitFlow.",
     ],
-    example: preview(outputExamples.ftreeLinks, 18),
+    example: outputExamples.ftreeLinks,
     language: "infomap",
   },
   {
@@ -221,7 +215,7 @@ const formats = [
     details: [
       "JSON preserves structured metadata and avoids parsing text formats. It is the best output when another app or pipeline will consume the result directly.",
     ],
-    example: preview(outputExamples.json, 18),
+    example: outputExamples.json,
     language: "json",
   },
 ];
@@ -342,7 +336,7 @@ function FormatCard({ format }) {
         <FormatDescription format={format} />
       )}
 
-      <CodeBlock mt={4} language={format.language}>
+      <CodeBlock mt={4} language={format.language} maxLines={15}>
         {format.example}
       </CodeBlock>
     </DocsCard>
@@ -480,7 +474,7 @@ const FormatsPage: NextPage = () => {
               Every output file starts with a header that records the run.
             </Text>
             <SimpleGrid columns={{ base: 1, md: showAnnotations ? 2 : 1 }}>
-              <CodeBlock mt={4}>{`# ${infomapVersionLabel}
+              <CodeBlock mt={4} language="infomap">{`# ${infomapVersionLabel}
 # ./Infomap network.net . --ftree --clu
 # started at 2026-05-05, 07:23:30
 # completed in 0.114 s
