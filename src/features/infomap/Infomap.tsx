@@ -300,12 +300,12 @@ function OutputFileSelector({
                 activeOutputFile?.name || "Output"
               ) : (
                 <>
-                  <Box as="span" display={{ base: "inline", md: "none" }}>
+                  <Text as="span" display={{ base: "inline", md: "none" }}>
                     Output
-                  </Box>
-                  <Box as="span" display={{ base: "none", md: "inline" }}>
+                  </Text>
+                  <Text as="span" display={{ base: "none", md: "inline" }}>
                     Output files
-                  </Box>
+                  </Text>
                 </>
               )}
             </Text>
@@ -994,10 +994,9 @@ export default function InfomapOnline() {
         title="Input data"
         description="Paste, upload, or try an example below."
       />
-      <Box
-        display="flex"
+      <Flex
         flex="1"
-        flexDirection="column"
+        direction="column"
         minH={0}
         overflowX="hidden"
         overflowY="auto"
@@ -1162,7 +1161,7 @@ export default function InfomapOnline() {
                             <Stack align="flex-start" gap={2}>
                               <Box>
                                 <Text
-                                  color="gray.700"
+                                  color="fg"
                                   fontSize="sm"
                                   fontWeight={700}
                                   mb={0}
@@ -1221,7 +1220,7 @@ export default function InfomapOnline() {
             onSelectNetwork={() => setMobilePanel(null)}
           />
         </Box>
-      </Box>
+      </Flex>
     </>
   );
   const renderParametersPanel = () => (
@@ -1408,7 +1407,7 @@ export default function InfomapOnline() {
           </HStack>
         </Stack>
 
-        <Box display={tab === "network" ? "flex" : "none"} flex="1" minH={0}>
+        <Flex display={tab === "network" ? "flex" : "none"} flex="1" minH={0}>
           <NetworkPreview
             directed={Boolean(params.getParam("--directed").active)}
             ftree={previewFtree}
@@ -1428,8 +1427,8 @@ export default function InfomapOnline() {
             numLevels={previewNumLevels}
             selectedLevel={previewSelectedLevel}
           />
-        </Box>
-        <Box display={tab === "console" ? "flex" : "none"} flex="1" minH={0}>
+        </Flex>
+        <Flex display={tab === "console" ? "flex" : "none"} flex="1" minH={0}>
           <PreformattedOutput
             ariaLabel="Infomap console output"
             autoScroll
@@ -1440,8 +1439,8 @@ export default function InfomapOnline() {
             placeholder="Run Infomap to see the log…"
             variant="terminal"
           />
-        </Box>
-        <Box display={tab === "output" ? "flex" : "none"} flex="1" minH={0}>
+        </Flex>
+        <Flex display={tab === "output" ? "flex" : "none"} flex="1" minH={0}>
           <Field.Root flex="1" minH={0} position="relative">
             {output.activeContent && (
               <Box position="absolute" right={3} top={3} zIndex={1}>
@@ -1475,7 +1474,7 @@ export default function InfomapOnline() {
               onCopy={onCopyClusters}
             />
           </Field.Root>
-        </Box>
+        </Flex>
       </WorkbenchPanel>
       <WorkbenchPanel
         gridArea="output"

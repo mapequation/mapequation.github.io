@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Grid, IconButton, Text } from "@chakra-ui/react";
 import {
   type Force,
   type ForceLink,
@@ -286,7 +286,7 @@ function NetworkHoverTooltip({
         },
       }}
     >
-      <Box alignItems="baseline" display="flex" gap={3} mb={1} minW={0}>
+      <Flex align="baseline" gap={3} mb={1} minW={0}>
         <Text
           as="span"
           fontSize="xs"
@@ -308,13 +308,12 @@ function NetworkHoverTooltip({
             {hover.node.id}
           </Text>
         )}
-      </Box>
-      <Box
+      </Flex>
+      <Grid
         color="whiteAlpha.900"
         columnGap={2.5}
-        display="grid"
         fontSize="xs"
-        gridTemplateColumns="max-content 1fr"
+        templateColumns="max-content 1fr"
         mt={1.5}
         rowGap={0.5}
       >
@@ -363,7 +362,7 @@ function NetworkHoverTooltip({
             </Text>
           </>
         )}
-      </Box>
+      </Grid>
       {hoverSlices.length > 1 && (
         <Box mt={1}>
           {visibleHoverSlices.map((slice) => {

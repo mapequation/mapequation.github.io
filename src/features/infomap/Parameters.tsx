@@ -6,6 +6,7 @@ import {
   CloseButton,
   chakra,
   FileUpload,
+  Flex,
   HStack,
   IconButton,
   Input,
@@ -443,9 +444,9 @@ function ParameterGroupHeader({
         {title}
       </Text>
       <Text color="fg.muted" fontSize="0.68rem" mb={0}>
-        <Box as="span" color="blue.600" fontWeight="600">
+        <Text as="span" color="blue.600" fontWeight="600">
           {activeCount}
-        </Box>
+        </Text>
         /{count} active
       </Text>
     </HStack>
@@ -565,16 +566,9 @@ function ParameterRow({
           />
         </Box>
       </Box>
-      <Box
-        flex="0 0 auto"
-        maxW="100%"
-        minW="4rem"
-        display="flex"
-        pt={0.5}
-        justifyContent="flex-end"
-      >
+      <Flex flex="0 0 auto" maxW="100%" minW="4rem" pt={0.5} justify="flex-end">
         {children}
-      </Box>
+      </Flex>
     </HStack>
   );
 }

@@ -1,6 +1,6 @@
 import {
-  Box,
   type BoxProps,
+  Card,
   Heading,
   type HeadingProps,
   Text,
@@ -17,39 +17,41 @@ type DocsCardProps = BoxProps & {
 export function DocsCard({
   children,
   eyebrow,
+  p = { base: 5, md: 6 },
   title,
   headingAs = "h2",
   ...props
 }: DocsCardProps) {
   return (
-    <Box
+    <Card.Root
       as="section"
       bg="bg.panel"
       borderWidth="1px"
       borderColor="border.emphasized"
       borderRadius="md"
-      p={{ base: 5, md: 6 }}
       scrollMarginTop="6rem"
       {...props}
     >
-      {eyebrow && (
-        <Text
-          color="fg.muted"
-          fontFamily="monospace"
-          fontSize="xs"
-          letterSpacing="0.1em"
-          textTransform="uppercase"
-          mb={2}
-        >
-          {eyebrow}
-        </Text>
-      )}
-      {title && (
-        <Heading as={headingAs} size="md" mb={3}>
-          {title}
-        </Heading>
-      )}
-      {children}
-    </Box>
+      <Card.Body p={p}>
+        {eyebrow && (
+          <Text
+            color="fg.muted"
+            fontFamily="monospace"
+            fontSize="xs"
+            letterSpacing="0.1em"
+            textTransform="uppercase"
+            mb={2}
+          >
+            {eyebrow}
+          </Text>
+        )}
+        {title && (
+          <Heading as={headingAs} size="md" mb={3}>
+            {title}
+          </Heading>
+        )}
+        {children}
+      </Card.Body>
+    </Card.Root>
   );
 }
