@@ -48,7 +48,7 @@ export function PreformattedOutput({
       borderColor={isTerminal ? "#1f2937" : "border.emphasized"}
       borderRadius="md"
       borderWidth="1px"
-      boxShadow={isTerminal ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "none"}
+      boxShadow={isTerminal ? "inset 0 1px 0 rgba(255,255,255,0.04)" : "inner"}
       color={isTerminal ? "#d1d5db" : "fg"}
       fontFamily="monospace"
       fontSize={fontSize}

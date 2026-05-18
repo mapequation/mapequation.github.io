@@ -18,8 +18,8 @@ import { useState } from "react";
 import { LuArrowRight } from "react-icons/lu";
 import * as exampleNetworks from "../../data/networks";
 import * as outputExamples from "../../data/output";
+import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
-import { DocsCodeBlock } from "../../shared/components/DocsCodeBlock";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 import { Tag } from "../../shared/components/Tag";
 import { infomapVersionLabel } from "../../shared/infomapVersion";
@@ -52,6 +52,7 @@ const formats = [
       },
     ],
     example: preview(exampleNetworks.twoTriangles),
+    language: "infomap",
   },
   {
     id: "InputPajek",
@@ -66,6 +67,7 @@ const formats = [
       "Text inside quotation marks gives the node name. You can assign node weights by adding a third column with positive numbers. Links are interpreted like the link-list format.",
     ],
     example: preview(exampleNetworks.pajek),
+    language: "infomap",
   },
   {
     id: "InputBipartite",
@@ -89,6 +91,7 @@ const formats = [
       },
     ],
     example: preview(exampleNetworks.bipartite),
+    language: "infomap",
   },
   {
     id: "InputMultilayer",
@@ -114,6 +117,7 @@ const formats = [
     ],
     figuresFullWidth: true,
     example: preview(exampleNetworks.multilayer, 20),
+    language: "infomap",
   },
   {
     id: "InputStates",
@@ -146,6 +150,7 @@ const formats = [
     ],
     example: preview(exampleNetworks.states, 18),
     figuresFullWidth: true,
+    language: "infomap",
   },
   {
     id: "OutputClu",
@@ -160,6 +165,7 @@ const formats = [
       "If the .clu file is used as an input clustering to Infomap, the flow column is ignored and may be omitted.",
     ],
     example: outputExamples.clu,
+    language: "infomap",
   },
   {
     id: "OutputTree",
@@ -174,6 +180,7 @@ const formats = [
       "The integer after the last colon is the rank within the finest-level module. The decimal number is the steady-state probability of the random walker in that node.",
     ],
     example: outputExamples.tree,
+    language: "infomap",
   },
   {
     id: "OutputFtree",
@@ -188,6 +195,7 @@ const formats = [
       "Links entering or leaving a module are not listed directly, but the corresponding flow is aggregated into enterFlow and exitFlow.",
     ],
     example: preview(outputExamples.ftreeLinks, 18),
+    language: "infomap",
   },
   {
     id: "OutputNewick",
@@ -201,6 +209,7 @@ const formats = [
       "The format is compact and useful for dendrogram or phylogenetic-style tools that understand parenthesized tree structure.",
     ],
     example: outputExamples.newick,
+    language: "newick",
   },
   {
     id: "OutputJson",
@@ -213,6 +222,7 @@ const formats = [
       "JSON preserves structured metadata and avoids parsing text formats. It is the best output when another app or pipeline will consume the result directly.",
     ],
     example: preview(outputExamples.json, 18),
+    language: "json",
   },
 ];
 
@@ -332,7 +342,9 @@ function FormatCard({ format }) {
         <FormatDescription format={format} />
       )}
 
-      <DocsCodeBlock mt={4}>{format.example}</DocsCodeBlock>
+      <CodeBlock mt={4} language={format.language}>
+        {format.example}
+      </CodeBlock>
     </DocsCard>
   );
 }
@@ -468,13 +480,13 @@ const FormatsPage: NextPage = () => {
               Every output file starts with a header that records the run.
             </Text>
             <SimpleGrid columns={{ base: 1, md: showAnnotations ? 2 : 1 }}>
-              <DocsCodeBlock mt={4}>{`# ${infomapVersionLabel}
+              <CodeBlock mt={4}>{`# ${infomapVersionLabel}
 # ./Infomap network.net . --ftree --clu
 # started at 2026-05-05, 07:23:30
 # completed in 0.114 s
 # partitioned into 2 levels with 2 top modules
 # codelength 2.32073 bits
-# relative codelength savings 9.22792%`}</DocsCodeBlock>
+# relative codelength savings 9.22792%`}</CodeBlock>
               {showAnnotations && (
                 <Box
                   borderWidth="1px"

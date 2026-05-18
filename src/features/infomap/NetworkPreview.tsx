@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, IconButton, Text } from "@chakra-ui/react";
 import {
   type Force,
   type ForceLink,
@@ -21,7 +21,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { LuDownload, LuExpand, LuMaximize, LuMinimize2 } from "react-icons/lu";
+import {
+  LuDownload,
+  LuExpand,
+  LuMaximize,
+  LuMinimize2,
+  LuMinus,
+  LuPlus,
+} from "react-icons/lu";
 import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
 import { WorkbenchControlGroup } from "../../shared/components/WorkbenchControlGroup";
 import { WorkbenchOverlay } from "../../shared/components/WorkbenchOverlay";
@@ -31,17 +38,17 @@ import {
 } from "./hierarchicalLayout";
 import {
   buildHierarchicalModuleColors,
-  moduleColorFromModel,
   type ModuleColorModel,
   type ModuleId,
   type ModuleMap,
+  moduleColorFromModel,
   modulePathFromModuleId,
   modulePathFromNodePath,
 } from "./moduleColors";
 import {
+  computeModuleCentroids,
   createNetworkPreviewExportCanvas,
   createNetworkPreviewExportSvg,
-  computeModuleCentroids,
   type ModuleColorResolver,
   nodeModuleSlices,
   renderNetworkPreviewFrame,
@@ -65,39 +72,6 @@ function hasMatchingModules(
   return nodes.some((node) => modules.has(Number(node.id)));
 }
 
-function LevelGranularityIcon({ fine }: { fine?: boolean }) {
-  return (
-    <Box aria-hidden="true" color="fg.muted" lineHeight={0}>
-      <svg
-        aria-hidden="true"
-        focusable="false"
-        height="16"
-        viewBox="0 0 16 16"
-        width="16"
-      >
-        {fine ? (
-          <>
-            <circle cx="4" cy="4" fill="currentColor" r="2" />
-            <circle cx="12" cy="4" fill="currentColor" r="2" />
-            <circle cx="8" cy="8" fill="currentColor" r="2" />
-            <circle cx="4" cy="12" fill="currentColor" r="2" />
-            <circle cx="12" cy="12" fill="currentColor" r="2" />
-          </>
-        ) : (
-          <circle
-            cx="8"
-            cy="8"
-            fill="none"
-            r="5"
-            stroke="currentColor"
-            strokeWidth="2"
-          />
-        )}
-      </svg>
-    </Box>
-  );
-}
-
 function NetworkLevelControl({
   levelLocked,
   levelValueLabel,
@@ -111,54 +85,77 @@ function NetworkLevelControl({
   setLevel: (level: number) => void;
   sliderLevel: number;
 }) {
+  const levels = Array.from(
+    { length: moduleLevelCount },
+    (_, index) => moduleLevelCount - index,
+  );
+  const canIncrease = !levelLocked && sliderLevel < moduleLevelCount;
+  const canDecrease = !levelLocked && sliderLevel > 1;
+
   return (
-    <Stack
+    <WorkbenchControlGroup
       align="center"
-      bg="bg.subtle"
-      borderRadius="l2"
+      aria-label={`Module level ${levelValueLabel}`}
+      bg="bg"
       bottom={3}
-      boxShadow="0 0 0 1px var(--chakra-colors-border)"
-      color="fg.muted"
-      fontSize="xs"
-      gap={1}
-      minW="2.75rem"
+      opacity={levelLocked ? 0.68 : 1}
+      orientation="vertical"
       position="absolute"
-      px={1.5}
-      py={1.5}
       right={3}
+      role="group"
+      zIndex={2}
     >
-      <Text
-        color="fg"
-        fontWeight={600}
-        lineHeight={1}
-        mb={0}
-        textAlign="center"
+      <IconButton
+        aria-label="Show finer module level"
+        bg="bg"
+        disabled={!canIncrease}
+        onClick={() => setLevel(sliderLevel + 1)}
       >
-        {levelValueLabel}
-      </Text>
-      <Box mt={-1}>
-        <LevelGranularityIcon fine />
-      </Box>
-      <Box display="flex" justifyContent="center">
-        <input
-          aria-label={`Module level ${levelValueLabel}`}
-          disabled={levelLocked}
-          max={moduleLevelCount}
-          min={1}
-          onChange={(event) => setLevel(Number(event.target.value))}
-          step={1}
-          style={{
-            writingMode: "vertical-lr",
-            direction: "rtl",
-            height: "7rem",
-            width: "1.25rem",
-          }}
-          type="range"
-          value={sliderLevel}
-        />
-      </Box>
-      <LevelGranularityIcon />
-    </Stack>
+        <LuPlus />
+      </IconButton>
+
+      {levels.map((levelValue) => {
+        const selected = levelValue === sliderLevel;
+        return (
+          <Button
+            key={levelValue}
+            aria-current={selected ? "true" : undefined}
+            aria-label={`Show module level ${levelValue} of ${moduleLevelCount}`}
+            bg="bg"
+            color="gray.400"
+            disabled={levelLocked}
+            minW="2rem"
+            px={0}
+            type="button"
+            onClick={() => setLevel(levelValue)}
+          >
+            <Box
+              aria-hidden="true"
+              bg={selected ? "blue.500" : "transparent"}
+              borderColor="gray.400"
+              borderRadius="full"
+              borderWidth={selected ? 0 : "2px"}
+              boxShadow={
+                selected
+                  ? "0 0 0 2px color-mix(in srgb, var(--chakra-colors-blue-500) 14%, transparent)"
+                  : undefined
+              }
+              h="0.375rem"
+              w="0.375rem"
+            />
+          </Button>
+        );
+      })}
+
+      <IconButton
+        aria-label="Show coarser module level"
+        bg="bg"
+        disabled={!canDecrease}
+        onClick={() => setLevel(sliderLevel - 1)}
+      >
+        <LuMinus />
+      </IconButton>
+    </WorkbenchControlGroup>
   );
 }
 
@@ -2085,6 +2082,7 @@ function NetworkPreviewImpl({
       right={isFullscreen ? 0 : undefined}
       top={isFullscreen ? `${fullscreenTop}px` : undefined}
       zIndex={isFullscreen ? 40 : undefined}
+      boxShadow="inner"
     >
       <canvas
         ref={canvasRef}

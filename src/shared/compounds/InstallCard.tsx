@@ -1,13 +1,5 @@
-import { Box, chakra, Flex, Stack, Tabs, Text } from "@chakra-ui/react";
-import { useRouter } from "next/router";
-import type { ElementType } from "react";
-import { useEffect, useState } from "react";
-import { CopyButton } from "../components/CopyButton";
-
-const TabsRoot = Tabs.Root as ElementType;
-const TabsList = Tabs.List as ElementType;
-const TabsTrigger = Tabs.Trigger as ElementType;
-const TabsContent = Tabs.Content as ElementType;
+import { chakra, Flex, Text } from "@chakra-ui/react";
+import { TabbedCodeBlock } from "../components/CodeBlock";
 
 type InstallOption = {
   id: string;
@@ -16,6 +8,7 @@ type InstallOption = {
   note: string;
   snippet?: string;
   links?: { label: string; href: string }[];
+  language: string;
 };
 
 const installOptions: InstallOption[] = [
@@ -31,6 +24,7 @@ const installOptions: InstallOption[] = [
         href: "https://mapequation.github.io/infomap-python-docs/",
       },
     ],
+    language: "shell",
   },
   {
     id: "r",
@@ -44,6 +38,7 @@ const installOptions: InstallOption[] = [
         href: "https://mapequation.r-universe.dev/infomap",
       },
     ],
+    language: "r",
   },
   {
     id: "homebrew",
@@ -56,6 +51,7 @@ const installOptions: InstallOption[] = [
         href: "https://github.com/mapequation/homebrew-infomap",
       },
     ],
+    language: "shell",
   },
   {
     id: "docker",
@@ -68,6 +64,7 @@ const installOptions: InstallOption[] = [
         href: "https://github.com/mapequation/infomap/pkgs/container/infomap",
       },
     ],
+    language: "shell",
   },
   {
     id: "typescript",
@@ -80,6 +77,7 @@ const installOptions: InstallOption[] = [
         href: "https://www.npmjs.com/package/@mapequation/infomap",
       },
     ],
+    language: "shell",
   },
   {
     id: "source",
@@ -88,143 +86,64 @@ const installOptions: InstallOption[] = [
     note: "Native CLI from source",
     links: [
       {
-        label: "Latest GitHub release",
-        href: "https://github.com/mapequation/infomap/releases/latest",
+        label: "GitHub repository",
+        href: "https://github.com/mapequation/infomap/",
       },
     ],
+    language: "shell",
   },
 ];
 
 export default function InstallCard() {
-  const router = useRouter();
-  const [active, setActive] = useState<string>(installOptions[0].id);
-
-  // Hydrate active tab from `?lang=` on mount and on URL change.
-  useEffect(() => {
-    const fromQuery =
-      typeof router.query.lang === "string"
-        ? installOptions.find((o) => o.id === router.query.lang)?.id
-        : undefined;
-    if (fromQuery && fromQuery !== active) setActive(fromQuery);
-    // Intentionally watch only router.query.lang.
-  }, [router.query.lang]);
-
-  const onTabChange = (id: string) => {
-    setActive(id);
-    const next = { ...router.query, lang: id };
-    router.replace({ pathname: router.pathname, query: next }, undefined, {
-      shallow: true,
-      scroll: false,
-    });
-  };
-
   return (
-    <Box
-      borderWidth="1px"
-      borderColor="border.emphasized"
-      borderRadius="md"
-      bg="bg.panel"
-      overflow="hidden"
-    >
-      <TabsRoot
-        value={active}
-        onValueChange={(d: { value: string }) => onTabChange(d.value)}
-      >
-        <TabsList
-          aria-label="Install options"
-          gap={0}
-          overflowX="auto"
-          borderBottomWidth="1px"
-          borderBottomColor="border.emphasized"
-        >
-          {installOptions.map((option) => (
-            <TabsTrigger
-              key={option.id}
-              value={option.id}
-              borderRadius={0}
-              borderBottomWidth="3px"
-              borderBottomColor="transparent"
-              color="fg.muted"
-              fontWeight={400}
-              px={{ base: 4, md: 7 }}
-              h="64px"
-              _hover={{ bg: "bg.subtle", color: "fg" }}
-              _selected={{
-                color: "fg",
-                fontWeight: 700,
-              }}
+    <TabbedCodeBlock
+      ariaLabel="Install options"
+      files={installOptions.map((option) => ({
+        code: option.command,
+        label: option.label,
+        language: option.language,
+        value: option.id,
+      }))}
+      renderFooter={(file) => {
+        const option = installOptions.find((item) => item.id === file.value);
+        if (!option) return null;
+
+        return (
+          <Flex mt={3}>
+            <Flex
+              justify="space-between"
+              align="center"
+              gap={4}
+              flexWrap="wrap"
             >
-              {option.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {installOptions.map((option) => (
-          <TabsContent key={option.id} value={option.id}>
-            <Stack gap={5} py={{ base: 4, md: 6 }} px={{ base: 4, md: 8 }}>
-              <Box
-                bg="bg.subtle"
-                borderWidth="1px"
-                borderColor="border.emphasized"
-                borderRadius="md"
-                py={2}
-                px={4}
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                gap={4}
-              >
-                <chakra.code
-                  border={0}
-                  bg="transparent"
-                  p={0}
-                  fontSize={{ base: "sm", md: "md" }}
-                  color="fg"
-                >
-                  {option.command}
-                </chakra.code>
-                <CopyButton
-                  text={option.command}
-                  size="sm"
-                  ariaLabel={`Copy ${option.label} install command`}
-                />
-              </Box>
-
-              <Flex
-                justify="space-between"
-                align="center"
-                gap={4}
-                flexWrap="wrap"
-              >
-                <Text color="fg.muted" mb={0}>
-                  {option.note}
-                </Text>
-                {option.links && option.links.length > 0 && (
-                  <Flex gap={4} flexWrap="wrap">
-                    {option.links.map((link) => (
-                      <chakra.a
-                        key={link.href}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        fontSize="sm"
-                        color="link.emphasis"
-                        textDecoration="none"
-                        _hover={{
-                          color: "link.emphasisHover",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        {link.label} ↗
-                      </chakra.a>
-                    ))}
-                  </Flex>
-                )}
-              </Flex>
-            </Stack>
-          </TabsContent>
-        ))}
-      </TabsRoot>
-    </Box>
+              <Text color="fg.muted" mb={0}>
+                {option.note}
+              </Text>
+              {option.links && option.links.length > 0 && (
+                <Flex gap={4} flexWrap="wrap">
+                  {option.links.map((link) => (
+                    <chakra.a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      fontSize="sm"
+                      color="link.emphasis"
+                      textDecoration="none"
+                      _hover={{
+                        color: "link.emphasisHover",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      {link.label} ↗
+                    </chakra.a>
+                  ))}
+                </Flex>
+              )}
+            </Flex>
+          </Flex>
+        );
+      }}
+    />
   );
 }

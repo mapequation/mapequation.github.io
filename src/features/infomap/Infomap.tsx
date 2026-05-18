@@ -25,6 +25,13 @@ import {
   LuTrash2,
   LuX,
 } from "react-icons/lu";
+import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
+import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
+import {
+  WorkbenchPanel,
+  WorkbenchPanelHeader,
+} from "../../shared/components/WorkbenchPanel";
+import { WorkbenchTabs } from "../../shared/components/WorkbenchTabs";
 import useStore from "../../state";
 import { parseCluModules } from "../../state/output";
 import {
@@ -33,13 +40,6 @@ import {
   ensurePreviewOutputs,
 } from "../../state/parameters";
 import type { InputFile, InputName, OutputKey } from "../../state/types";
-import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
-import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
-import {
-  WorkbenchPanel,
-  WorkbenchPanelHeader,
-} from "../../shared/components/WorkbenchPanel";
-import { WorkbenchTabs } from "../../shared/components/WorkbenchTabs";
 import ExampleNetworksList from "./ExamplesMenu";
 import { InfomapStatsStrip } from "./InfomapStatsStrip";
 import InputParameters from "./InputParameters";

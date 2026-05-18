@@ -215,8 +215,19 @@ const PublicationsAccordion = ({
       <Box key={p.slug} id={p.slug} scrollMarginTop="7rem">
         <AccItem
           value={p.slug}
+          bg="bg.panel"
           borderBottomWidth={i < publications.length - 1 ? "1px" : 0}
           borderBottomColor="border"
+          borderRadius="sm"
+          position="relative"
+          transition="background-color 150ms, box-shadow 150ms, outline-color 150ms"
+          _open={{
+            bg: "bg.subtle",
+            outline: "1px solid",
+            outlineColor: "border.emphasized",
+            boxShadow: "sm",
+            zIndex: 1,
+          }}
         >
           <AccTrigger
             px={6}

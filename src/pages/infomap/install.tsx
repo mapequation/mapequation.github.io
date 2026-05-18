@@ -14,8 +14,8 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
 import { LuArrowRight, LuMonitor, LuTerminal } from "react-icons/lu";
+import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
-import { DocsCodeBlock } from "../../shared/components/DocsCodeBlock";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 import { Tag } from "../../shared/components/Tag";
 
@@ -37,6 +37,7 @@ const installMethods = [
       ["PyPI", "//pypi.org/project/infomap/"],
       ["Python API reference", "//mapequation.github.io/infomap-python-docs/"],
     ],
+    language: "shell",
   },
   {
     id: "HomebrewCli",
@@ -54,6 +55,7 @@ const installMethods = [
       ["Upgrade with the normal Homebrew flow", "brew upgrade infomap"],
     ],
     links: [["Homebrew tap", "//github.com/mapequation/homebrew-infomap"]],
+    language: "shell",
   },
   {
     id: "DownloadBinary",
@@ -66,6 +68,7 @@ const installMethods = [
     links: [
       ["Latest release", "//github.com/mapequation/infomap/releases/latest"],
     ],
+    language: "shell",
   },
   {
     id: "RPackage",
@@ -77,6 +80,7 @@ const installMethods = [
     command:
       'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
     links: [["r-universe", "//mapequation.r-universe.dev/infomap"]],
+    language: "r",
   },
   {
     id: "JavaScriptPackage",
@@ -87,6 +91,7 @@ const installMethods = [
     tags: ["TypeScript", "NPM"],
     command: "npm install @mapequation/infomap",
     links: [["npm", "//www.npmjs.com/package/@mapequation/infomap"]],
+    language: "shell",
   },
   {
     id: "Docker",
@@ -103,6 +108,7 @@ const installMethods = [
         "//github.com/mapequation/infomap/pkgs/container/infomap",
       ],
     ],
+    language: "shell",
   },
   {
     id: "CompilingFromSource",
@@ -117,13 +123,8 @@ const installMethods = [
       ["Build without OpenMP", "make build-native OPENMP=0"],
       ["Show available CLI options", "./Infomap --help"],
     ],
-    links: [
-      [
-        "Latest GitHub release",
-        "//github.com/mapequation/infomap/releases/latest",
-      ],
-      ["GitHub repository", "//github.com/mapequation/infomap"],
-    ],
+    links: [["GitHub repository", "//github.com/mapequation/infomap"]],
+    language: "shell",
   },
 ];
 
@@ -186,7 +187,7 @@ function MethodCard({ method }) {
       {method.custom === "binaries" ? (
         <BinaryTable />
       ) : (
-        <DocsCodeBlock>{method.command}</DocsCodeBlock>
+        <CodeBlock language={method.language}>{method.command}</CodeBlock>
       )}
 
       {method.commands?.length > 0 && (
@@ -197,7 +198,7 @@ function MethodCard({ method }) {
                 <Text color="fg.muted" fontSize="sm" mb={2}>
                   {title}
                 </Text>
-                <DocsCodeBlock>{command}</DocsCodeBlock>
+                <CodeBlock language={method.language}>{command}</CodeBlock>
               </Box>
             ))}
           </Stack>
@@ -351,23 +352,21 @@ const InstallPage: NextPage = () => {
             <Text color="fg.muted">
               After installation, the command-line form is:
             </Text>
-            <DocsCodeBlock>
-              infomap [options] network_data destination
-            </DocsCodeBlock>
+            <CodeBlock>infomap [options] network_data destination</CodeBlock>
 
             <Text color="fg.muted" mt={5}>
               For example:
             </Text>
-            <DocsCodeBlock>
+            <CodeBlock language="shell">
               {
                 "infomap network.net out\ninfomap --two-level --directed network.net out"
               }
-            </DocsCodeBlock>
+            </CodeBlock>
 
             <Text color="fg.muted" mt={5}>
               List all available options with:
             </Text>
-            <DocsCodeBlock>infomap --help</DocsCodeBlock>
+            <CodeBlock language="shell">infomap --help</CodeBlock>
           </DocsCard>
 
           <DocsCard id="ReadNext" title="Read next" mb={12}>
