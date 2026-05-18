@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Field,
+  FileUpload,
   Flex,
   Grid,
   HStack,
@@ -11,7 +12,15 @@ import {
 } from "@chakra-ui/react";
 import Infomap from "@mapequation/infomap";
 import localforage from "localforage";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ComponentProps,
+  type FC,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   LuChevronDown,
   LuChevronRight,
@@ -64,6 +73,17 @@ import {
 localforage.config({ name: "infomap" });
 
 const toolbarControlHeight = "2.75rem";
+const FileUploadDropzone = FileUpload.Dropzone as FC<
+  ComponentProps<typeof FileUpload.Dropzone> & {
+    asChild?: boolean;
+    children: ReactNode;
+    disableClick?: boolean;
+    unstyled?: boolean;
+  }
+>;
+
+const toTextFileAccept = (extensions?: string[]) =>
+  extensions ? { "text/plain": extensions } : undefined;
 
 const inputPlaceholders = {
   network: "Paste network data here…",
@@ -1039,133 +1059,156 @@ export default function InfomapOnline() {
                       </HStack>
                     </Button>
                     {key === "network" && !isOpen && (
-                      <LoadButton
-                        onDrop={onLoad(key)}
-                        accept={inputAccept[key]}
+                      <FileUpload.Root
+                        accept={toTextFileAccept(inputAccept[key])}
                         disabled={isInputLoading}
                         flexShrink={0}
-                        size="xs"
-                        variant={hasInput ? "outline" : "surface"}
+                        maxFiles={1}
+                        onFileAccept={({ files }) => onLoad(key)(files)}
+                        unstyled
                       >
-                        {hasInput ? "Change" : "Browse"}
-                      </LoadButton>
+                        <FileUpload.HiddenInput />
+                        <LoadButton
+                          disabled={isInputLoading}
+                          flexShrink={0}
+                          size="xs"
+                          variant={hasInput ? "outline" : "surface"}
+                        >
+                          {hasInput ? "Change" : "Browse"}
+                        </LoadButton>
+                      </FileUpload.Root>
                     )}
                   </HStack>
                 </Card.Body>
                 {isOpen && (
-                  <Card.Body
-                    borderTopWidth="1px"
-                    borderColor="border"
-                    display="flex"
-                    flexDirection="column"
-                    gap={3}
-                    p={3}
+                  <FileUpload.Root
+                    accept={toTextFileAccept(inputAccept[key])}
+                    disabled={isInputLoading}
+                    maxFiles={1}
+                    onFileAccept={({ files }) => onLoad(key)(files)}
+                    unstyled
                   >
-                    {hasInput ? (
-                      <HStack gap={2} justify="space-between" wrap="wrap">
-                        <Stack gap={0} minW={0} pl={1}>
-                          {getExpandedInputDetail(key, display).map(
-                            (detail) => (
-                              <Text
-                                key={detail}
-                                color="fg.muted"
-                                fontSize="xs"
-                                fontWeight={400}
-                                mb={0}
-                                overflow="hidden"
-                                textOverflow="ellipsis"
-                                whiteSpace="nowrap"
-                              >
-                                {detail}
-                              </Text>
-                            ),
-                          )}
-                        </Stack>
-                        <HStack gap={1}>
-                          <LoadButton
-                            onDrop={onLoad(key)}
-                            accept={inputAccept[key]}
-                            disabled={isInputLoading}
-                            size="xs"
-                            variant="surface"
-                          >
-                            Change file
-                          </LoadButton>
-                          <Button
-                            aria-label={`Clear ${label.toLowerCase()} input`}
-                            disabled={isInputLoading}
-                            onClick={() =>
-                              onInputChange(key)({ name: "", value: "" })
-                            }
-                            size="xs"
-                            type="button"
-                            variant="ghost"
-                          >
-                            <LuTrash2 />
-                          </Button>
-                        </HStack>
-                      </HStack>
-                    ) : (
-                      <Box
-                        bg="bg.subtle"
+                    <FileUploadDropzone asChild disableClick unstyled>
+                      <Card.Body
+                        borderTopWidth="1px"
                         borderColor="border"
-                        borderRadius="md"
-                        borderStyle="dashed"
-                        borderWidth="1px"
+                        display="flex"
+                        flexDirection="column"
+                        gap={3}
                         p={3}
+                        css={{
+                          '&[data-dragging=""]': {
+                            background: "var(--chakra-colors-bg-subtle)",
+                          },
+                        }}
                       >
-                        <Stack align="flex-start" gap={2}>
-                          <Box>
-                            <Text
-                              color="gray.700"
-                              fontSize="sm"
-                              fontWeight={700}
-                              mb={0}
-                            >
-                              Add {label.toLowerCase()} input
-                            </Text>
-                            <Text color="fg.muted" fontSize="xs" mb={0}>
-                              {description}
-                            </Text>
-                          </Box>
-                          <LoadButton
-                            onDrop={onLoad(key)}
-                            accept={inputAccept[key]}
-                            disabled={isInputLoading}
-                            size="sm"
-                            variant="surface"
+                        <FileUpload.HiddenInput />
+                        {hasInput ? (
+                          <HStack gap={2} justify="space-between" wrap="wrap">
+                            <Stack gap={0} minW={0} pl={1}>
+                              {getExpandedInputDetail(key, display).map(
+                                (detail) => (
+                                  <Text
+                                    key={detail}
+                                    color="fg.muted"
+                                    fontSize="xs"
+                                    fontWeight={400}
+                                    mb={0}
+                                    overflow="hidden"
+                                    textOverflow="ellipsis"
+                                    whiteSpace="nowrap"
+                                  >
+                                    {detail}
+                                  </Text>
+                                ),
+                              )}
+                            </Stack>
+                            <HStack gap={1}>
+                              <LoadButton
+                                disabled={isInputLoading}
+                                size="xs"
+                                variant="surface"
+                              >
+                                Change file
+                              </LoadButton>
+                              <Button
+                                aria-label={`Clear ${label.toLowerCase()} input`}
+                                disabled={isInputLoading}
+                                onClick={() =>
+                                  onInputChange(key)({ name: "", value: "" })
+                                }
+                                size="xs"
+                                type="button"
+                                variant="ghost"
+                              >
+                                <LuTrash2 />
+                              </Button>
+                            </HStack>
+                          </HStack>
+                        ) : (
+                          <Box
+                            bg="bg.subtle"
+                            borderColor="border"
+                            borderRadius="md"
+                            borderStyle="dashed"
+                            borderWidth="1px"
+                            p={3}
+                            css={{
+                              '[data-dragging=""] &': {
+                                borderColor: "var(--chakra-colors-blue-400)",
+                              },
+                            }}
                           >
-                            Browse file
-                          </LoadButton>
-                        </Stack>
-                      </Box>
-                    )}
-                    <InputTextarea
-                      aria-label={`${key} input`}
-                      name={`${key}-input`}
-                      onDrop={onLoad(key)}
-                      accept={inputAccept[key]}
-                      onChange={(event) =>
-                        onInputChange(key)({
-                          name: file.name,
-                          value: event.target.value,
-                        })
-                      }
-                      value={display.value}
-                      readOnly={display.isLarge}
-                      disabled={isInputLoading}
-                      placeholder={inputPlaceholders[key]}
-                      spellCheck={false}
-                      wrap="off"
-                      overflow="auto"
-                      resize="vertical"
-                      minH="9rem"
-                      maxH={{ base: "16rem", lg: "22rem" }}
-                      variant="outline"
-                      bg="bg.subtle"
-                      fontSize="sm"
-                    />
-                  </Card.Body>
+                            <Stack align="flex-start" gap={2}>
+                              <Box>
+                                <Text
+                                  color="gray.700"
+                                  fontSize="sm"
+                                  fontWeight={700}
+                                  mb={0}
+                                >
+                                  Add {label.toLowerCase()} input
+                                </Text>
+                                <Text color="fg.muted" fontSize="xs" mb={0}>
+                                  {description}
+                                </Text>
+                              </Box>
+                              <LoadButton
+                                disabled={isInputLoading}
+                                size="sm"
+                                variant="surface"
+                              >
+                                Browse file
+                              </LoadButton>
+                            </Stack>
+                          </Box>
+                        )}
+                        <InputTextarea
+                          aria-label={`${key} input`}
+                          name={`${key}-input`}
+                          onChange={(event) =>
+                            onInputChange(key)({
+                              name: file.name,
+                              value: event.target.value,
+                            })
+                          }
+                          value={display.value}
+                          readOnly={display.isLarge}
+                          disabled={isInputLoading}
+                          placeholder={inputPlaceholders[key]}
+                          spellCheck={false}
+                          wrap="off"
+                          overflow="auto"
+                          resize="vertical"
+                          minH="9rem"
+                          maxH={{ base: "16rem", lg: "22rem" }}
+                          variant="outline"
+                          bg="bg.subtle"
+                          fontSize="sm"
+                        />
+                      </Card.Body>
+                    </FileUploadDropzone>
+                  </FileUpload.Root>
                 )}
               </Card.Root>
             );

@@ -1,9 +1,11 @@
 import {
+  Badge,
   Box,
   Button,
   ButtonGroup,
-  chakra,
   CloseButton,
+  chakra,
+  FileUpload,
   HStack,
   IconButton,
   Input,
@@ -12,17 +14,28 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import type { Ref } from "react";
-import { useEffect, useMemo, useRef } from "react";
-import { useDropzone } from "react-dropzone";
+import {
+  type ComponentProps,
+  type FC,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { LuMinus, LuPlus, LuSearch } from "react-icons/lu";
+import { ToggleField } from "../../shared/components/ToggleField";
 import useStore from "../../state";
 import { applyArgsToParams, createParams } from "../../state/parameters";
 import type { InfomapParameter } from "../../state/types";
-import { ToggleField } from "../../shared/components/ToggleField";
 
 const parameterGroups = ["Input", "Output", "Algorithm", "Accuracy", "About"];
 const parameterControlWidth = "8.5rem";
+const FileUploadTrigger = FileUpload.Trigger as FC<
+  ComponentProps<typeof FileUpload.Trigger> & {
+    asChild?: boolean;
+    children: ReactNode;
+  }
+>;
 const parameterSelectStyles = {
   container: (provided) => ({
     ...provided,
@@ -249,7 +262,10 @@ const InputParameter = ({ param }: { param: any }) => {
 const FileInputParameter = ({ param }: { param: any }) => {
   const store = useStore();
 
-  const onDrop = (files) => {
+  const onFileAccept: NonNullable<
+    ComponentProps<typeof FileUpload.Root>["onFileAccept"]
+  > = (details) => {
+    const { files } = details as { files: File[] };
     if (files.length < 1) return;
 
     const file = files[0];
@@ -269,26 +285,20 @@ const FileInputParameter = ({ param }: { param: any }) => {
     reader.readAsText(file, "utf-8");
   };
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    multiple: false,
-    accept: { "text/plain": param.accept },
-    noClick: true, // Turn off default click trigger to prevent double file requests
-  });
-
-  const { ref, ...rootProps } = getRootProps();
-
   return (
-    <Button variant="outline" size="xs" w={parameterControlWidth} asChild>
-      <label
-        ref={ref as Ref<HTMLLabelElement>}
-        htmlFor={param.long}
-        {...rootProps}
-      >
-        Load file
-        <input id={param.long} {...getInputProps()} />
-      </label>
-    </Button>
+    <FileUpload.Root
+      accept={{ "text/plain": param.accept }}
+      maxFiles={1}
+      onFileAccept={onFileAccept}
+      unstyled
+    >
+      <FileUpload.HiddenInput />
+      <FileUploadTrigger asChild unstyled>
+        <Button variant="outline" size="xs" w={parameterControlWidth}>
+          Load file
+        </Button>
+      </FileUploadTrigger>
+    </FileUpload.Root>
   );
 };
 
@@ -533,6 +543,11 @@ function ParameterRow({
             <Box fontSize="xs">
               <ParamName param={param} />
             </Box>
+            {param.advanced && (
+              <Badge colorPalette="blue" size="xs" variant="subtle">
+                Advanced
+              </Badge>
+            )}
             {paramShortcut(param.long) && (
               <Kbd
                 fontSize="0.65rem"
