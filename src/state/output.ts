@@ -1,5 +1,3 @@
-import { saveAs } from "file-saver";
-import JSZip from "jszip";
 import { OUTPUT_FORMATS } from "../data/output-formats";
 import type { ModuleId } from "../features/infomap/moduleColors";
 import type { OutputContent, OutputFile, OutputKey } from "./types";
@@ -122,9 +120,26 @@ type ParsedJsonOutput = {
   relativeCodelengthSavings?: unknown;
 };
 
-function parseJsonOutput(output: OutputState): ParsedJsonOutput | null {
-  const json = output.json_states || output.json;
+type ParsedJsonDerivedState = Pick<
+  OutputState,
+  | "codeLength"
+  | "codelengthSavings"
+  | "levelModules"
+  | "modules"
+  | "moduleFlows"
+  | "nodePaths"
+  | "numLevels"
+>;
+
+function parseJsonOutput(value: unknown): ParsedJsonOutput | null {
+  const json = value;
   if (!json) return null;
+
+  if (typeof json === "object") {
+    return json as ParsedJsonOutput;
+  }
+
+  if (typeof json !== "string") return null;
 
   try {
     const parsed = JSON.parse(json);
@@ -136,40 +151,69 @@ function parseJsonOutput(output: OutputState): ParsedJsonOutput | null {
   }
 }
 
-function jsonNodes(output: OutputState): JsonOutputNode[] {
-  const parsed = parseJsonOutput(output);
-  return Array.isArray(parsed?.nodes) ? (parsed.nodes as JsonOutputNode[]) : [];
-}
+function parseJsonDerivedState(
+  parsed: ParsedJsonOutput | null,
+): ParsedJsonDerivedState {
+  const moduleFlows: ModuleFlowMap = new Map();
+  const bestPathByNode = new Map<number, { flow: number; path: number[] }>();
+  const bestByNodeAndLevel = new Map<
+    string,
+    { flow: number; id: number; level: number; moduleId: string }
+  >();
+  const nodes = Array.isArray(parsed?.nodes)
+    ? (parsed.nodes as JsonOutputNode[])
+    : [];
 
-function parseJsonModuleFlows(output: OutputState): ModuleFlowMap {
-  const result: ModuleFlowMap = new Map();
-
-  for (const node of jsonNodes(output)) {
+  for (const node of nodes) {
     const id = Number(node.id);
     const path = Array.isArray(node.path) ? node.path.map(Number) : [];
-    const module = path[0];
-    const moduleId = String(module);
     const flow = Number(node.flow);
-    if (!Number.isFinite(id) || !Number.isFinite(module)) continue;
-
-    const entries = result.get(id) ?? [];
-    const existing = entries.find((entry) => entry.module === moduleId);
     const finiteFlow = Number.isFinite(flow) ? flow : 1;
-    if (existing) {
-      existing.flow += finiteFlow;
-    } else {
-      entries.push({ module: moduleId, flow: finiteFlow });
-      result.set(id, entries);
+
+    if (!Number.isFinite(id)) {
+      continue;
+    }
+
+    const module = path[0];
+    if (Number.isFinite(module)) {
+      const moduleId = String(module);
+      const entries = moduleFlows.get(id) ?? [];
+      const existing = entries.find((entry) => entry.module === moduleId);
+      if (existing) {
+        existing.flow += finiteFlow;
+      } else {
+        entries.push({ module: moduleId, flow: finiteFlow });
+        moduleFlows.set(id, entries);
+      }
+    }
+
+    if (path.length >= 2) {
+      if (path.every((part) => Number.isFinite(part))) {
+        const previousPath = bestPathByNode.get(id);
+        if (!previousPath || finiteFlow > previousPath.flow) {
+          bestPathByNode.set(id, { flow: finiteFlow, path });
+        }
+      }
+
+      const moduleDepth = Math.max(1, path.length - 1);
+      for (let level = 1; level <= moduleDepth; level += 1) {
+        const moduleId = path.slice(0, level).join(":");
+        const key = `${id}:${level}`;
+        const previous = bestByNodeAndLevel.get(key);
+        if (!previous || finiteFlow > previous.flow) {
+          bestByNodeAndLevel.set(key, {
+            flow: finiteFlow,
+            id,
+            level,
+            moduleId,
+          });
+        }
+      }
     }
   }
 
-  return result;
-}
-
-function parseJsonModules(output: OutputState) {
   const modules = new Map<number, ModuleId>();
-
-  for (const [id, entries] of parseJsonModuleFlows(output)) {
+  for (const [id, entries] of moduleFlows) {
     let best = entries[0];
     for (const entry of entries) {
       if (entry.flow > best.flow) best = entry;
@@ -177,78 +221,28 @@ function parseJsonModules(output: OutputState) {
     modules.set(id, best.module);
   }
 
-  return modules;
-}
-
-function parseJsonNodePaths(output: OutputState) {
-  const bestByNode = new Map<number, { flow: number; path: number[] }>();
-
-  for (const node of jsonNodes(output)) {
-    const id = Number(node.id);
-    const path = Array.isArray(node.path) ? node.path.map(Number) : [];
-    const flow = Number(node.flow);
-    if (
-      !Number.isFinite(id) ||
-      path.length < 2 ||
-      path.some((part) => !Number.isFinite(part))
-    ) {
-      continue;
-    }
-
-    const finiteFlow = Number.isFinite(flow) ? flow : 1;
-    const previous = bestByNode.get(id);
-    if (!previous || finiteFlow > previous.flow) {
-      bestByNode.set(id, { flow: finiteFlow, path });
-    }
-  }
-
-  return new Map([...bestByNode].map(([id, value]) => [id, value.path]));
-}
-
-function parseJsonLevelModules(output: OutputState) {
-  const levels = new Map<number, Map<number, string>>();
-  const bestByNodeAndLevel = new Map<
-    string,
-    { flow: number; id: number; level: number; moduleId: string }
-  >();
-
-  for (const node of jsonNodes(output)) {
-    const id = Number(node.id);
-    const path = Array.isArray(node.path) ? node.path.map(Number) : [];
-    const flow = Number(node.flow);
-    if (!Number.isFinite(id) || path.length < 2) continue;
-
-    const finiteFlow = Number.isFinite(flow) ? flow : 1;
-    const moduleDepth = Math.max(1, path.length - 1);
-    for (let level = 1; level <= moduleDepth; level += 1) {
-      const moduleId = path.slice(0, level).join(":");
-      const key = `${id}:${level}`;
-      const previous = bestByNodeAndLevel.get(key);
-      if (!previous || finiteFlow > previous.flow) {
-        bestByNodeAndLevel.set(key, { flow: finiteFlow, id, level, moduleId });
-      }
-    }
-  }
-
+  const nodePaths = new Map(
+    [...bestPathByNode].map(([id, value]) => [id, value.path]),
+  );
+  const levelModules = new Map<number, Map<number, string>>();
   for (const { id, level, moduleId } of bestByNodeAndLevel.values()) {
-    const levelModules = levels.get(level) ?? new Map<number, string>();
-    levelModules.set(id, moduleId);
-    levels.set(level, levelModules);
+    const levelModule = levelModules.get(level) ?? new Map<number, string>();
+    levelModule.set(id, moduleId);
+    levelModules.set(level, levelModule);
   }
 
-  return levels;
-}
-
-function parseJsonMetadata(output: OutputState) {
-  const content = parseJsonOutput(output);
-  const codeLength = Number(content?.codelength ?? content?.codeLength);
-  const codelengthSavings = Number(content?.relativeCodelengthSavings);
-  const numLevels = Number(content?.numLevels);
+  const codeLength = Number(parsed?.codelength ?? parsed?.codeLength);
+  const codelengthSavings = Number(parsed?.relativeCodelengthSavings);
+  const numLevels = Number(parsed?.numLevels);
   return {
     codeLength: Number.isFinite(codeLength) ? codeLength : null,
     codelengthSavings: Number.isFinite(codelengthSavings)
       ? codelengthSavings
       : null,
+    levelModules,
+    modules,
+    moduleFlows,
+    nodePaths,
     numLevels: Number.isFinite(numLevels) ? numLevels : null,
   };
 }
@@ -269,14 +263,16 @@ export function applyOutputContent(
         : String(value);
   }
 
-  next.modules = parseJsonModules(next);
-  next.moduleFlows = parseJsonModuleFlows(next);
-  next.nodePaths = parseJsonNodePaths(next);
-  next.levelModules = parseJsonLevelModules(next);
-  const jsonMetadata = parseJsonMetadata(next);
-  next.codeLength = jsonMetadata.codeLength;
-  next.codelengthSavings = jsonMetadata.codelengthSavings;
-  next.numLevels = jsonMetadata.numLevels;
+  const jsonContent =
+    content.json_states ?? content.json ?? next.json_states ?? next.json;
+  const jsonState = parseJsonDerivedState(parseJsonOutput(jsonContent));
+  next.modules = jsonState.modules;
+  next.moduleFlows = jsonState.moduleFlows;
+  next.nodePaths = jsonState.nodePaths;
+  next.levelModules = jsonState.levelModules;
+  next.codeLength = jsonState.codeLength;
+  next.codelengthSavings = jsonState.codelengthSavings;
+  next.numLevels = jsonState.numLevels;
   next.activeKey =
     ([
       "clu",
@@ -296,28 +292,32 @@ export function applyOutputContent(
   return next;
 }
 
-export function downloadOutputFile(
+export function outputFileMimeType(formatKey: OutputKey) {
+  return formatKey === "json" || formatKey === "json_states"
+    ? "application/json;charset=utf-8"
+    : "text/plain;charset=utf-8";
+}
+
+export function outputFileDownloadData(
   output: OutputState,
   name: string,
   formatKey: OutputKey,
 ) {
   const file = outputFiles(output, name).find(({ key }) => key === formatKey);
   const content = output[formatKey];
-  if (!file) return;
+  if (!file) return null;
 
-  const mimeType =
-    formatKey === "json" || formatKey === "json_states"
-      ? "application/json;charset=utf-8"
-      : "text/plain;charset=utf-8";
-  const blob = new Blob([content], { type: mimeType });
-  saveAs(blob, file.filename);
+  return {
+    data: content,
+    fileName: file.filename,
+    mimeType: outputFileMimeType(formatKey),
+  };
 }
 
-export async function downloadAllOutput(output: OutputState, name: string) {
-  const zip = new JSZip();
-  for (const file of outputFiles(output, name)) {
-    zip.file(file.filename, output[file.key]);
-  }
-  const blob = await zip.generateAsync({ type: "blob" });
-  saveAs(blob, `${name}.zip`);
+export function outputFilesDownloadData(output: OutputState, name: string) {
+  return outputFiles(output, name).map((file) => ({
+    data: output[file.key],
+    fileName: file.filename,
+    mimeType: outputFileMimeType(file.key),
+  }));
 }

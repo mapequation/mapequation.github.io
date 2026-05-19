@@ -647,6 +647,7 @@ const hierarchicalFinalRelaxAlpha = 0.95;
 
 const dragSimulationAlpha = 0.7;
 const dragSimulationAlphaTarget = 0.32;
+const dragSimulationRestartIntervalMs = 48;
 
 const modularLinkDistanceMultiplier = {
   intra: 0.75,
@@ -776,6 +777,20 @@ function textSignature(value: string | undefined) {
   return `${value.length}:${hash}`;
 }
 
+export type NetworkPreviewProps = {
+  directed?: boolean;
+  ftree?: string;
+  levelModules?: Map<number, ModuleMap>;
+  loadingState?: "loading" | "running" | null;
+  networkName?: string;
+  modules: ModuleMap;
+  moduleFlows?: Map<number, ModuleFlow[]>;
+  nodePaths?: Map<number, number[]>;
+  numLevels?: number | null;
+  previewGraph: PreviewGraph;
+  selectedLevel?: number | null;
+};
+
 function NetworkPreviewImpl({
   directed = false,
   ftree,
@@ -788,19 +803,7 @@ function NetworkPreviewImpl({
   numLevels,
   previewGraph,
   selectedLevel,
-}: {
-  directed?: boolean;
-  ftree?: string;
-  levelModules?: Map<number, ModuleMap>;
-  loadingState?: "loading" | "running" | null;
-  networkName?: string;
-  modules: ModuleMap;
-  moduleFlows?: Map<number, ModuleFlow[]>;
-  nodePaths?: Map<number, number[]>;
-  numLevels?: number | null;
-  previewGraph: PreviewGraph;
-  selectedLevel?: number | null;
-}) {
+}: NetworkPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const graphRef = useRef<Graph | null>(null);
@@ -824,6 +827,7 @@ function NetworkPreviewImpl({
     clientY: number;
   } | null>(null);
   const draggingRef = useRef<SimNode | null>(null);
+  const lastDragSimulationRestartRef = useRef(0);
   const hoverRef = useRef<HoverState>(null);
   const directedRef = useRef(directed);
   const drawRef = useRef<() => void>(() => {});
@@ -846,6 +850,8 @@ function NetworkPreviewImpl({
   const moduleCentroidsRef = useRef<Map<ModuleId, { x: number; y: number }>>(
     new Map(),
   );
+  const canvasRectRef = useRef({ left: 0, top: 0, width: 0, height: 0 });
+  const hoverCardSizeRef = useRef({ width: 224, height: 112 });
 
   const clearModuleColorCaches = () => {
     moduleColorCacheRef.current.clear();
@@ -1010,10 +1016,9 @@ function NetworkPreviewImpl({
 
   const positionHoverCard = () => {
     const card = hoverCardRef.current;
-    const canvas = canvasRef.current;
     const node = hoverRef.current?.node;
-    if (!card || !canvas || !node) return;
-    const rect = canvas.getBoundingClientRect();
+    if (!card || !node) return;
+    const rect = canvasRectRef.current;
     const t = transformRef.current;
     const nx = node.x ?? 0;
     const ny = node.y ?? 0;
@@ -1021,8 +1026,7 @@ function NetworkPreviewImpl({
     const anchorY = rect.top + t.y + ny * t.k;
     const gap = Math.max(14, node.radius * t.k + 10);
     const margin = 12;
-    const cardWidth = card.offsetWidth || 224;
-    const cardHeight = card.offsetHeight || 112;
+    const { width: cardWidth, height: cardHeight } = hoverCardSizeRef.current;
     const viewportRight = window.innerWidth - margin;
     const viewportBottom = window.innerHeight - margin;
     const hasRoomRight = anchorX + gap + cardWidth <= viewportRight;
@@ -1621,26 +1625,104 @@ function NetworkPreviewImpl({
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    const resize = () => {
-      const rect = container.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      dimensionsRef.current = {
+    let resizeFrame = 0;
+    let rectFrame = 0;
+    let pendingSize: { height: number; width: number } | null = null;
+
+    const updateCanvasRect = () => {
+      const rect = canvas.getBoundingClientRect();
+      canvasRectRef.current = {
+        left: rect.left,
+        top: rect.top,
         width: rect.width,
         height: rect.height,
+      };
+    };
+
+    const applyPendingSize = () => {
+      resizeFrame = 0;
+      const size = pendingSize;
+      pendingSize = null;
+      if (!size) return;
+      updateCanvasRect();
+
+      const dpr = window.devicePixelRatio || 1;
+      dimensionsRef.current = {
+        width: size.width,
+        height: size.height,
         dpr,
       };
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
+      canvas.width = Math.max(1, Math.floor(size.width * dpr));
+      canvas.height = Math.max(1, Math.floor(size.height * dpr));
+      canvas.style.width = `${size.width}px`;
+      canvas.style.height = `${size.height}px`;
       requestDraw();
     };
 
-    resize();
-    const observer = new ResizeObserver(resize);
+    const scheduleResize = (width: number, height: number) => {
+      pendingSize = { width, height };
+      if (resizeFrame) return;
+      resizeFrame = window.requestAnimationFrame(applyPendingSize);
+    };
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const borderBox = entry.borderBoxSize[0];
+      scheduleResize(
+        borderBox?.inlineSize ?? entry.contentRect.width,
+        borderBox?.blockSize ?? entry.contentRect.height,
+      );
+    });
     observer.observe(container);
-    return () => observer.disconnect();
+
+    const scheduleRectUpdate = () => {
+      if (rectFrame) return;
+      rectFrame = window.requestAnimationFrame(() => {
+        rectFrame = 0;
+        updateCanvasRect();
+        positionHoverCard();
+      });
+    };
+
+    updateCanvasRect();
+    window.addEventListener("resize", scheduleRectUpdate);
+    window.addEventListener("scroll", scheduleRectUpdate, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", scheduleRectUpdate);
+      window.removeEventListener("scroll", scheduleRectUpdate);
+      if (resizeFrame) {
+        window.cancelAnimationFrame(resizeFrame);
+      }
+      if (rectFrame) {
+        window.cancelAnimationFrame(rectFrame);
+      }
+    };
   }, []);
+
+  useEffect(() => {
+    const card = hoverCardRef.current;
+    if (!card) return;
+
+    const updateHoverCardSize = (width: number, height: number) => {
+      hoverCardSizeRef.current = {
+        width: Math.max(1, width),
+        height: Math.max(1, height),
+      };
+      positionHoverCard();
+    };
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const borderBox = entry.borderBoxSize[0];
+      updateHoverCardSize(
+        borderBox?.inlineSize ?? entry.contentRect.width,
+        borderBox?.blockSize ?? entry.contentRect.height,
+      );
+    });
+    observer.observe(card);
+    return () => observer.disconnect();
+  }, [hover]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -1980,10 +2062,17 @@ function NetworkPreviewImpl({
       dragged.fy = point.y;
       dragged.vx = 0;
       dragged.vy = 0;
-      simulationRef.current
-        ?.alpha(dragSimulationAlpha)
-        .alphaTarget(dragSimulationAlphaTarget)
-        .restart();
+      const now = performance.now();
+      if (
+        now - lastDragSimulationRestartRef.current >=
+        dragSimulationRestartIntervalMs
+      ) {
+        lastDragSimulationRestartRef.current = now;
+        simulationRef.current
+          ?.alpha(dragSimulationAlpha)
+          .alphaTarget(dragSimulationAlphaTarget)
+          .restart();
+      }
       requestDraw();
       return;
     }
@@ -2003,7 +2092,12 @@ function NetworkPreviewImpl({
     node.vx = 0;
     node.vy = 0;
     draggingRef.current = node;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Synthetic pointer events do not always create an active browser pointer.
+    }
+    lastDragSimulationRestartRef.current = performance.now();
     simulationRef.current
       ?.alpha(dragSimulationAlpha)
       .alphaTarget(dragSimulationAlphaTarget)
@@ -2019,7 +2113,12 @@ function NetworkPreviewImpl({
     dragged.fx = null;
     dragged.fy = null;
     draggingRef.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    lastDragSimulationRestartRef.current = 0;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture may be absent for synthetic or interrupted pointers.
+    }
     simulationRef.current?.alpha(0.35).alphaTarget(0).restart();
     requestDraw();
   };

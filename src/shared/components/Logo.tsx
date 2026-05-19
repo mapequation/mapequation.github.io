@@ -8,7 +8,7 @@ interface Props {
 
 export default function Logo({ size = 40, href = "/" }: Props) {
   return (
-    <NextLink href={href}>
+    <NextLink href={href} prefetch={false}>
       <HStack gap={2.5} color="gray.900" textDecoration="none">
         <chakra.img
           src="/assets/img/twocolormapicon_whiteboarder.svg"

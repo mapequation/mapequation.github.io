@@ -44,8 +44,6 @@ exports the site with `next build` into `out/` as configured in
 
 - Prefer `npm run check` for regular validation.
 - Use `npm run typecheck` when only TypeScript behavior changed.
-- Use `npm run test:smoke` when page rendering, navigation, or workbench
-  behavior changed.
 - Use `npm run verify` before PRs or when explicitly requested, since it runs
   `npm run build`.
 

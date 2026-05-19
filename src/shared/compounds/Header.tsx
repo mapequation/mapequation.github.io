@@ -78,7 +78,9 @@ const NavLink = ({
   children: ReactNode;
 }) => (
   <Box asChild {...navLinkStyles(active)}>
-    <NextLink href={href}>{children}</NextLink>
+    <NextLink href={href} prefetch={false}>
+      {children}
+    </NextLink>
   </Box>
 );
 
@@ -125,7 +127,7 @@ const MegaLink = ({
     textDecoration="none"
     _hover={{ bg: "bg.subtle" }}
   >
-    <NextLink href={href}>
+    <NextLink href={href} prefetch={false}>
       <Text as="strong" fontSize="sm" fontWeight={600} mb={0}>
         {label}
       </Text>
@@ -154,7 +156,7 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
   >
     <HoverTrigger asChild>
       <Box asChild {...navLinkStyles(active)}>
-        <NextLink href={href}>
+        <NextLink href={href} prefetch={false}>
           Infomap
           <Box as="span" fontSize="sm" opacity={0.7} ml={1}>
             ▾
@@ -261,7 +263,11 @@ const MobileNav = ({ active }: { active: string }) => {
                     textDecoration="none"
                     _hover={{ bg: "bg.subtle" }}
                   >
-                    <NextLink href={item.href} onClick={() => setOpen(false)}>
+                    <NextLink
+                      href={item.href}
+                      prefetch={false}
+                      onClick={() => setOpen(false)}
+                    >
                       {item.label}
                     </NextLink>
                   </Box>

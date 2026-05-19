@@ -218,4 +218,4 @@ Abstract goes here.
 | `npm run lint` / `npm run lint:fix` | Biome lint (check / autofix). |
 | `npm run format` | Apply Biome formatting. |
 | `npm run typecheck` | `tsc --noEmit`. |
-| `npm run verify` | `check` + `build` + `test:smoke` (matches CI). |
+| `npm run verify` | `check` + `build` (matches CI). |

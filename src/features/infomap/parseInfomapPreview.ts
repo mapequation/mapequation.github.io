@@ -123,7 +123,7 @@ function parseFlowLinks(
   let directed = false;
   let mode: "none" | "edges" = "none";
 
-  for (const rawLine of flowText.split(/\r?\n/)) {
+  for (const rawLine of flowTextLines(flowText)) {
     const trimmed = rawLine.trim();
     if (!trimmed || trimmed.startsWith("#") || trimmed.startsWith("%"))
       continue;
@@ -180,6 +180,21 @@ function parseFlowLinks(
   }
 
   return [...aggregated.values()];
+}
+
+function* flowTextLines(text: string) {
+  let start = 0;
+  for (let index = 0; index <= text.length; index += 1) {
+    if (index !== text.length && text.charCodeAt(index) !== 10) continue;
+
+    let end = index;
+    if (end > start && text.charCodeAt(end - 1) === 13) {
+      end -= 1;
+    }
+
+    yield text.slice(start, end);
+    start = index + 1;
+  }
 }
 
 export function errorGraph(message: string): PreviewGraph {

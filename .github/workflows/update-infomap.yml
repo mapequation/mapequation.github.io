@@ -80,10 +80,6 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
         run: npm install --save-exact @mapequation/infomap@$VERSION
 
-      - name: Install Playwright browser
-        if: steps.current.outputs.skip != 'true'
-        run: npx playwright install --with-deps chromium
-
       - name: Verify bumped dependency
         if: steps.current.outputs.skip != 'true'
         run: npm run verify

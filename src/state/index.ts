@@ -3,8 +3,6 @@ import { create } from "zustand";
 import { modular_w } from "../data/networks";
 import {
   applyOutputContent,
-  downloadAllOutput,
-  downloadOutputFile,
   emptyOutput,
   type OutputState,
   outputFiles,
@@ -66,9 +64,6 @@ type OutputActions = {
   resetContent: () => void;
   setActiveKey: (key: OutputKey) => void;
   setDownloaded: (value: boolean) => void;
-  downloadFile: (formatKey: OutputKey) => void;
-  downloadActiveContent: () => void;
-  downloadAll: () => void;
 };
 
 type InfomapState = {
@@ -302,20 +297,6 @@ const useInfomapStore = create<InfomapState>((set, get) => {
           output: { ...state.output, downloaded: value },
         }),
       ),
-    downloadFile: (formatKey) => {
-      const state = get();
-      downloadOutputFile(state.output, state.network.name, formatKey);
-      state.output.setDownloaded(true);
-    },
-    downloadActiveContent: () => {
-      const output = get().output;
-      output.downloadFile(output.activeKey);
-    },
-    downloadAll: async () => {
-      const state = get();
-      await downloadAllOutput(state.output, state.network.name);
-      state.output.setDownloaded(true);
-    },
   };
 
   return withDerived({

@@ -39,7 +39,6 @@ const publicationSchema = z.object({
 
 export type Publication = z.infer<typeof publicationSchema> & {
   slug: string;
-  body: string;
   bodyHtml: string;
   figureSrc?: string;
   figureWidth?: number;
@@ -79,7 +78,6 @@ export function loadPublications(): Publication[] {
     return {
       ...parsed,
       slug,
-      body,
       bodyHtml: body ? (marked.parse(body, { async: false }) as string) : "",
       figureSrc,
       figureWidth: figureDimensions?.width,

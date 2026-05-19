@@ -11,7 +11,9 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Infomap from "@mapequation/infomap";
+import type { Result } from "@mapequation/infomap";
 import localforage from "localforage";
+import dynamic from "next/dynamic";
 import {
   type ComponentProps,
   type FC,
@@ -40,9 +42,14 @@ import {
   WorkbenchPanel,
   WorkbenchPanelHeader,
 } from "../../shared/components/WorkbenchPanel";
+import { WorkbenchOverlay } from "../../shared/components/WorkbenchOverlay";
 import { WorkbenchTabs } from "../../shared/components/WorkbenchTabs";
 import useStore from "../../state";
-import { parseCluModules } from "../../state/output";
+import {
+  outputFileDownloadData,
+  outputFilesDownloadData,
+  parseCluModules,
+} from "../../state/output";
 import {
   argsRequestOutputFormat,
   DEFAULT_INFOMAP_ARGS,
@@ -59,7 +66,7 @@ import {
   type ModuleId,
   type ModuleMap,
 } from "./moduleColors";
-import NetworkPreview from "./NetworkPreview";
+import type { NetworkPreviewProps } from "./NetworkPreview";
 import Parameters, {
   AdvancedParametersToggle,
   ParametersSearch,
@@ -73,6 +80,17 @@ import {
 localforage.config({ name: "infomap" });
 
 const toolbarControlHeight = "2.75rem";
+const NetworkPreview = dynamic<NetworkPreviewProps>(
+  () => import("./NetworkPreview"),
+  {
+    loading: () => (
+      <Box flex="1" minH={0} position="relative">
+        <WorkbenchOverlay kind="loading" title="Loading network preview" />
+      </Box>
+    ),
+    ssr: false,
+  },
+);
 const FileUploadDropzone = FileUpload.Dropzone as FC<
   ComponentProps<typeof FileUpload.Dropzone> & {
     asChild?: boolean;
@@ -129,6 +147,64 @@ type OutputFileOption = {
   key: OutputKey;
   name: string;
 };
+
+type PreviewParseTask = {
+  promise: Promise<PreviewGraph>;
+  terminate: () => void;
+};
+
+function parsePreviewResult(result: Result): PreviewParseTask {
+  if (typeof window === "undefined" || typeof Worker === "undefined") {
+    return {
+      promise: Promise.resolve(parseInfomapPreviewResult(result)),
+      terminate: () => {},
+    };
+  }
+
+  let worker: Worker;
+  try {
+    worker = new Worker(new URL("./previewParser.worker.ts", import.meta.url));
+  } catch {
+    return {
+      promise: Promise.resolve(parseInfomapPreviewResult(result)),
+      terminate: () => {},
+    };
+  }
+
+  let settled = false;
+  const promise = new Promise<PreviewGraph>((resolve) => {
+    const finish = (graph: PreviewGraph) => {
+      settled = true;
+      worker.terminate();
+      resolve(graph);
+    };
+
+    worker.onmessage = ({ data }: MessageEvent<{ graph?: PreviewGraph }>) => {
+      finish(data.graph ?? errorGraph("Failed to parse preview."));
+    };
+    worker.onerror = () => {
+      finish(errorGraph("Failed to parse preview."));
+    };
+    worker.onmessageerror = () => {
+      finish(errorGraph("Failed to parse preview."));
+    };
+
+    try {
+      worker.postMessage({ result });
+    } catch {
+      finish(parseInfomapPreviewResult(result));
+    }
+  });
+
+  return {
+    promise,
+    terminate: () => {
+      if (settled) return;
+      settled = true;
+      worker.terminate();
+    },
+  };
+}
 
 function parseEvaluationMetadata(content: Record<string, unknown>) {
   const json = content.json ?? content.json_states;
@@ -535,6 +611,7 @@ export default function InfomapOnline() {
     }
     const runId = ++previewRunIdRef.current;
     let previewInfomap: Infomap | null = null;
+    let previewParseTask: PreviewParseTask | null = null;
     let previewWorkerId: number | null = null;
     const trimmed = networkValue?.trim() ?? "";
     if (!trimmed) {
@@ -559,8 +636,15 @@ export default function InfomapOnline() {
           if (runId !== previewRunIdRef.current) {
             return;
           }
-          setPreviewGraph(parseInfomapPreviewResult(result));
-          setIsPreviewParsing(false);
+          previewParseTask?.terminate();
+          previewParseTask = parsePreviewResult(result);
+          void previewParseTask.promise.then((graph) => {
+            if (runId !== previewRunIdRef.current) {
+              return;
+            }
+            setPreviewGraph(graph);
+            setIsPreviewParsing(false);
+          });
         })
         .on("error", (message) => {
           if (runId !== previewRunIdRef.current) {
@@ -584,6 +668,7 @@ export default function InfomapOnline() {
       if (previewInfomap && previewWorkerId !== null) {
         void previewInfomap.terminate(previewWorkerId, 0);
       }
+      previewParseTask?.terminate();
       if (previewRunIdRef.current === runId) {
         previewRunIdRef.current += 1;
       }
@@ -948,6 +1033,12 @@ export default function InfomapOnline() {
   const activeOutputFile = outputFiles.find((file) => file.key === activeKey);
   const selectedOutputFile = activeOutputFile ?? outputFiles[0];
   const hasMultipleOutputFiles = outputFiles.length > 1;
+  const activeOutputDownload = outputFileDownloadData(
+    output,
+    network.name,
+    output.activeKey,
+  );
+  const outputDownloads = outputFilesDownloadData(output, network.name);
   const resultViewControls = (
     <ResultViewControls
       activeOutputFile={activeOutputFile}
@@ -1449,18 +1540,24 @@ export default function InfomapOnline() {
                   disabled={isRunning}
                   trigger={<LuDownload />}
                   items={[
-                    {
-                      icon: <LuDownload />,
-                      label: "Download file",
-                      onSelect: output.downloadActiveContent,
-                      value: "download-file",
-                    },
+                    ...(activeOutputDownload
+                      ? [
+                          {
+                            download: activeOutputDownload,
+                            icon: <LuDownload />,
+                            label: "Download file",
+                            onSelect: () => output.setDownloaded(true),
+                            value: "download-file",
+                          },
+                        ]
+                      : []),
                     ...(hasMultipleOutputFiles
                       ? [
                           {
+                            downloads: outputDownloads,
                             icon: <LuFiles />,
                             label: "Download all",
-                            onSelect: store.output.downloadAll,
+                            onSelect: () => output.setDownloaded(true),
                             value: "download-all",
                           },
                         ]
