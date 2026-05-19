@@ -416,6 +416,7 @@ function layoutModuleForNode(
   const pathModuleId = finestPathModuleId(node.path);
   const flows = moduleFlows?.get(Number(node.id));
   if (flows && countPositiveModuleFlows(flows) > 1) {
+    if (hasTiedTopModuleFlows(flows)) return undefined;
     return nodeModuleSlices(node, modules, moduleFlows)[0]?.moduleId;
   }
   if (pathModuleId !== undefined) return pathModuleId;
@@ -450,6 +451,22 @@ function countPositiveModuleFlows(flows: ModuleFlow[]) {
     if (flow.flow > 0) count += 1;
   }
   return count;
+}
+
+function hasTiedTopModuleFlows(flows: ModuleFlow[]) {
+  let first = 0;
+  let second = 0;
+  for (const { flow } of flows) {
+    if (flow <= 0) continue;
+    if (flow > first) {
+      second = first;
+      first = flow;
+    } else if (flow > second) {
+      second = flow;
+    }
+  }
+  if (second <= 0) return false;
+  return Math.abs(first - second) <= Math.max(first, second) * 1e-9;
 }
 
 function buildLayoutModulesByNode(
@@ -1083,6 +1100,17 @@ function NetworkPreviewImpl({
       [...nodePaths].map(([id, path]) => [String(id), path] as const),
     );
   }, [nodePaths]);
+  const hierarchicalNodePaths = useMemo(() => {
+    if (!layoutNodePaths) return undefined;
+    if (!moduleFlows || moduleFlows.size === 0) return layoutNodePaths;
+    const filtered = new Map(layoutNodePaths);
+    for (const [nodeId, flows] of moduleFlows) {
+      if (countPositiveModuleFlows(flows) > 1 && hasTiedTopModuleFlows(flows)) {
+        filtered.delete(String(nodeId));
+      }
+    }
+    return filtered;
+  }, [layoutNodePaths, moduleFlows]);
 
   const levelLocked = selectedLevel !== null && selectedLevel !== undefined;
   const moduleLevelCount = Math.max(1, (numLevels ?? 1) - 1);
@@ -1118,7 +1146,8 @@ function NetworkPreviewImpl({
     parsed.nodes.length <= hierarchicalLayoutNodeLimit &&
     ftreeLayout.linkCount <= hierarchicalLayoutLinkLimit &&
     parsed.nodes.some(
-      (node) => (layoutNodePaths?.get(node.id) ?? node.path ?? []).length > 1,
+      (node) =>
+        (hierarchicalNodePaths?.get(node.id) ?? node.path ?? []).length > 1,
     ) &&
     hierarchicalLayoutKeyRef.current !== `${parsedKey}:${ftreeLayoutKey}`;
   const hierarchicalLayoutPending =
@@ -1977,7 +2006,8 @@ function NetworkPreviewImpl({
       graph.nodes.length <= hierarchicalLayoutNodeLimit &&
       ftreeLayout.linkCount <= hierarchicalLayoutLinkLimit &&
       graph.nodes.some(
-        (node) => (layoutNodePaths?.get(node.id) ?? node.path ?? []).length > 1,
+        (node) =>
+          (hierarchicalNodePaths?.get(node.id) ?? node.path ?? []).length > 1,
       );
 
     if (!shouldUseHierarchy || !graph || !ftreeLayout) {
@@ -2003,7 +2033,7 @@ function NetworkPreviewImpl({
         draggingRef.current !== null,
       links: graph.links,
       nodes: graph.nodes,
-      nodePaths: layoutNodePaths,
+      nodePaths: hierarchicalNodePaths,
       onComplete: (positions) => {
         if (runId !== hierarchicalLayoutRunIdRef.current) return;
         hierarchicalLayoutCancelRef.current = null;
@@ -2038,8 +2068,8 @@ function NetworkPreviewImpl({
     coloredByModules,
     ftreeLayout,
     ftreeLayoutKey,
+    hierarchicalNodePaths,
     initialLayoutReadyKey,
-    layoutNodePaths,
     parsed.status,
     parsedKey,
   ]);
