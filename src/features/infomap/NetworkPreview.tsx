@@ -1612,6 +1612,7 @@ function NetworkPreviewImpl({
       hierarchyPaths: nodeHierarchyPathsRef.current,
       hover: hoverRef.current,
       moduleColorFor,
+      moduleCentroids: moduleCentroidsRef.current,
       moduleFlows: moduleFlowsRef.current,
       modules: modulesRef.current,
       showArrows: directedRef.current,

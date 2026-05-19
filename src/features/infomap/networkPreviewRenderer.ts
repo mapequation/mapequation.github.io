@@ -17,6 +17,7 @@ export interface NetworkPreviewRenderOptions {
   hierarchyPaths: Map<string, ModuleId[]>;
   hover: HoverState;
   moduleColorFor: ModuleColorResolver;
+  moduleCentroids: Map<ModuleId, { x: number; y: number }>;
   moduleFlows?: ModuleFlowMap;
   modules: ModuleMap;
   showArrows: boolean;
@@ -821,6 +822,7 @@ export function renderNetworkPreviewFrame(
     hierarchyPaths,
     hover,
     moduleColorFor,
+    moduleCentroids,
     moduleFlows,
     modules,
     showArrows,
@@ -835,27 +837,31 @@ export function renderNetworkPreviewFrame(
   const hovered = hover?.node ?? null;
   const hoveredId = hovered?.id;
   const hoveredPath = hovered ? hierarchyPaths.get(hovered.id) : undefined;
+  const nodeSlicesById = new Map<string, ModuleSlice[]>();
+  const moduleSlicesFor = (node: SimNode) => {
+    if (!moduleFlows) return [];
+    const cached = nodeSlicesById.get(node.id);
+    if (cached) return cached;
+    const slices = nodeModuleSlices(node, modules, moduleFlows);
+    nodeSlicesById.set(node.id, slices);
+    return slices;
+  };
   const hoveredModuleIds =
     hover?.moduleIds && hover.moduleIds.length > 0
       ? new Set(hover.moduleIds)
       : hovered && coloredByModules && moduleFlows
-        ? new Set(
-            nodeModuleSlices(hovered, modules, moduleFlows).map(
-              (slice) => slice.moduleId,
-            ),
-          )
+        ? new Set(moduleSlicesFor(hovered).map((slice) => slice.moduleId))
         : null;
   const hoveredSliceModuleId =
     hoveredModuleIds && hoveredModuleIds.size === 1
       ? [...hoveredModuleIds][0]
       : undefined;
-  const focusStrengthFor = (node: SimNode) => {
+  const focusByNodeId = new Map<string, number>();
+  const computeFocusStrength = (node: SimNode) => {
     if (!hovered) return 1;
     if (node.id === hovered.id) return 1;
     if (hoveredModuleIds && hoveredModuleIds.size > 0) {
-      const nodeSlices = moduleFlows
-        ? nodeModuleSlices(node, modules, moduleFlows)
-        : [];
+      const nodeSlices = moduleSlicesFor(node);
       const nodeModuleId =
         nodeSlices[0]?.moduleId ?? modules.get(Number(node.id));
       if (nodeSlices.some((slice) => hoveredModuleIds.has(slice.moduleId))) {
@@ -876,6 +882,13 @@ export function renderNetworkPreviewFrame(
     const relative = shared / Math.max(1, hoveredPath.length);
     return 0.15 + 0.85 * relative ** 1.6;
   };
+  const focusStrengthFor = (node: SimNode) => {
+    const cached = focusByNodeId.get(node.id);
+    if (cached !== undefined) return cached;
+    const focus = computeFocusStrength(node);
+    focusByNodeId.set(node.id, focus);
+    return focus;
+  };
   const nodeColorWithFocus = (color: string, focus: number) =>
     hovered ? mixHexColors(color, neutralNode, (1 - focus) * 0.72) : color;
   const labelColorWithFocus = (color: string, focus: number) =>
@@ -894,7 +907,7 @@ export function renderNetworkPreviewFrame(
     x < viewLeft || x > viewRight || y < viewTop || y > viewBottom;
   ensureArrowBuffers(graph.links.length);
   let arrowCount = 0;
-  const inactiveLinks: Array<{
+  type LinkDrawCommand = {
     startX: number;
     startY: number;
     endX: number;
@@ -902,166 +915,187 @@ export function renderNetworkPreviewFrame(
     stroke: string;
     width: number;
     arrowIndex?: number;
-  }> = [];
-  const activeLinks: typeof inactiveLinks = [];
-  const drawLink = (link: (typeof inactiveLinks)[number]) => {
+  };
+  const activeInterLinks: LinkDrawCommand[] = [];
+  const activeIntraLinks: LinkDrawCommand[] = [];
+  const drawLine = (
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    stroke: string,
+    lineWidth: number,
+  ) => {
     context.beginPath();
-    context.moveTo(link.startX, link.startY);
-    context.lineTo(link.endX, link.endY);
-    context.strokeStyle = link.stroke;
-    context.lineWidth = link.width;
+    context.moveTo(startX, startY);
+    context.lineTo(endX, endY);
+    context.strokeStyle = stroke;
+    context.lineWidth = lineWidth;
     context.stroke();
   };
+  const drawLink = (link: LinkDrawCommand) => {
+    drawLine(
+      link.startX,
+      link.startY,
+      link.endX,
+      link.endY,
+      link.stroke,
+      link.width,
+    );
+    if (link.arrowIndex !== undefined) drawArrow(context, link.arrowIndex);
+  };
 
-  for (const link of graph.links) {
-    if (link.width < minVisibleWidthWorld) break;
+  const renderLinkPass = (targetIntraModule: boolean) => {
+    for (const link of graph.links) {
+      if (link.width < minVisibleWidthWorld) break;
 
-    const sx = link.source.x ?? 0;
-    const sy = link.source.y ?? 0;
-    const tx = link.target.x ?? 0;
-    const ty = link.target.y ?? 0;
-    if (isOffscreen(sx, sy) && isOffscreen(tx, ty)) continue;
+      const sx = link.source.x ?? 0;
+      const sy = link.source.y ?? 0;
+      const tx = link.target.x ?? 0;
+      const ty = link.target.y ?? 0;
+      if (isOffscreen(sx, sy) && isOffscreen(tx, ty)) continue;
 
-    const isConnected =
-      hovered !== null &&
-      (link.source.id === hoveredId || link.target.id === hoveredId);
-    const sharedModule = coloredByModules ? link.sharedModule : undefined;
-    const intraModule = sharedModule !== undefined;
-    const selectedModuleLink =
-      hoveredModuleIds &&
-      sharedModule !== undefined &&
-      hoveredModuleIds.has(sharedModule);
-    const activeLink =
-      hovered !== null &&
-      (hoveredModuleIds ? selectedModuleLink === true : isConnected);
-    const directedLink = showArrows || link.directed;
-    const baseStroke =
-      sharedModule !== undefined
-        ? shadeColorCached(moduleColorFor(sharedModule), -42)
-        : linkColor;
-    const linkFocus =
-      hovered === null
-        ? 1
-        : hoveredModuleIds
+      const sharedModule = coloredByModules ? link.sharedModule : undefined;
+      const intraModule = sharedModule !== undefined;
+      if (intraModule !== targetIntraModule) continue;
+
+      const isConnected =
+        hovered !== null &&
+        (link.source.id === hoveredId || link.target.id === hoveredId);
+      const selectedModuleLink =
+        hoveredModuleIds &&
+        sharedModule !== undefined &&
+        hoveredModuleIds.has(sharedModule);
+      const activeLink =
+        hovered !== null &&
+        (hoveredModuleIds ? selectedModuleLink === true : isConnected);
+      const directedLink = showArrows || link.directed;
+      const baseStroke =
+        sharedModule !== undefined
+          ? shadeColorCached(moduleColorFor(sharedModule), -42)
+          : linkColor;
+      const linkFocus =
+        hovered === null
+          ? 1
+          : hoveredModuleIds
+            ? selectedModuleLink
+              ? 0.95
+              : Math.min(
+                  focusStrengthFor(link.source),
+                  focusStrengthFor(link.target),
+                )
+            : isConnected
+              ? Math.max(
+                  focusStrengthFor(link.source),
+                  focusStrengthFor(link.target),
+                )
+              : Math.min(
+                  focusStrengthFor(link.source),
+                  focusStrengthFor(link.target),
+                );
+      const baseOpacity = intraModule ? 0.42 : 0.26;
+      const linkOpacity = hovered
+        ? hoveredModuleIds
           ? selectedModuleLink
-            ? 0.95
-            : Math.min(
-                focusStrengthFor(link.source),
-                focusStrengthFor(link.target),
-              )
+            ? intraModule
+              ? 0.62
+              : 0.55
+            : baseOpacity * (0.25 + 0.55 * linkFocus)
           : isConnected
-            ? Math.max(
-                focusStrengthFor(link.source),
-                focusStrengthFor(link.target),
-              )
-            : Math.min(
-                focusStrengthFor(link.source),
-                focusStrengthFor(link.target),
-              );
-    const baseOpacity = intraModule ? 0.42 : 0.26;
-    const linkOpacity = hovered
-      ? hoveredModuleIds
-        ? selectedModuleLink
-          ? intraModule
-            ? 0.62
-            : 0.55
-          : baseOpacity * (0.25 + 0.55 * linkFocus)
-        : isConnected
-          ? intraModule
-            ? 0.62
-            : 0.55
-          : baseOpacity * (0.25 + 0.55 * linkFocus)
-      : baseOpacity;
-    const stroke = fadeToBackgroundCached(baseStroke, linkOpacity);
-    const lineWidth = link.width;
+            ? intraModule
+              ? 0.62
+              : 0.55
+            : baseOpacity * (0.25 + 0.55 * linkFocus)
+        : baseOpacity;
+      const stroke = fadeToBackgroundCached(baseStroke, linkOpacity);
+      const lineWidth = link.width;
 
-    let endX = tx;
-    let endY = ty;
-    let startX = sx;
-    let startY = sy;
-    let arrowIndex: number | undefined;
-    if (directedLink) {
-      const dx = tx - sx;
-      const dy = ty - sy;
-      const length = Math.hypot(dx, dy);
-      if (length > 0) {
-        const ux = dx / length;
-        const uy = dy / length;
-        const tipDistance = link.target.radius + nodeStrokeWorld * 0.5;
-        const reverseTipDistance =
-          link.reverseWidth > 0
-            ? link.source.radius + nodeStrokeWorld * 0.5
-            : 0;
-        const availableForHead = length - tipDistance - reverseTipDistance;
-        const headCap = Math.min(
-          link.target.radius * 1.1,
-          link.reverseWidth > 0
-            ? Math.max(2, availableForHead * 0.4)
-            : length * 0.35,
-        );
-        const head = Math.max(2, Math.min(headCap, lineWidth * 4));
-        const baseDistance = tipDistance + head;
-        const tipX = tx - ux * tipDistance;
-        const tipY = ty - uy * tipDistance;
-        endX = tx - ux * baseDistance;
-        endY = ty - uy * baseDistance;
-        if (link.reverseWidth > 0) {
-          const reverseHeadCap = Math.min(
-            link.source.radius * 1.1,
-            Math.max(2, availableForHead * 0.4),
+      let endX = tx;
+      let endY = ty;
+      let startX = sx;
+      let startY = sy;
+      let arrowIndex: number | undefined;
+      if (directedLink) {
+        const dx = tx - sx;
+        const dy = ty - sy;
+        const length = Math.hypot(dx, dy);
+        if (length > 0) {
+          const ux = dx / length;
+          const uy = dy / length;
+          const tipDistance = link.target.radius + nodeStrokeWorld * 0.5;
+          const reverseTipDistance =
+            link.reverseWidth > 0
+              ? link.source.radius + nodeStrokeWorld * 0.5
+              : 0;
+          const availableForHead = length - tipDistance - reverseTipDistance;
+          const headCap = Math.min(
+            link.target.radius * 1.1,
+            link.reverseWidth > 0
+              ? Math.max(2, availableForHead * 0.4)
+              : length * 0.35,
           );
-          const reverseHead = Math.max(
-            2,
-            Math.min(reverseHeadCap, link.reverseWidth * 4),
-          );
-          const startOffset = reverseTipDistance + reverseHead;
-          startX = sx + ux * startOffset;
-          startY = sy + uy * startOffset;
+          const head = Math.max(2, Math.min(headCap, lineWidth * 4));
+          const baseDistance = tipDistance + head;
+          const tipX = tx - ux * tipDistance;
+          const tipY = ty - uy * tipDistance;
+          endX = tx - ux * baseDistance;
+          endY = ty - uy * baseDistance;
+          if (link.reverseWidth > 0) {
+            const reverseHeadCap = Math.min(
+              link.source.radius * 1.1,
+              Math.max(2, availableForHead * 0.4),
+            );
+            const reverseHead = Math.max(
+              2,
+              Math.min(reverseHeadCap, link.reverseWidth * 4),
+            );
+            const startOffset = reverseTipDistance + reverseHead;
+            startX = sx + ux * startOffset;
+            startY = sy + uy * startOffset;
+          }
+          storeArrow({
+            arrowCount,
+            color: stroke,
+            endX,
+            endY,
+            head,
+            lineWidth,
+            linkReverseWidth: link.reverseWidth,
+            tipX,
+            tipY,
+            ux,
+            uy,
+          });
+          arrowIndex = arrowCount;
+          arrowCount += 1;
         }
-        storeArrow({
-          arrowCount,
-          color: stroke,
-          endX,
-          endY,
-          head,
-          lineWidth,
-          linkReverseWidth: link.reverseWidth,
-          tipX,
-          tipY,
-          ux,
-          uy,
-        });
-        arrowIndex = arrowCount;
-        arrowCount += 1;
       }
+
+      if (!activeLink) {
+        drawLine(startX, startY, endX, endY, stroke, lineWidth);
+        if (arrowIndex !== undefined) drawArrow(context, arrowIndex);
+        continue;
+      }
+
+      const links = intraModule ? activeIntraLinks : activeInterLinks;
+      links.push({
+        startX,
+        startY,
+        endX,
+        endY,
+        stroke,
+        width: lineWidth,
+        arrowIndex,
+      });
     }
+  };
 
-    const links = activeLink ? activeLinks : inactiveLinks;
-    links.push({
-      startX,
-      startY,
-      endX,
-      endY,
-      stroke,
-      width: lineWidth,
-      arrowIndex,
-    });
-  }
-
-  for (const link of inactiveLinks) {
-    drawLink(link);
-    if (link.arrowIndex !== undefined) drawArrow(context, link.arrowIndex);
-  }
-  for (const link of activeLinks) {
-    drawLink(link);
-    if (link.arrowIndex !== undefined) drawArrow(context, link.arrowIndex);
-  }
+  renderLinkPass(false);
+  renderLinkPass(true);
+  for (const link of activeInterLinks) drawLink(link);
+  for (const link of activeIntraLinks) drawLink(link);
 
   const minVisibleNodeRadiusWorld = minRenderedNodeRadiusPixels / zoomLevel;
-  const moduleCentroids =
-    coloredByModules && moduleFlows
-      ? computeModuleCentroids(graph.nodes, moduleFlows, modules)
-      : new Map<ModuleId, { x: number; y: number }>();
   for (const node of graph.nodes) {
     const nx = node.x ?? 0;
     const ny = node.y ?? 0;
@@ -1071,10 +1105,7 @@ export function renderNetworkPreviewFrame(
       coloredByModules && !moduleFlows
         ? modules.get(Number(node.id))
         : undefined;
-    const slices =
-      coloredByModules && moduleFlows
-        ? nodeModuleSlices(node, modules, moduleFlows)
-        : [];
+    const slices = coloredByModules && moduleFlows ? moduleSlicesFor(node) : [];
     const isHovered = hoveredId === node.id;
     const nodeFocus = focusStrengthFor(node);
     const dominantModuleId = slices[0]?.moduleId ?? nodeModuleId;
@@ -1208,10 +1239,7 @@ export function renderNetworkPreviewFrame(
       coloredByModules && !moduleFlows
         ? modules.get(Number(node.id))
         : undefined;
-    const slices =
-      coloredByModules && moduleFlows
-        ? nodeModuleSlices(node, modules, moduleFlows)
-        : [];
+    const slices = coloredByModules && moduleFlows ? moduleSlicesFor(node) : [];
     const labelColor =
       hoveredSliceModuleId !== undefined && focusStrengthFor(node) > 0.5
         ? shadeColorCached(moduleColorFor(hoveredSliceModuleId), -70)
@@ -1259,5 +1287,5 @@ export function renderNetworkPreviewFrame(
     if (labelCount >= labelBudget) break;
   }
 
-  if (hovered) renderLabel(hovered);
+  if (hovered && zoomLevel >= 0.7) renderLabel(hovered);
 }
