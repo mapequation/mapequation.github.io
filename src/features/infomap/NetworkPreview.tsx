@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Grid, Text } from "@chakra-ui/react";
 import {
   type Force,
   type ForceLink,
@@ -14,21 +14,16 @@ import { select } from "d3-selection";
 import { type ZoomTransform, zoom, zoomIdentity } from "d3-zoom";
 import {
   memo,
+  type KeyboardEvent as ReactKeyboardEvent,
   type RefObject,
+  type PointerEvent as ReactPointerEvent,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
-import {
-  LuDownload,
-  LuExpand,
-  LuMaximize,
-  LuMinimize2,
-  LuMinus,
-  LuPlus,
-} from "react-icons/lu";
+import { LuDownload, LuExpand, LuMaximize, LuMinimize2 } from "react-icons/lu";
 import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
 import { WorkbenchControlGroup } from "../../shared/components/WorkbenchControlGroup";
 import { WorkbenchOverlay } from "../../shared/components/WorkbenchOverlay";
@@ -85,77 +80,156 @@ function NetworkLevelControl({
   setLevel: (level: number) => void;
   sliderLevel: number;
 }) {
-  const levels = Array.from(
-    { length: moduleLevelCount },
-    (_, index) => moduleLevelCount - index,
+  const railRef = useRef<HTMLDivElement>(null);
+  const levelPosition =
+    moduleLevelCount <= 1
+      ? 0
+      : ((sliderLevel - 1) / (moduleLevelCount - 1)) * 100;
+  const railStart = 24;
+  const railEnd = 118;
+  const railLength = railEnd - railStart;
+  const handlePosition = `${
+    ((railStart + (levelPosition / 100) * railLength) / 144) * 100
+  }%`;
+  const ticks = Array.from(
+    { length: Math.min(moduleLevelCount, 9) },
+    (_, index) =>
+      moduleLevelCount <= 1
+        ? railStart
+        : railStart +
+          (index / (Math.min(moduleLevelCount, 9) - 1)) * railLength,
   );
-  const canIncrease = !levelLocked && sliderLevel < moduleLevelCount;
-  const canDecrease = !levelLocked && sliderLevel > 1;
+
+  const setLevelFromPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (levelLocked || !railRef.current) return;
+
+    const rect = railRef.current.getBoundingClientRect();
+    const y = Math.min(Math.max(event.clientY - rect.top, 0), rect.height);
+    const ratio = rect.height === 0 ? 0 : y / rect.height;
+    setLevel(Math.round(ratio * (moduleLevelCount - 1)) + 1);
+  };
+
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (levelLocked) return;
+
+    if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      setLevel(Math.max(1, sliderLevel - 1));
+    } else if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+      event.preventDefault();
+      setLevel(Math.min(moduleLevelCount, sliderLevel + 1));
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setLevel(1);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setLevel(moduleLevelCount);
+    }
+  };
 
   return (
-    <WorkbenchControlGroup
-      align="center"
-      aria-label={`Module level ${levelValueLabel}`}
+    <Box
+      aria-label={`Map depth ${levelValueLabel}`}
       bg="bg"
       bottom={3}
+      borderColor="border.emphasized"
+      borderRadius="md"
+      borderWidth="1px"
+      boxShadow="md"
+      cursor={levelLocked ? "not-allowed" : "pointer"}
+      h="10rem"
       opacity={levelLocked ? 0.68 : 1}
-      orientation="vertical"
+      p={2.5}
       position="absolute"
       right={3}
-      role="group"
+      role="slider"
+      tabIndex={levelLocked ? -1 : 0}
+      title={`Map depth ${levelValueLabel}`}
+      w="2.75rem"
       zIndex={2}
+      aria-disabled={levelLocked ? "true" : undefined}
+      aria-orientation="vertical"
+      aria-valuemax={moduleLevelCount}
+      aria-valuemin={1}
+      aria-valuenow={sliderLevel}
+      aria-valuetext={`Level ${sliderLevel} of ${moduleLevelCount}`}
+      onKeyDown={onKeyDown}
+      onPointerDown={(event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setLevelFromPointer(event);
+      }}
+      onPointerMove={(event) => {
+        if (event.buttons === 1) setLevelFromPointer(event);
+      }}
     >
-      <IconButton
-        aria-label="Show finer module level"
-        bg="bg"
-        disabled={!canIncrease}
-        onClick={() => setLevel(sliderLevel + 1)}
+      <Box
+        ref={railRef}
+        aria-hidden="true"
+        color="fg.muted"
+        h="full"
+        position="relative"
+        w="full"
       >
-        <LuPlus />
-      </IconButton>
-
-      {levels.map((levelValue) => {
-        const selected = levelValue === sliderLevel;
-        return (
-          <Button
-            key={levelValue}
-            aria-current={selected ? "true" : undefined}
-            aria-label={`Show module level ${levelValue} of ${moduleLevelCount}`}
-            bg="bg"
-            color="gray.400"
-            disabled={levelLocked}
-            minW="2rem"
-            px={0}
-            type="button"
-            onClick={() => setLevel(levelValue)}
-          >
-            <Box
-              aria-hidden="true"
-              bg={selected ? "blue.500" : "transparent"}
-              borderColor="gray.400"
-              borderRadius="full"
-              borderWidth={selected ? 0 : "2px"}
-              boxShadow={
-                selected
-                  ? "0 0 0 2px color-mix(in srgb, var(--chakra-colors-blue-500) 14%, transparent)"
-                  : undefined
-              }
-              h="0.375rem"
-              w="0.375rem"
+        <svg
+          aria-hidden="true"
+          fill="none"
+          height="100%"
+          stroke="currentColor"
+          viewBox="0 0 32 144"
+          width="100%"
+        >
+          <circle cx="16" cy="9" fill="currentColor" opacity="0.62" r="5" />
+          <line
+            opacity="0.72"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="2"
+            x1="16"
+            x2="16"
+            y1={railStart}
+            y2={railEnd}
+          />
+          {ticks.map((tick) => (
+            <line
+              key={tick}
+              opacity="0.5"
+              strokeLinecap="round"
+              strokeWidth="2"
+              x1="11"
+              x2="21"
+              y1={tick}
+              y2={tick}
             />
-          </Button>
-        );
-      })}
-
-      <IconButton
-        aria-label="Show coarser module level"
-        bg="bg"
-        disabled={!canDecrease}
-        onClick={() => setLevel(sliderLevel - 1)}
-      >
-        <LuMinus />
-      </IconButton>
-    </WorkbenchControlGroup>
+          ))}
+          {[12, 20].map((x) =>
+            [132, 138].map((y) => (
+              <circle
+                key={`${x}-${y}`}
+                cx={x}
+                cy={y}
+                fill="currentColor"
+                opacity="0.72"
+                r="2"
+              />
+            )),
+          )}
+        </svg>
+        <Box
+          bg="blue.500"
+          borderColor="bg"
+          borderRadius="full"
+          borderWidth="2px"
+          boxShadow="0 0 0 3px color-mix(in srgb, currentColor 18%, transparent)"
+          color="blue.500"
+          h="1rem"
+          left="50%"
+          position="absolute"
+          top={handlePosition}
+          transform="translate(-50%, -50%)"
+          w="1rem"
+        />
+      </Box>
+    </Box>
   );
 }
 
