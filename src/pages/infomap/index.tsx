@@ -10,6 +10,7 @@ import {
 import type { NextPage } from "next";
 import NextLink from "next/link";
 import { LuArrowRight } from "react-icons/lu";
+import { trackEvent } from "../../shared/analytics";
 import { PrimaryButton } from "../../shared/components/PrimaryButton";
 import InstallCard from "../../shared/compounds/InstallCard";
 import PillarCard from "../../shared/compounds/PillarCard";
@@ -37,7 +38,16 @@ const Home: NextPage = () => {
           </Text>
 
           <Flex gap={3} flexWrap="wrap">
-            <PrimaryButton href="/infomap/workbench">
+            <PrimaryButton
+              href="/infomap/workbench"
+              onClick={() =>
+                trackEvent("cta_clicked", {
+                  site_area: "infomap",
+                  cta_type: "try",
+                  content_id: "infomap-hero-workbench",
+                })
+              }
+            >
               Try Infomap <LuArrowRight />
             </PrimaryButton>
           </Flex>
@@ -46,6 +56,13 @@ const Home: NextPage = () => {
         <NextLink
           href="/infomap/workbench"
           aria-label="Try Infomap"
+          onClick={() =>
+            trackEvent("cta_clicked", {
+              site_area: "infomap",
+              cta_type: "try",
+              content_id: "infomap-workbench-image",
+            })
+          }
           style={{
             display: "block",
             textDecoration: "none",
@@ -76,6 +93,13 @@ const Home: NextPage = () => {
             title="Install for your workflow"
             text="Python, R, CLI, Docker, Homebrew, binaries, and TypeScript packages."
             cta="How to install"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "install",
+                content_id: "infomap-install-card",
+              })
+            }
           />
           <PillarCard
             href="/infomap/workbench"
@@ -83,6 +107,13 @@ const Home: NextPage = () => {
             title="Try a small network first"
             text="Upload or paste a network and inspect the communities before installing."
             cta="Open workbench"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "try",
+                content_id: "infomap-workbench-card",
+              })
+            }
           />
           <PillarCard
             href="/publications#how-to-cite"
@@ -90,6 +121,13 @@ const Home: NextPage = () => {
             title="Cite the method correctly"
             text="Copy citations for the software version and the map equation paper."
             cta="How to cite"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "cite",
+                content_id: "infomap-cite-card",
+              })
+            }
           />
         </SimpleGrid>
       </PortalSection>
@@ -112,6 +150,13 @@ const Home: NextPage = () => {
             title="Input & output formats"
             text="Prepare your network data and choose the output your analysis needs."
             cta="Read the docs"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "docs",
+                content_id: "infomap-formats-card",
+              })
+            }
           />
           <PillarCard
             href="/infomap/how-it-works"
@@ -119,6 +164,13 @@ const Home: NextPage = () => {
             title="How it works"
             text="Connect your research question to the flow model, map equation, and search algorithm."
             cta="Read the docs"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "docs",
+                content_id: "infomap-how-it-works-card",
+              })
+            }
           />
         </SimpleGrid>
       </PortalSection>
@@ -163,6 +215,14 @@ const Home: NextPage = () => {
                 color: "link.emphasisHover",
                 textDecoration: "underline",
               }}
+              onClick={() =>
+                trackEvent("support_clicked", {
+                  site_area: "infomap",
+                  cta_type: "support",
+                  content_id: `infomap-support-${l.label.toLowerCase()}`,
+                  destination: l.label.toLowerCase(),
+                })
+              }
             >
               {l.label} ↗
             </chakra.a>

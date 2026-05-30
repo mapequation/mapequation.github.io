@@ -12,6 +12,7 @@ import {
 import type { GetStaticProps, NextPage } from "next";
 import NextLink from "next/link";
 import { LuArrowRight } from "react-icons/lu";
+import { trackEvent } from "../shared/analytics";
 import { ImageThumb } from "../shared/components/ImageThumb";
 import { PrimaryButton } from "../shared/components/PrimaryButton";
 import FlowDemo from "../shared/compounds/FlowDemo";
@@ -79,11 +80,29 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
             weighted, multilayer, bipartite, and memory networks.
           </Text>
           <Flex gap={3} flexWrap="wrap" mt={1}>
-            <PrimaryButton href="/infomap/workbench">
+            <PrimaryButton
+              href="/infomap/workbench"
+              onClick={() =>
+                trackEvent("cta_clicked", {
+                  site_area: "home",
+                  cta_type: "try",
+                  content_id: "hero-workbench",
+                })
+              }
+            >
               Run a network in Infomap <LuArrowRight />
             </PrimaryButton>
             <Button asChild size="lg" variant="surface">
-              <NextLink href="/publications#Smiljanic-Etal-2026-MapEquationSurvey">
+              <NextLink
+                href="/publications#Smiljanic-Etal-2026-MapEquationSurvey"
+                onClick={() =>
+                  trackEvent("cta_clicked", {
+                    site_area: "home",
+                    cta_type: "read",
+                    content_id: "survey-2026",
+                  })
+                }
+              >
                 Read the survey <LuArrowRight />
               </NextLink>
             </Button>
@@ -112,6 +131,18 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
             <NextLink
               key={card.href}
               href={card.href}
+              onClick={() =>
+                trackEvent("cta_clicked", {
+                  site_area: "home",
+                  cta_type:
+                    card.href === "/publications"
+                      ? "cite"
+                      : card.href === "/apps"
+                        ? "docs"
+                        : "install",
+                  content_id: `portal-${card.title.toLowerCase()}`,
+                })
+              }
               style={{ textDecoration: "none", display: "block" }}
             >
               <Stack role="group" gap={3} h="100%">

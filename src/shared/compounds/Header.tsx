@@ -21,6 +21,7 @@ import {
   type ReactNode,
 } from "react";
 import { LuMenu, LuX } from "react-icons/lu";
+import { trackEvent, type AnalyticsProps } from "../analytics";
 import Logo from "../components/Logo";
 
 interface NavItem {
@@ -72,13 +73,25 @@ const NavLink = ({
   href,
   active,
   children,
+  itemId,
 }: {
   href: string;
   active: boolean;
   children: ReactNode;
+  itemId?: string;
 }) => (
   <Box asChild {...navLinkStyles(active)}>
-    <NextLink href={href} prefetch={false}>
+    <NextLink
+      href={href}
+      prefetch={false}
+      onClick={() =>
+        trackEvent("cta_clicked", {
+          site_area: "home",
+          cta_type: itemId === "publications" ? "cite" : "docs",
+          content_id: `header-${itemId ?? (href.replace("/", "") || "home")}`,
+        })
+      }
+    >
       {children}
     </NextLink>
   </Box>
@@ -112,10 +125,12 @@ const MegaLink = ({
   href,
   label,
   desc,
+  analytics,
 }: {
   href: string;
   label: string;
   desc: string;
+  analytics?: AnalyticsProps;
 }) => (
   <Box
     asChild
@@ -127,7 +142,17 @@ const MegaLink = ({
     textDecoration="none"
     _hover={{ bg: "bg.subtle" }}
   >
-    <NextLink href={href} prefetch={false}>
+    <NextLink
+      href={href}
+      prefetch={false}
+      onClick={() =>
+        trackEvent("cta_clicked", {
+          site_area: "infomap",
+          content_id: `mega-${label.toLowerCase().replaceAll(" ", "-")}`,
+          ...analytics,
+        })
+      }
+    >
       <Text as="strong" fontSize="sm" fontWeight={600} mb={0}>
         {label}
       </Text>
@@ -156,7 +181,17 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
   >
     <HoverTrigger asChild>
       <Box asChild {...navLinkStyles(active)}>
-        <NextLink href={href} prefetch={false}>
+        <NextLink
+          href={href}
+          prefetch={false}
+          onClick={() =>
+            trackEvent("cta_clicked", {
+              site_area: "infomap",
+              cta_type: "docs",
+              content_id: "header-infomap",
+            })
+          }
+        >
           Infomap
           <Box as="span" fontSize="sm" opacity={0.7} ml={1}>
             ▾
@@ -180,11 +215,13 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
               href="/infomap/workbench"
               label="Try it"
               desc="Run Infomap in your browser"
+              analytics={{ cta_type: "try", content_id: "mega-try" }}
             />
             <MegaLink
               href="/infomap/install"
               label="Install"
               desc="Python · R · CLI · Docker"
+              analytics={{ cta_type: "install", content_id: "mega-install" }}
             />
           </MegaSection>
           <MegaSection title="Documentation">
@@ -192,11 +229,13 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
               href="/infomap/formats"
               label="Formats"
               desc="Input and output formats"
+              analytics={{ cta_type: "docs", content_id: "mega-formats" }}
             />
             <MegaLink
               href="/infomap/how-it-works"
               label="How it works"
               desc="The map equation and the search algorithm"
+              analytics={{ cta_type: "docs", content_id: "mega-how-it-works" }}
             />
           </MegaSection>
         </SimpleGrid>
@@ -266,7 +305,15 @@ const MobileNav = ({ active }: { active: string }) => {
                     <NextLink
                       href={item.href}
                       prefetch={false}
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        trackEvent("cta_clicked", {
+                          site_area: "home",
+                          cta_type:
+                            item.id === "publications" ? "cite" : "docs",
+                          content_id: `mobile-header-${item.id}`,
+                        });
+                        setOpen(false);
+                      }}
                     >
                       {item.label}
                     </NextLink>
@@ -317,7 +364,12 @@ export default function Header() {
                 );
               }
               return (
-                <NavLink key={item.id} href={item.href} active={active}>
+                <NavLink
+                  key={item.id}
+                  href={item.href}
+                  active={active}
+                  itemId={item.id}
+                >
                   {item.label}
                 </NavLink>
               );

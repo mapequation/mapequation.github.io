@@ -38,6 +38,7 @@ import {
 } from "react-icons/lu";
 import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
 import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
+import { trackEvent } from "../../shared/analytics";
 import {
   WorkbenchPanel,
   WorkbenchPanelHeader,
@@ -279,6 +280,31 @@ function formatRunTime(timestamp: number) {
   }).format(timestamp);
 }
 
+function lengthBucket(value: string) {
+  const length = value.trim().length;
+  if (length === 0) return "empty";
+  if (length < 1_000) return "small";
+  if (length < 10_000) return "medium";
+  if (length < 100_000) return "large";
+  return "very-large";
+}
+
+function elapsedBucket(ms: number) {
+  if (ms < 1_000) return "lt-1s";
+  if (ms < 5_000) return "1-5s";
+  if (ms < 30_000) return "5-30s";
+  if (ms < 120_000) return "30-120s";
+  return "gt-120s";
+}
+
+function countBucket(count: number) {
+  if (count === 0) return "0";
+  if (count === 1) return "1";
+  if (count <= 3) return "2-3";
+  if (count <= 8) return "4-8";
+  return "gt-8";
+}
+
 function RunStatus({
   changedSinceRun,
   isRunning,
@@ -503,6 +529,13 @@ export default function InfomapOnline() {
   const [clusterChangedAt, setClusterChangedAt] = useState(0);
   const [outputNetworkSignature, setOutputNetworkSignature] = useState("");
   const pendingOutputNetworkSignatureRef = useRef("");
+
+  useEffect(() => {
+    trackEvent("workbench_opened", {
+      site_area: "workbench",
+      content_id: "infomap-workbench",
+    });
+  }, []);
   const drainOutputBuffer = () => {
     const buffered = outputBufferRef.current;
     outputBufferRef.current = [];
@@ -546,12 +579,19 @@ export default function InfomapOnline() {
           `Error: ${infomapError}`,
         ]);
         setIsRunning(false);
+        const elapsedMs = performance.now() - runStartedAtRef.current;
         setLastRun({
           args: storeRef.current.params.args,
           completedAt: Date.now(),
-          elapsedMs: performance.now() - runStartedAtRef.current,
+          elapsedMs,
           networkSignature: pendingOutputNetworkSignatureRef.current,
           status: "error",
+        });
+        trackEvent("workbench_run_completed", {
+          site_area: "workbench",
+          status: "error",
+          elapsed_bucket: elapsedBucket(elapsedMs),
+          output_count_bucket: "0",
         });
         console.error(infomapError);
       })
@@ -570,12 +610,19 @@ export default function InfomapOnline() {
           ...content,
         });
         setIsRunning(false);
+        const elapsedMs = performance.now() - runStartedAtRef.current;
         setLastRun({
           args: storeRef.current.params.args,
           completedAt: Date.now(),
-          elapsedMs: performance.now() - runStartedAtRef.current,
+          elapsedMs,
           networkSignature: pendingOutputNetworkSignatureRef.current,
           status: "complete",
+        });
+        trackEvent("workbench_run_completed", {
+          site_area: "workbench",
+          status: "success",
+          elapsed_bucket: elapsedBucket(elapsedMs),
+          output_count_bucket: countBucket(Object.keys(content).length),
         });
       }),
   );
@@ -794,6 +841,12 @@ export default function InfomapOnline() {
         store.infomapNetwork.content,
       );
       runStartedAtRef.current = performance.now();
+      trackEvent("workbench_run_started", {
+        site_area: "workbench",
+        input_length_bucket: lengthBucket(store.infomapNetwork.content),
+        has_cluster_data: Boolean(store.clusterData.value.trim()),
+        has_meta_data: Boolean(store.metaData.value.trim()),
+      });
       infomap.run({
         network: store.infomapNetwork.content,
         filename: store.infomapNetwork.filename,
@@ -805,12 +858,19 @@ export default function InfomapOnline() {
       setIsRunning(false);
       drainOutputBuffer();
       setInfomapOutput([`Error: ${message}`]);
+      const elapsedMs = performance.now() - runStartedAtRef.current;
       setLastRun({
         args,
         completedAt: Date.now(),
-        elapsedMs: performance.now() - runStartedAtRef.current,
+        elapsedMs,
         networkSignature: pendingOutputNetworkSignatureRef.current,
         status: "error",
+      });
+      trackEvent("workbench_run_completed", {
+        site_area: "workbench",
+        status: "error",
+        elapsed_bucket: elapsedBucket(elapsedMs),
+        output_count_bucket: "0",
       });
       console.error(e);
       return;
@@ -1546,7 +1606,13 @@ export default function InfomapOnline() {
                             download: activeOutputDownload,
                             icon: <LuDownload />,
                             label: "Download file",
-                            onSelect: () => output.setDownloaded(true),
+                            onSelect: () => {
+                              output.setDownloaded(true);
+                              trackEvent("workbench_output_downloaded", {
+                                site_area: "workbench",
+                                content_id: "download-file",
+                              });
+                            },
                             value: "download-file",
                           },
                         ]
@@ -1557,7 +1623,13 @@ export default function InfomapOnline() {
                             downloads: outputDownloads,
                             icon: <LuFiles />,
                             label: "Download all",
-                            onSelect: () => output.setDownloaded(true),
+                            onSelect: () => {
+                              output.setDownloaded(true);
+                              trackEvent("workbench_output_downloaded", {
+                                site_area: "workbench",
+                                content_id: "download-all",
+                              });
+                            },
                             value: "download-all",
                           },
                         ]

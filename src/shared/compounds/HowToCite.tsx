@@ -2,6 +2,7 @@ import { Box, chakra, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { CopyButton } from "../components/CopyButton";
 import { DocsCard } from "../components/DocsCard";
 import { Tag } from "../components/Tag";
+import { trackEvent } from "../analytics";
 import { infomapVersion } from "../infomapVersion";
 
 const currentYear = new Date().getFullYear();
@@ -49,12 +50,36 @@ function Chip({
   );
 }
 
-function ExternalLink({ href, children }: { href: string; children: string }) {
+function citationDestination(label: string) {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("doi")) return "doi";
+  if (normalized.includes("pdf")) return "pdf";
+  if (normalized.includes("scholar")) return "google-scholar";
+  return normalized.replaceAll(" ", "-");
+}
+
+function ExternalLink({
+  href,
+  paper,
+  children,
+}: {
+  href: string;
+  paper: string;
+  children: string;
+}) {
   return (
     <chakra.a
       href={href}
       target="_blank"
       rel="noreferrer"
+      onClick={() =>
+        trackEvent("outbound_clicked", {
+          site_area: "publications",
+          cta_type: children.toLowerCase().includes("pdf") ? "read" : "cite",
+          paper,
+          destination: citationDestination(children),
+        })
+      }
       display="inline-flex"
       alignItems="center"
       px={3}
@@ -83,6 +108,7 @@ function CitationCard({
   description,
   bibtex,
   links,
+  paper,
 }: {
   id: string;
   chipLabel: string;
@@ -92,6 +118,7 @@ function CitationCard({
   description: string;
   bibtex: string;
   links?: { label: string; href: string }[];
+  paper: string;
 }) {
   return (
     <DocsCard id={id} mb={5}>
@@ -127,9 +154,16 @@ function CitationCard({
           copiedLabel="Copied"
           size="sm"
           variant="solid"
+          analyticsEvent="citation_copied"
+          analyticsProperties={{
+            site_area: "publications",
+            cta_type: "cite",
+            paper,
+            citation_type: "bibtex",
+          }}
         />
         {links?.map((l) => (
-          <ExternalLink key={l.href} href={l.href}>
+          <ExternalLink key={l.href} href={l.href} paper={paper}>
             {l.label}
           </ExternalLink>
         ))}
@@ -164,6 +198,7 @@ export default function HowToCite() {
           title="Maps of random walks on complex networks reveal community structure"
           description="Rosvall, M., & Bergstrom, C. T. — the original paper. Cite this when you describe the map equation method behind Infomap."
           bibtex={paperBibtex}
+          paper="map-equation-2008"
           links={[
             { label: "DOI", href: "https://doi.org/10.1073/pnas.0706851105" },
             {
@@ -180,6 +215,7 @@ export default function HowToCite() {
           title="The MapEquation software package"
           description="Edler, D., Holmgren, A., & Rosvall, M. Cite this when your analysis depends on Infomap as software and the release version matters for reproducibility."
           bibtex={softwareBibtex}
+          paper="software-package"
           links={[
             {
               label: "Google Scholar",

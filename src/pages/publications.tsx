@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { FaRegFilePdf } from "react-icons/fa6";
 import { LuX } from "react-icons/lu";
 import { SiGooglescholar } from "react-icons/si";
+import { trackEvent } from "../shared/analytics";
 import { Tag } from "../shared/components/Tag";
 import HowToCite from "../shared/compounds/HowToCite";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
@@ -91,10 +92,14 @@ function formatPubDate(p: Publication): string {
 const ActionLink = ({
   href,
   ariaLabel,
+  destination,
+  paper,
   children,
 }: {
   href: string;
   ariaLabel?: string;
+  destination: string;
+  paper: string;
   children: React.ReactNode;
 }) => (
   <chakra.a
@@ -102,6 +107,23 @@ const ActionLink = ({
     target="_blank"
     rel="noreferrer"
     aria-label={ariaLabel}
+    onClick={() =>
+      trackEvent(
+        destination === "notebook" ? "cta_clicked" : "outbound_clicked",
+        {
+          site_area: "publications",
+          cta_type:
+            destination === "doi" || destination === "google-scholar"
+              ? "cite"
+              : destination === "notebook"
+                ? "docs"
+                : "read",
+          content_id: destination === "notebook" ? "paper-notebook" : undefined,
+          destination,
+          paper,
+        },
+      )
+    }
     fontSize="sm"
     color="link.emphasis"
     textDecoration="none"
@@ -462,7 +484,13 @@ const PublicationsAccordion = ({
                   )}
                   <HStack gap={4} mt={p.bodyHtml ? 4 : 0} flexWrap="wrap">
                     {p.doiHref && p.journal && (
-                      <ActionLink href={p.doiHref}>{p.journal} ↗</ActionLink>
+                      <ActionLink
+                        href={p.doiHref}
+                        destination="doi"
+                        paper={p.slug}
+                      >
+                        {p.journal} ↗
+                      </ActionLink>
                     )}
                     {!p.doiHref && p.journal && (
                       <Text color="fg.muted" fontSize="sm" mb={0}>
@@ -470,20 +498,43 @@ const PublicationsAccordion = ({
                       </Text>
                     )}
                     {p.arxiv && (
-                      <ActionLink href={`https://arxiv.org/abs/${p.arxiv}`}>
+                      <ActionLink
+                        href={`https://arxiv.org/abs/${p.arxiv}`}
+                        destination="arxiv"
+                        paper={p.slug}
+                      >
                         arXiv:{p.arxiv}
                       </ActionLink>
                     )}
                     {p.pdfHref && (
-                      <ActionLink href={p.pdfHref} ariaLabel="PDF">
+                      <ActionLink
+                        href={p.pdfHref}
+                        ariaLabel="PDF"
+                        destination="pdf"
+                        paper={p.slug}
+                      >
                         <FaRegFilePdf size={16} />
                       </ActionLink>
                     )}
-                    <ActionLink href={p.scholarHref} ariaLabel="Google Scholar">
+                    <ActionLink
+                      href={p.scholarHref}
+                      ariaLabel="Google Scholar"
+                      destination="google-scholar"
+                      paper={p.slug}
+                    >
                       <SiGooglescholar size={16} />
                     </ActionLink>
                     {p.links?.map((l) => (
-                      <ActionLink key={l.href} href={l.href}>
+                      <ActionLink
+                        key={l.href}
+                        href={l.href}
+                        destination={
+                          l.label.toLowerCase().includes("notebook")
+                            ? "notebook"
+                            : l.label.toLowerCase().replaceAll(" ", "-")
+                        }
+                        paper={p.slug}
+                      >
                         {l.label} ↗
                       </ActionLink>
                     ))}
@@ -516,6 +567,12 @@ const FeaturedPublicationCard = ({
     <chakra.a
       href={`#${publication.slug}`}
       onClick={() => {
+        trackEvent("cta_clicked", {
+          site_area: "publications",
+          cta_type: "read",
+          content_id: "featured-publication",
+          paper: publication.slug,
+        });
         // Open before the browser scrolls so layout is final.
         onSelect(publication.slug);
       }}

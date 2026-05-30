@@ -1,8 +1,15 @@
 import { Button, type ButtonProps, VisuallyHidden } from "@chakra-ui/react";
 import { useState } from "react";
 import { LuCheck, LuCopy } from "react-icons/lu";
+import {
+  type AnalyticsEvent,
+  type AnalyticsProps,
+  trackEvent,
+} from "../analytics";
 
 type Props = {
+  analyticsEvent?: AnalyticsEvent;
+  analyticsProperties?: AnalyticsProps;
   text: string;
   label?: string;
   copiedLabel?: string;
@@ -12,6 +19,8 @@ type Props = {
 };
 
 export function CopyButton({
+  analyticsEvent,
+  analyticsProperties,
   text,
   label = "Copy",
   copiedLabel = "Copied",
@@ -31,6 +40,9 @@ export function CopyButton({
         if (typeof navigator === "undefined" || !navigator.clipboard) return;
         await navigator.clipboard.writeText(text);
         setCopied(true);
+        if (analyticsEvent) {
+          trackEvent(analyticsEvent, analyticsProperties);
+        }
         window.setTimeout(() => setCopied(false), 1400);
       }}
     >

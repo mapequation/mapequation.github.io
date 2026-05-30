@@ -1,5 +1,6 @@
 import { Box, Link } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { trackEvent } from "../analytics";
 import { TabbedCodeBlock } from "../components/CodeBlock";
 
 const PYTHON_SNIPPET = `import networkx as nx
@@ -25,13 +26,35 @@ export function QuickStart() {
       <TabbedCodeBlock
         ariaLabel="Quick start languages"
         files={[
-          { language: "python", label: "Python", code: PYTHON_SNIPPET },
-          { language: "r", label: "R", code: R_SNIPPET },
+          {
+            language: "python",
+            label: "Python",
+            code: PYTHON_SNIPPET,
+            value: "python",
+          },
+          { language: "r", label: "R", code: R_SNIPPET, value: "r" },
         ]}
+        copyEvent="code_example_copied"
+        copyProperties={(file) => ({
+          site_area: "home",
+          content_id: "homepage-quickstart",
+          example: file.value ?? file.language,
+        })}
         meta={{ wordWrap: false }}
       />
       <Link asChild fontSize="sm" mt={2}>
-        <NextLink href="/infomap/install">More install options →</NextLink>
+        <NextLink
+          href="/infomap/install"
+          onClick={() =>
+            trackEvent("cta_clicked", {
+              site_area: "home",
+              cta_type: "install",
+              content_id: "homepage-install-options",
+            })
+          }
+        >
+          More install options →
+        </NextLink>
       </Link>
     </Box>
   );
