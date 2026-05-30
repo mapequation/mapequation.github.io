@@ -14,21 +14,40 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 import { useState } from "react";
 import { LuArrowRight, LuMonitor, LuTerminal } from "react-icons/lu";
+import { type AnalyticsProps, trackEvent } from "../../shared/analytics";
 import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 import { Tag } from "../../shared/components/Tag";
 
-const installMethods = [
+type InstallMethod = {
+  command?: string;
+  commandContentId?: string;
+  commands?: [string, string][];
+  custom?: "binaries";
+  description: string;
+  id: string;
+  label: string;
+  language: string;
+  links?: [string, string][];
+  package?: AnalyticsProps["package"];
+  recommended?: boolean;
+  tags: string[];
+  title: string;
+};
+
+const installMethods: InstallMethod[] = [
   {
     id: "PythonPackage",
     label: "Python",
     title: "Python package",
+    package: "python",
     recommended: true,
     description:
       "Start here for most research workflows. The package installs both the Python API and the infomap command-line tool.",
     tags: ["Python 3.11+", "macOS", "Linux", "Windows"],
     command: "pip install infomap",
+    commandContentId: "pip-install",
     commands: [
       ["Upgrade an existing installation", "pip install --upgrade infomap"],
       ["Verify the installation", "infomap -v"],
@@ -43,10 +62,12 @@ const installMethods = [
     id: "HomebrewCli",
     label: "CLI",
     title: "Native CLI with Homebrew",
+    package: "homebrew",
     description:
       "Use Homebrew when you want the native command-line tool without installing the Python package.",
     tags: ["macOS", "Linux", "CLI"],
     command: "brew install mapequation/infomap/infomap",
+    commandContentId: "homebrew-install",
     commands: [
       [
         "Tap and install separately",
@@ -74,11 +95,13 @@ const installMethods = [
     id: "RPackage",
     label: "R",
     title: "R package",
+    package: "r",
     description:
       "Use the R package when Infomap is part of an R analysis workflow. Pre-built binaries are published on r-universe.",
     tags: ["R", "r-universe"],
     command:
       'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
+    commandContentId: "r-install",
     links: [["r-universe", "//mapequation.r-universe.dev/infomap"]],
     language: "r",
   },
@@ -86,10 +109,12 @@ const installMethods = [
     id: "JavaScriptPackage",
     label: "TypeScript",
     title: "TypeScript package",
+    package: "typescript",
     description:
       "Use the WebAssembly worker package to embed Infomap in browser, Node.js, and TypeScript applications.",
     tags: ["TypeScript", "NPM"],
     command: "npm install @mapequation/infomap",
+    commandContentId: "npm-install",
     links: [["npm", "//www.npmjs.com/package/@mapequation/infomap"]],
     language: "shell",
   },
@@ -97,11 +122,13 @@ const installMethods = [
     id: "Docker",
     label: "Docker",
     title: "Docker",
+    package: "docker",
     description:
       "Use the container image for reproducible CLI runs in CI, teaching material, or shared compute environments.",
     tags: ["Docker", "amd64", "arm64"],
     command:
       'docker run -it --rm -v "$(pwd)":/data ghcr.io/mapequation/infomap:latest [infomap arguments]',
+    commandContentId: "docker-run",
     links: [
       [
         "ghcr.io/mapequation/infomap",
@@ -114,11 +141,13 @@ const installMethods = [
     id: "CompilingFromSource",
     label: "Source",
     title: "Build from source",
+    package: "source",
     description:
       "Build locally when you want to modify Infomap, inspect the implementation, or compile with custom flags. Requires a working gcc or clang toolchain.",
     tags: ["gcc", "clang"],
     command:
       "git clone git@github.com:mapequation/infomap.git\ncd infomap\nmake build-native",
+    commandContentId: "source-build",
     commands: [
       ["Build without OpenMP", "make build-native OPENMP=0"],
       ["Show available CLI options", "./Infomap --help"],
@@ -135,7 +164,7 @@ const railItems: DocsRailItem[] = [
   { id: "FormatsNext", label: "Formats", href: "/infomap/formats" },
 ];
 
-function MethodCard({ method }) {
+function MethodCard({ method }: { method: InstallMethod }) {
   return (
     <DocsCard
       as="article"
@@ -187,10 +216,21 @@ function MethodCard({ method }) {
       {method.custom === "binaries" ? (
         <BinaryTable />
       ) : (
-        <CodeBlock language={method.language}>{method.command}</CodeBlock>
+        <CodeBlock
+          language={method.language}
+          copyEvent="command_copied"
+          copyProperties={{
+            site_area: "install",
+            cta_type: "install",
+            package: method.package,
+            content_id: method.commandContentId,
+          }}
+        >
+          {method.command}
+        </CodeBlock>
       )}
 
-      {method.commands?.length > 0 && (
+      {method.commands && method.commands.length > 0 && (
         <Box mt={3}>
           <Stack gap={4} mt={3}>
             {method.commands.map(([title, command]) => (
@@ -198,14 +238,27 @@ function MethodCard({ method }) {
                 <Text color="fg.muted" fontSize="sm" mb={2}>
                   {title}
                 </Text>
-                <CodeBlock language={method.language}>{command}</CodeBlock>
+                <CodeBlock
+                  language={method.language}
+                  copyEvent="command_copied"
+                  copyProperties={{
+                    site_area: "install",
+                    cta_type: "install",
+                    package: method.package,
+                    content_id: `${method.id}-${title
+                      .toLowerCase()
+                      .replaceAll(" ", "-")}`,
+                  }}
+                >
+                  {command}
+                </CodeBlock>
               </Box>
             ))}
           </Stack>
         </Box>
       )}
 
-      {method.links?.length > 0 && (
+      {method.links && method.links.length > 0 && (
         <Flex gap={4} flexWrap="wrap" mt={4} pt={4} borderTopWidth="1px">
           {method.links.map(([label, href]) => (
             <CkLink
@@ -215,6 +268,17 @@ function MethodCard({ method }) {
               rel="noopener noreferrer"
               fontSize="sm"
               fontWeight={600}
+              onClick={() =>
+                trackEvent("outbound_clicked", {
+                  site_area: "install",
+                  cta_type: "install",
+                  package: method.package,
+                  content_id: `${method.id}-${label
+                    .toLowerCase()
+                    .replaceAll(" ", "-")}`,
+                  destination: href,
+                })
+              }
             >
               {label} <LuArrowRight />
             </CkLink>
@@ -222,6 +286,24 @@ function MethodCard({ method }) {
         </Flex>
       )}
     </DocsCard>
+  );
+}
+
+function BinaryLink({ href, children }: { href: string; children: string }) {
+  return (
+    <a
+      href={href}
+      onClick={() =>
+        trackEvent("outbound_clicked", {
+          site_area: "install",
+          cta_type: "install",
+          content_id: children,
+          destination: href,
+        })
+      }
+    >
+      {children}
+    </a>
   );
 }
 
@@ -243,14 +325,14 @@ function BinaryTable() {
               Windows
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-win.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-win.zip">
                 infomap-win.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-win-noomp.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-win-noomp.zip">
                 infomap-win-noomp.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
           </Table.Row>
           <Table.Row>
@@ -259,14 +341,14 @@ function BinaryTable() {
               macOS
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-mac.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-mac.zip">
                 infomap-mac.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-mac-noomp.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-mac-noomp.zip">
                 infomap-mac-noomp.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
           </Table.Row>
           <Table.Row>
@@ -275,14 +357,14 @@ function BinaryTable() {
               Ubuntu
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-ubuntu.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-ubuntu.zip">
                 infomap-ubuntu.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
             <Table.Cell>
-              <a href="//github.com/mapequation/infomap/releases/latest/download/infomap-ubuntu-noomp.zip">
+              <BinaryLink href="//github.com/mapequation/infomap/releases/latest/download/infomap-ubuntu-noomp.zip">
                 infomap-ubuntu-noomp.zip
-              </a>
+              </BinaryLink>
             </Table.Cell>
           </Table.Row>
         </Table.Body>
@@ -305,7 +387,18 @@ const InstallPage: NextPage = () => {
         <DocsRail
           items={railItems}
           active={active}
-          onActiveChange={setActive}
+          onActiveChange={(next) => {
+            setActive(next);
+            const method = installMethods.find((item) => item.id === next);
+            if (method) {
+              trackEvent("cta_clicked", {
+                site_area: "install",
+                cta_type: "install",
+                package: method.package,
+                content_id: `install-section-${next}`,
+              });
+            }
+          }}
         />
 
         <Box as="main">

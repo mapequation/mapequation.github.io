@@ -8,6 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { trackEvent } from "../analytics";
 import EmailLink from "../components/EmailLink";
 import Logo from "../components/Logo";
 import { PortalEyebrow } from "./portal";
@@ -22,19 +23,44 @@ const linkStyles = {
 const FootLink = ({
   href,
   external,
+  eventId,
   children,
 }: {
   href: string;
   external?: boolean;
+  eventId?: string;
   children: React.ReactNode;
 }) =>
   external ? (
-    <chakra.a href={href} target="_blank" rel="noreferrer" {...linkStyles}>
+    <chakra.a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={() =>
+        trackEvent("outbound_clicked", {
+          site_area: "home",
+          content_id: eventId ?? "footer-external",
+          destination: href,
+        })
+      }
+      {...linkStyles}
+    >
       {children}
     </chakra.a>
   ) : (
     <Box asChild {...linkStyles}>
-      <NextLink href={href}>{children}</NextLink>
+      <NextLink
+        href={href}
+        onClick={() =>
+          trackEvent("cta_clicked", {
+            site_area: "home",
+            cta_type: href === "/publications" ? "cite" : "docs",
+            content_id: eventId ?? `footer-${href.replace("/", "") || "home"}`,
+          })
+        }
+      >
+        {children}
+      </NextLink>
     </Box>
   );
 
@@ -64,35 +90,53 @@ export default function Footer() {
           <Box>
             <PortalEyebrow>Software</PortalEyebrow>
             <Stack gap={2}>
-              <FootLink href="/infomap">Infomap</FootLink>
-              <FootLink href="/apps">Apps &amp; Notebooks</FootLink>
+              <FootLink href="/infomap" eventId="footer-infomap">
+                Infomap
+              </FootLink>
+              <FootLink href="/apps" eventId="footer-apps">
+                Apps &amp; Notebooks
+              </FootLink>
             </Stack>
           </Box>
           <Box>
             <PortalEyebrow>Research</PortalEyebrow>
             <Stack gap={2}>
-              <FootLink href="/publications">Publications</FootLink>
-              <FootLink href="/about">About</FootLink>
+              <FootLink href="/publications" eventId="footer-publications">
+                Publications
+              </FootLink>
+              <FootLink href="/about" eventId="footer-about">
+                About
+              </FootLink>
             </Stack>
           </Box>
           <Box>
             <PortalEyebrow>Packages</PortalEyebrow>
             <Stack gap={2}>
-              <FootLink href="https://github.com/mapequation/infomap" external>
+              <FootLink
+                href="https://github.com/mapequation/infomap"
+                external
+                eventId="footer-github"
+              >
                 GitHub ↗
               </FootLink>
-              <FootLink href="https://pypi.org/project/infomap/" external>
+              <FootLink
+                href="https://pypi.org/project/infomap/"
+                external
+                eventId="footer-pypi"
+              >
                 PyPI ↗
               </FootLink>
               <FootLink
                 href="https://mapequation.r-universe.dev/infomap"
                 external
+                eventId="footer-r-universe"
               >
                 R-universe ↗
               </FootLink>
               <FootLink
                 href="https://www.npmjs.com/package/@mapequation/infomap"
                 external
+                eventId="footer-npm"
               >
                 npm ↗
               </FootLink>

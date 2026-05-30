@@ -8,6 +8,11 @@ import {
 } from "@chakra-ui/react";
 import type { ElementType, ReactNode } from "react";
 import type { HighlighterGeneric, LanguageRegistration } from "shiki";
+import {
+  type AnalyticsEvent,
+  type AnalyticsProps,
+  trackEvent,
+} from "../analytics";
 
 const infomapLanguage: LanguageRegistration = {
   name: "infomap",
@@ -112,6 +117,8 @@ const shikiAdapter = createShikiAdapter<HighlighterGeneric<any, any>>({
 });
 
 type CodeBlockProps = Omit<CkCodeBlock.RootProps, "children" | "code"> & {
+  copyEvent?: AnalyticsEvent;
+  copyProperties?: AnalyticsProps;
   children: ReactNode;
 };
 
@@ -127,8 +134,11 @@ type TabbedCodeBlockProps = Omit<
   "children" | "code" | "language"
 > & {
   ariaLabel?: string;
+  copyEvent?: AnalyticsEvent;
+  copyProperties?: AnalyticsProps | ((file: CodeBlockFile) => AnalyticsProps);
   defaultValue?: string;
   files: CodeBlockFile[];
+  onTabChange?: (file: CodeBlockFile) => void;
   renderFooter?: (file: CodeBlockFile) => ReactNode;
   tabListProps?: Record<string, unknown>;
   tabTriggerProps?: Record<string, unknown>;
@@ -143,12 +153,24 @@ function fileValue(file: CodeBlockFile) {
   return file.value ?? file.label ?? file.language;
 }
 
-function CodeBlockContent() {
+function CodeBlockContent({
+  copyEvent,
+  copyProperties,
+}: {
+  copyEvent?: AnalyticsEvent;
+  copyProperties?: AnalyticsProps;
+}) {
   return (
     <CkCodeBlock.Content>
       <Float placement="top-end" offset="5" zIndex="1">
         <CkCodeBlock.CopyTrigger asChild>
-          <IconButton variant="ghost" size="2xs">
+          <IconButton
+            variant="ghost"
+            size="2xs"
+            onClick={() => {
+              if (copyEvent) trackEvent(copyEvent, copyProperties);
+            }}
+          >
             <CkCodeBlock.CopyIndicator />
           </IconButton>
         </CkCodeBlock.CopyTrigger>
@@ -168,7 +190,13 @@ function CodeBlockContent() {
   );
 }
 
-export function CodeBlock({ children, meta, ...props }: CodeBlockProps) {
+export function CodeBlock({
+  children,
+  copyEvent,
+  copyProperties,
+  meta,
+  ...props
+}: CodeBlockProps) {
   return (
     <CkCodeBlock.AdapterProvider value={shikiAdapter}>
       <CkCodeBlock.Root
@@ -176,7 +204,10 @@ export function CodeBlock({ children, meta, ...props }: CodeBlockProps) {
         meta={{ wordWrap: true, colorScheme: "light", ...meta }}
         {...props}
       >
-        <CodeBlockContent />
+        <CodeBlockContent
+          copyEvent={copyEvent}
+          copyProperties={copyProperties}
+        />
       </CkCodeBlock.Root>
     </CkCodeBlock.AdapterProvider>
   );
@@ -188,9 +219,12 @@ const TabsTrigger = Tabs.Trigger as ElementType;
 
 export function TabbedCodeBlock({
   ariaLabel = "Code examples",
+  copyEvent,
+  copyProperties,
   defaultValue,
   files,
   meta,
+  onTabChange,
   renderFooter,
   tabListProps,
   tabTriggerProps,
@@ -222,6 +256,7 @@ export function TabbedCodeBlock({
                     key={value}
                     value={value}
                     fontSize="sm"
+                    onClick={() => onTabChange?.(file)}
                     {...tabTriggerProps}
                   >
                     {file.label ?? file.language}
@@ -230,7 +265,14 @@ export function TabbedCodeBlock({
               })}
             </TabsList>
           </CkCodeBlock.Header>
-          <CodeBlockContent />
+          <CodeBlockContent
+            copyEvent={copyEvent}
+            copyProperties={
+              typeof copyProperties === "function"
+                ? copyProperties(activeFile)
+                : copyProperties
+            }
+          />
         </CkCodeBlock.Root>
         {renderFooter?.(activeFile)}
       </TabsRoot>

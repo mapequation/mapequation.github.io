@@ -7,14 +7,16 @@ const PillarCard = ({
   title,
   text,
   cta,
+  onClick,
 }: {
   href: string;
   eyebrow: string;
   title: string;
   text: string;
   cta?: string;
+  onClick?: () => void;
 }) => (
-  <NextLink href={href}>
+  <NextLink href={href} onClick={onClick}>
     <Box
       bg="white"
       borderWidth="1px"

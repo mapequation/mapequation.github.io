@@ -13,17 +13,13 @@ import { useEffect } from "react";
 import SiteLayout from "../shared/compounds/SiteLayout";
 import system from "../theme";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+const UMAMI_SCRIPT_SRC =
+  process.env.NEXT_PUBLIC_UMAMI_SCRIPT_SRC ??
+  "https://cloud.umami.is/script.js";
 // GitHub Pages reserves /infomap for the infomap repository, so that repo can
 // trampoline direct visits through /?redirect_to=/infomap back into this app.
 const REDIRECT_TARGET_PREFIX = "/infomap";
-
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
-  }
-}
 
 function getRedirectTarget() {
   const target = new URLSearchParams(window.location.search).get("redirect_to");
@@ -66,21 +62,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       <Head>
         <title>MapEquation — research, software, and visualizations</title>
       </Head>
-      {GA_MEASUREMENT_ID && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga4-init" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${GA_MEASUREMENT_ID}');
-            `}
-          </Script>
-        </>
+      {UMAMI_WEBSITE_ID && (
+        <Script
+          async
+          data-website-id={UMAMI_WEBSITE_ID}
+          src={UMAMI_SCRIPT_SRC}
+          strategy="afterInteractive"
+        />
       )}
 
       <ChakraProvider value={system}>

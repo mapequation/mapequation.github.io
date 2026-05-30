@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 interface PrimaryButtonProps {
   children: ReactNode;
   href: string;
+  onClick?: () => void;
 }
 
-export function PrimaryButton({ children, href }: PrimaryButtonProps) {
+export function PrimaryButton({ children, href, onClick }: PrimaryButtonProps) {
   return (
     <Button
       asChild
@@ -19,7 +20,9 @@ export function PrimaryButton({ children, href }: PrimaryButtonProps) {
         _active: { bg: "brand.active" },
       }}
     >
-      <NextLink href={href}>{children}</NextLink>
+      <NextLink href={href} onClick={onClick}>
+        {children}
+      </NextLink>
     </Button>
   );
 }
