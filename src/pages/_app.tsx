@@ -17,6 +17,19 @@ const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 const UMAMI_SCRIPT_SRC =
   process.env.NEXT_PUBLIC_UMAMI_SCRIPT_SRC ??
   "https://cloud.umami.is/script.js";
+const PLAUSIBLE_SCRIPT_SRC =
+  process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_SRC ??
+  "https://plausible.io/js/pa-_bHA8JlagL4VXKah7abto.js";
+
+const PLAUSIBLE_INIT_SCRIPT = `
+  window.plausible = window.plausible || function() {
+    (window.plausible.q = window.plausible.q || []).push(arguments);
+  };
+  window.plausible.init = window.plausible.init || function(options) {
+    window.plausible.o = options || {};
+  };
+  window.plausible.init();
+`;
 // GitHub Pages reserves /infomap for the infomap repository, so that repo can
 // trampoline direct visits through /?redirect_to=/infomap back into this app.
 const REDIRECT_TARGET_PREFIX = "/infomap";
@@ -69,6 +82,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           src={UMAMI_SCRIPT_SRC}
           strategy="afterInteractive"
         />
+      )}
+      {PLAUSIBLE_SCRIPT_SRC && (
+        <>
+          <Script
+            async
+            src={PLAUSIBLE_SCRIPT_SRC}
+            strategy="afterInteractive"
+          />
+          <Script id="plausible-init" strategy="afterInteractive">
+            {PLAUSIBLE_INIT_SCRIPT}
+          </Script>
+        </>
       )}
 
       <ChakraProvider value={system}>
