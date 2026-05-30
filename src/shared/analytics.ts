@@ -45,8 +45,19 @@ type UmamiTracker = {
   track?: (eventName: string, data?: Record<string, string | number>) => void;
 };
 
+type PlausibleTracker = {
+  (
+    eventName: string,
+    options?: { props?: Record<string, string | number> },
+  ): void;
+  init?: (options?: Record<string, unknown>) => void;
+  o?: Record<string, unknown>;
+  q?: IArguments[];
+};
+
 declare global {
   interface Window {
+    plausible?: PlausibleTracker;
     umami?: UmamiTracker;
   }
 }
@@ -92,10 +103,10 @@ export function trackEvent(
   eventName: AnalyticsEvent,
   props: AnalyticsProps = {},
 ) {
-  if (typeof window === "undefined" || !window.umami?.track) return;
+  if (typeof window === "undefined") return;
 
-  window.umami.track(
-    eventName,
-    cleanProps({ ...currentPageProps(), ...props }),
-  );
+  const cleanedProps = cleanProps({ ...currentPageProps(), ...props });
+
+  window.umami?.track?.(eventName, cleanedProps);
+  window.plausible?.(eventName, { props: cleanedProps });
 }
