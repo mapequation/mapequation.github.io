@@ -153,24 +153,12 @@ function fileValue(file: CodeBlockFile) {
   return file.value ?? file.label ?? file.language;
 }
 
-function CodeBlockContent({
-  copyEvent,
-  copyProperties,
-}: {
-  copyEvent?: AnalyticsEvent;
-  copyProperties?: AnalyticsProps;
-}) {
+function CodeBlockContent() {
   return (
     <CkCodeBlock.Content>
       <Float placement="top-end" offset="5" zIndex="1">
         <CkCodeBlock.CopyTrigger asChild>
-          <IconButton
-            variant="ghost"
-            size="2xs"
-            onClick={() => {
-              if (copyEvent) trackEvent(copyEvent, copyProperties);
-            }}
-          >
+          <IconButton variant="ghost" size="2xs">
             <CkCodeBlock.CopyIndicator />
           </IconButton>
         </CkCodeBlock.CopyTrigger>
@@ -202,12 +190,12 @@ export function CodeBlock({
       <CkCodeBlock.Root
         code={codeText(children)}
         meta={{ wordWrap: true, colorScheme: "light", ...meta }}
+        onCopy={() => {
+          if (copyEvent) trackEvent(copyEvent, copyProperties);
+        }}
         {...props}
       >
-        <CodeBlockContent
-          copyEvent={copyEvent}
-          copyProperties={copyProperties}
-        />
+        <CodeBlockContent />
       </CkCodeBlock.Root>
     </CkCodeBlock.AdapterProvider>
   );
@@ -231,12 +219,23 @@ export function TabbedCodeBlock({
   ...props
 }: TabbedCodeBlockProps) {
   const fallbackValue = files[0] ? fileValue(files[0]) : "";
-  const tabs = useTabs({ defaultValue: defaultValue ?? fallbackValue });
+  const tabs = useTabs({
+    defaultValue: defaultValue ?? fallbackValue,
+    onValueChange: ({ value }) => {
+      const nextFile = files.find((file) => fileValue(file) === value);
+      if (nextFile) onTabChange?.(nextFile);
+    },
+  });
 
   const activeFile =
     files.find((file) => fileValue(file) === tabs.value) ?? files[0];
 
   if (!activeFile) return null;
+
+  const activeCopyProperties =
+    typeof copyProperties === "function"
+      ? copyProperties(activeFile)
+      : copyProperties;
 
   return (
     <CkCodeBlock.AdapterProvider value={shikiAdapter}>
@@ -245,6 +244,9 @@ export function TabbedCodeBlock({
           code={activeFile.code}
           language={activeFile.language}
           meta={{ wordWrap: true, colorScheme: "light", ...meta }}
+          onCopy={() => {
+            if (copyEvent) trackEvent(copyEvent, activeCopyProperties);
+          }}
           {...props}
         >
           <CkCodeBlock.Header px={0} py={0}>
@@ -256,7 +258,6 @@ export function TabbedCodeBlock({
                     key={value}
                     value={value}
                     fontSize="sm"
-                    onClick={() => onTabChange?.(file)}
                     {...tabTriggerProps}
                   >
                     {file.label ?? file.language}
@@ -265,14 +266,7 @@ export function TabbedCodeBlock({
               })}
             </TabsList>
           </CkCodeBlock.Header>
-          <CodeBlockContent
-            copyEvent={copyEvent}
-            copyProperties={
-              typeof copyProperties === "function"
-                ? copyProperties(activeFile)
-                : copyProperties
-            }
-          />
+          <CodeBlockContent />
         </CkCodeBlock.Root>
         {renderFooter?.(activeFile)}
       </TabsRoot>
