@@ -1,4 +1,5 @@
 import {
+  Button,
   Container,
   chakra,
   Flex,
@@ -50,6 +51,20 @@ const Home: NextPage = () => {
             >
               Try Infomap <LuArrowRight />
             </PrimaryButton>
+            <Button asChild size="lg" variant="surface">
+              <NextLink
+                href="/infomap/install"
+                onClick={() =>
+                  trackEvent("cta_clicked", {
+                    site_area: "infomap",
+                    cta_type: "install",
+                    content_id: "infomap-hero-install",
+                  })
+                }
+              >
+                Install Infomap <LuArrowRight />
+              </NextLink>
+            </Button>
           </Flex>
         </Stack>
 
@@ -88,20 +103,6 @@ const Home: NextPage = () => {
       <PortalSection title="Use Infomap" eyebrow="Get started">
         <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
           <PillarCard
-            href="/infomap/install"
-            eyebrow="Install"
-            title="Install for your workflow"
-            text="Python, R, CLI, Docker, Homebrew, binaries, and TypeScript packages."
-            cta="How to install"
-            onClick={() =>
-              trackEvent("cta_clicked", {
-                site_area: "infomap",
-                cta_type: "install",
-                content_id: "infomap-install-card",
-              })
-            }
-          />
-          <PillarCard
             href="/infomap/workbench"
             eyebrow="Try it"
             title="Try a small network first"
@@ -112,6 +113,20 @@ const Home: NextPage = () => {
                 site_area: "infomap",
                 cta_type: "try",
                 content_id: "infomap-workbench-card",
+              })
+            }
+          />
+          <PillarCard
+            href="/infomap/install"
+            eyebrow="Install"
+            title="Install for your workflow"
+            text="Python, R, CLI, Docker, Homebrew, binaries, and TypeScript packages."
+            cta="How to install"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "infomap",
+                cta_type: "install",
+                content_id: "infomap-install-card",
               })
             }
           />

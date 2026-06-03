@@ -61,8 +61,8 @@ const SOURCE_TOOLS = [
     id: "tutorial",
     title: "Infomap tutorial notebooks",
     desc: "Walkthrough of the map equation, two-level and multilevel phases, memory and multilayer networks, and the solution landscape.",
-    href: "https://github.com/mapequation/infomap-tutorial-notebooks",
-    link: "mapequation/infomap-tutorial-notebooks",
+    href: "https://github.com/mapequation/infomap/tree/master/examples/notebooks",
+    link: "infomap/examples/notebooks",
   },
   {
     id: "partval",

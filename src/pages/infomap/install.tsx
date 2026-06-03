@@ -59,6 +59,20 @@ const installMethods: InstallMethod[] = [
     language: "shell",
   },
   {
+    id: "RPackage",
+    label: "R",
+    title: "R package",
+    package: "r",
+    description:
+      "Use the R package when Infomap is part of an R analysis workflow. Pre-built binaries are published on r-universe.",
+    tags: ["R", "r-universe"],
+    command:
+      'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
+    commandContentId: "r-install",
+    links: [["r-universe", "//mapequation.r-universe.dev/infomap"]],
+    language: "r",
+  },
+  {
     id: "HomebrewCli",
     label: "CLI",
     title: "Native CLI with Homebrew",
@@ -79,46 +93,6 @@ const installMethods: InstallMethod[] = [
     language: "shell",
   },
   {
-    id: "DownloadBinary",
-    label: "Binaries",
-    title: "Standalone binaries",
-    description:
-      "Use a standalone binary when you only need the executable. OpenMP builds may be faster on larger networks but require OpenMP runtime libraries.",
-    tags: ["macOS", "Linux", "Windows", "OpenMP"],
-    custom: "binaries",
-    links: [
-      ["Latest release", "//github.com/mapequation/infomap/releases/latest"],
-    ],
-    language: "shell",
-  },
-  {
-    id: "RPackage",
-    label: "R",
-    title: "R package",
-    package: "r",
-    description:
-      "Use the R package when Infomap is part of an R analysis workflow. Pre-built binaries are published on r-universe.",
-    tags: ["R", "r-universe"],
-    command:
-      'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
-    commandContentId: "r-install",
-    links: [["r-universe", "//mapequation.r-universe.dev/infomap"]],
-    language: "r",
-  },
-  {
-    id: "JavaScriptPackage",
-    label: "TypeScript",
-    title: "TypeScript package",
-    package: "typescript",
-    description:
-      "Use the WebAssembly worker package to embed Infomap in browser, Node.js, and TypeScript applications.",
-    tags: ["TypeScript", "NPM"],
-    command: "npm install @mapequation/infomap",
-    commandContentId: "npm-install",
-    links: [["npm", "//www.npmjs.com/package/@mapequation/infomap"]],
-    language: "shell",
-  },
-  {
     id: "Docker",
     label: "Docker",
     title: "Docker",
@@ -134,6 +108,32 @@ const installMethods: InstallMethod[] = [
         "ghcr.io/mapequation/infomap",
         "//github.com/mapequation/infomap/pkgs/container/infomap",
       ],
+    ],
+    language: "shell",
+  },
+  {
+    id: "JavaScriptPackage",
+    label: "TypeScript",
+    title: "TypeScript package",
+    package: "typescript",
+    description:
+      "Use the WebAssembly worker package to embed Infomap in browser, Node.js, and TypeScript applications.",
+    tags: ["TypeScript", "NPM"],
+    command: "npm install @mapequation/infomap",
+    commandContentId: "npm-install",
+    links: [["npm", "//www.npmjs.com/package/@mapequation/infomap"]],
+    language: "shell",
+  },
+  {
+    id: "DownloadBinary",
+    label: "Binaries",
+    title: "Standalone binaries",
+    description:
+      "Use a standalone binary when you only need the executable. OpenMP builds may be faster on larger networks but require OpenMP runtime libraries.",
+    tags: ["macOS", "Linux", "Windows", "OpenMP"],
+    custom: "binaries",
+    links: [
+      ["Latest release", "//github.com/mapequation/infomap/releases/latest"],
     ],
     language: "shell",
   },
@@ -412,7 +412,7 @@ const InstallPage: NextPage = () => {
             id="Install"
             scrollMarginTop="7rem"
           >
-            Install Infomap for Python, R, or build from source
+            Install Infomap for Python, R, CLI, Docker, and TypeScript
           </Heading>
 
           <Text

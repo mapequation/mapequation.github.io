@@ -158,7 +158,7 @@ function CodeBlockContent() {
     <CkCodeBlock.Content>
       <Float placement="top-end" offset="5" zIndex="1">
         <CkCodeBlock.CopyTrigger asChild>
-          <IconButton variant="ghost" size="2xs">
+          <IconButton aria-label="Copy code" variant="ghost" size="2xs">
             <CkCodeBlock.CopyIndicator />
           </IconButton>
         </CkCodeBlock.CopyTrigger>

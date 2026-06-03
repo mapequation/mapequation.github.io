@@ -29,14 +29,20 @@ const PORTAL_CARDS = [
       "Install the reference implementation or test a network in your browser.",
     image: "/apps/Infomap.png",
     imagePosition: "center top",
+    imageSize: undefined,
+    ctaType: "try",
+    contentId: "portal-infomap",
   },
   {
     href: "/apps",
-    title: "Apps",
+    title: "Apps & Notebooks",
     description:
-      "Inspect partitions, hierarchies, alluvial changes, and bioregions.",
+      "Inspect partitions, hierarchies, alluvial changes, notebooks, and bioregions.",
     image: "/apps/NewAlluvialGenerator.png",
     imagePosition: "bottom left",
+    imageSize: undefined,
+    ctaType: "docs",
+    contentId: "portal-apps-notebooks",
   },
   {
     href: "/publications",
@@ -47,8 +53,10 @@ const PORTAL_CARDS = [
       "/publications/Rosvall-Bergstrom-2008-Maps-of-information-flow/science2004.svg",
     imagePosition: "bottom right",
     imageSize: "120%",
+    ctaType: "cite",
+    contentId: "portal-publications",
   },
-];
+] as const;
 
 interface Props {
   recentNews: NewsItem[];
@@ -90,20 +98,20 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
                 })
               }
             >
-              Run a network in Infomap <LuArrowRight />
+              Try Infomap in your browser <LuArrowRight />
             </PrimaryButton>
             <Button asChild size="lg" variant="surface">
               <NextLink
-                href="/publications#Smiljanic-Etal-2026-MapEquationSurvey"
+                href="/infomap/install"
                 onClick={() =>
                   trackEvent("cta_clicked", {
                     site_area: "home",
-                    cta_type: "read",
-                    content_id: "survey-2026",
+                    cta_type: "install",
+                    content_id: "hero-install",
                   })
                 }
               >
-                Read the survey <LuArrowRight />
+                Install Infomap <LuArrowRight />
               </NextLink>
             </Button>
           </Flex>
@@ -134,13 +142,8 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
               onClick={() =>
                 trackEvent("cta_clicked", {
                   site_area: "home",
-                  cta_type:
-                    card.href === "/publications"
-                      ? "cite"
-                      : card.href === "/apps"
-                        ? "docs"
-                        : "install",
-                  content_id: `portal-${card.title.toLowerCase()}`,
+                  cta_type: card.ctaType,
+                  content_id: card.contentId,
                 })
               }
               style={{ textDecoration: "none", display: "block" }}

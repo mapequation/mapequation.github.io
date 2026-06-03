@@ -126,6 +126,9 @@ const ActionLink = ({
     }
     fontSize="sm"
     color="link.emphasis"
+    display="inline-flex"
+    alignItems="center"
+    gap={1}
     textDecoration="none"
     _hover={{ color: "link.emphasisHover", textDecoration: "underline" }}
   >
@@ -483,19 +486,19 @@ const PublicationsAccordion = ({
                     />
                   )}
                   <HStack gap={4} mt={p.bodyHtml ? 4 : 0} flexWrap="wrap">
-                    {p.doiHref && p.journal && (
+                    {p.journal && (
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
+                        {p.journal}
+                      </Text>
+                    )}
+                    {p.doiHref && (
                       <ActionLink
                         href={p.doiHref}
                         destination="doi"
                         paper={p.slug}
                       >
-                        {p.journal} ↗
+                        DOI ↗
                       </ActionLink>
-                    )}
-                    {!p.doiHref && p.journal && (
-                      <Text color="fg.muted" fontSize="sm" mb={0}>
-                        {p.journal}
-                      </Text>
                     )}
                     {p.arxiv && (
                       <ActionLink
@@ -513,7 +516,7 @@ const PublicationsAccordion = ({
                         destination="pdf"
                         paper={p.slug}
                       >
-                        <FaRegFilePdf size={16} />
+                        <FaRegFilePdf size={16} aria-hidden="true" /> PDF
                       </ActionLink>
                     )}
                     <ActionLink
@@ -522,7 +525,8 @@ const PublicationsAccordion = ({
                       destination="google-scholar"
                       paper={p.slug}
                     >
-                      <SiGooglescholar size={16} />
+                      <SiGooglescholar size={16} aria-hidden="true" /> Google
+                      Scholar
                     </ActionLink>
                     {p.links?.map((l) => (
                       <ActionLink
