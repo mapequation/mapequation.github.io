@@ -96,6 +96,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           </Script>
         </>
       )}
+      <Script
+        defer
+        src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "796ca5d926a84b2b8c959e636b6ab0df"}'
+      />
 
       <ChakraProvider value={system}>
         <SiteLayout fillViewport={fillViewport}>
