@@ -8,6 +8,7 @@ export type AnalyticsEvent =
   | "workbench_run_started"
   | "workbench_run_completed"
   | "workbench_output_downloaded"
+  | "workbench_share_url_saved"
   | "support_clicked";
 
 export type AnalyticsProps = {

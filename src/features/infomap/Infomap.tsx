@@ -18,6 +18,7 @@ import {
   type ComponentProps,
   type FC,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -26,6 +27,7 @@ import {
 import {
   LuChevronDown,
   LuChevronRight,
+  LuCheck,
   LuDownload,
   LuFiles,
   LuPanelLeftOpen,
@@ -77,6 +79,7 @@ import {
   type PreviewGraph,
   parseInfomapPreviewResult,
 } from "./parseInfomapPreview";
+import { buildWorkbenchUrl, parseWorkbenchUrlState } from "./urlState";
 
 localforage.config({ name: "infomap" });
 
@@ -509,6 +512,7 @@ export default function InfomapOnline() {
   const [isRunning, setIsRunning] = useState(false);
   const [isInputLoading, setIsInputLoading] = useState(false);
   const [lastRun, setLastRun] = useState<LastRunSummary | null>(null);
+  const [shareUrlSaved, setShareUrlSaved] = useState(false);
   const [showAdvancedParameters, setShowAdvancedParameters] = useState(false);
   const [parameterSearch, setParameterSearch] = useState("");
   const [openInputCards, setOpenInputCards] = useState<Set<InputName>>(
@@ -566,6 +570,7 @@ export default function InfomapOnline() {
   const [isPreviewParsing, setIsPreviewParsing] = useState(false);
   const previewRunIdRef = useRef(0);
   const previewTimeoutRef = useRef<number | null>(null);
+  const initializedUrlStateRef = useRef(false);
 
   const [infomap] = useState(() =>
     new Infomap()
@@ -629,15 +634,41 @@ export default function InfomapOnline() {
   const hiddenOutputKeysRef = useRef<Set<OutputKey>>(new Set());
 
   useEffect(() => {
-    const args = new URLSearchParams(window.location.search).get("args");
-    const setArgs = store.params.setArgs;
+    if (initializedUrlStateRef.current) return;
+    initializedUrlStateRef.current = true;
 
-    if (args) {
-      setArgs(args);
-    } else {
-      setArgs(DEFAULT_INFOMAP_ARGS);
+    const urlState = parseWorkbenchUrlState(
+      new URLSearchParams(window.location.search),
+    );
+    const expandedInputs = new Set<InputName>();
+
+    if (urlState.network) {
+      store.setNetwork(urlState.network);
+      expandedInputs.add("network");
     }
-  }, [store.params.setArgs]);
+    if (urlState.clusterData) {
+      store.params.setFileParam(
+        store.params.getParam("--cluster-data"),
+        urlState.clusterData,
+      );
+      expandedInputs.add("cluster data");
+      setClusterChangedAt(Date.now());
+    }
+    if (urlState.metaData) {
+      store.params.setFileParam(
+        store.params.getParam("--meta-data"),
+        urlState.metaData,
+      );
+      expandedInputs.add("meta data");
+    }
+
+    store.params.setArgs(urlState.args ?? DEFAULT_INFOMAP_ARGS);
+
+    if (expandedInputs.size > 0) {
+      setOpenInputCards((current) => new Set([...current, ...expandedInputs]));
+      store.setActiveInput(expandedInputs.values().next().value ?? "network");
+    }
+  }, [store]);
 
   const directedActive = Boolean(store.params.getParam("--directed").active);
   const networkValue = store.network.value;
@@ -1139,6 +1170,46 @@ export default function InfomapOnline() {
       Run
     </Button>
   );
+  const saveShareUrl = useCallback(async () => {
+    if (typeof window === "undefined") return;
+
+    const shareUrl = buildWorkbenchUrl(window.location.href, {
+      args: params.args,
+      clusterData,
+      metaData,
+      network,
+    });
+    window.history.replaceState(null, "", shareUrl);
+
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+      } catch (error) {
+        console.warn("Failed to copy workbench URL.", error);
+      }
+    }
+
+    setShareUrlSaved(true);
+    window.setTimeout(() => setShareUrlSaved(false), 1400);
+    trackEvent("workbench_share_url_saved", {
+      site_area: "workbench",
+      content_id: "save-url",
+    });
+  }, [clusterData, metaData, network, params.args]);
+  const shareUrlButton = (
+    <Button
+      disabled={isRunning}
+      onClick={() => {
+        void saveShareUrl();
+      }}
+      size="sm"
+      title="Save current inputs in the URL and copy it"
+      variant="outline"
+    >
+      {shareUrlSaved ? <LuCheck /> : <LuShare2 />}
+      {shareUrlSaved ? "Saved" : "Save URL"}
+    </Button>
+  );
   const renderInputPanel = () => (
     <>
       <WorkbenchPanelHeader
@@ -1388,7 +1459,10 @@ export default function InfomapOnline() {
       />
 
       <HStack flexShrink={0} justify="space-between" gap={3} mb={3}>
-        {runButton}
+        <HStack gap={2}>
+          {runButton}
+          {shareUrlButton}
+        </HStack>
         <RunStatus
           changedSinceRun={changedSinceRun}
           isRunning={isRunning}
