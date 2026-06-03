@@ -30,7 +30,7 @@ const PORTAL_CARDS = [
     image: "/apps/Infomap.png",
     imagePosition: "center top",
     imageSize: undefined,
-    ctaType: "try",
+    ctaType: "infomap",
     contentId: "portal-infomap",
   },
   {
@@ -93,7 +93,7 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
               onClick={() =>
                 trackEvent("cta_clicked", {
                   site_area: "home",
-                  cta_type: "try",
+                  cta_type: "infomap",
                   content_id: "hero-workbench",
                 })
               }

@@ -14,7 +14,7 @@ export type AnalyticsEvent =
 export type AnalyticsProps = {
   citation_type?: "bibtex" | "method-text";
   content_id?: string;
-  cta_type?: "try" | "install" | "docs" | "cite" | "read" | "support";
+  cta_type?: "infomap" | "install" | "docs" | "cite" | "read" | "support";
   destination?: string;
   elapsed_bucket?: string;
   example?: string;

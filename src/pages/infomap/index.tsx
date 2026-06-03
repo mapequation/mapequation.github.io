@@ -44,7 +44,7 @@ const Home: NextPage = () => {
               onClick={() =>
                 trackEvent("cta_clicked", {
                   site_area: "infomap",
-                  cta_type: "try",
+                  cta_type: "infomap",
                   content_id: "infomap-hero-workbench",
                 })
               }
@@ -74,7 +74,7 @@ const Home: NextPage = () => {
           onClick={() =>
             trackEvent("cta_clicked", {
               site_area: "infomap",
-              cta_type: "try",
+              cta_type: "infomap",
               content_id: "infomap-workbench-image",
             })
           }
@@ -104,14 +104,14 @@ const Home: NextPage = () => {
         <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
           <PillarCard
             href="/infomap/workbench"
-            eyebrow="Try it"
+            eyebrow="Workbench"
             title="Try a small network first"
             text="Upload or paste a network and inspect the communities before installing."
             cta="Open workbench"
             onClick={() =>
               trackEvent("cta_clicked", {
                 site_area: "infomap",
-                cta_type: "try",
+                cta_type: "infomap",
                 content_id: "infomap-workbench-card",
               })
             }

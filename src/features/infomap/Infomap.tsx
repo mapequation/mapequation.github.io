@@ -1174,16 +1174,17 @@ export default function InfomapOnline() {
 
     window.history.replaceState(null, "", shareUrl);
 
+    let copied = false;
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(shareUrl);
-        toaster.create(shareUrlSavedToast());
+        copied = true;
       } catch (error) {
         console.warn("Failed to copy workbench URL.", error);
-        return;
       }
     }
 
+    toaster.create(shareUrlSavedToast(copied));
     trackEvent("workbench_share_url_saved", {
       site_area: "workbench",
       content_id: "save-url",

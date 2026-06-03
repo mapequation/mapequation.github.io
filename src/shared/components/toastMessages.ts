@@ -1,7 +1,10 @@
-export function shareUrlSavedToast() {
+export function shareUrlSavedToast(copied: boolean) {
   return {
-    description: "Current inputs are saved in the URL and copied.",
-    title: "Share URL copied",
+    closable: true,
+    description: copied
+      ? "Current inputs are saved in the URL and copied."
+      : "Current inputs are saved in the URL.",
+    title: copied ? "Share URL copied" : "Share URL saved",
     type: "success" as const,
   };
 }

@@ -10,6 +10,7 @@ export { shareUrlSavedToast } from "./toastMessages";
 
 export const toaster = createToaster({
   max: 3,
+  offsets: "16px",
   placement: "bottom-end",
   pauseOnPageIdle: true,
 });
@@ -33,9 +34,12 @@ export function Toaster() {
     <Portal>
       <ToasterRoot toaster={toaster}>
         {(toast) => (
-          <Toast.Root>
+          <Toast.Root
+            w={{ base: "calc(100vw - 2rem)", md: "24rem" }}
+            maxW="calc(100vw - 2rem)"
+          >
             <Toast.Indicator />
-            <Stack gap={1} flex="1">
+            <Stack gap={1} flex="1" maxW="100%" minW={0}>
               {toast.title && <ToastTitle>{toast.title}</ToastTitle>}
               {toast.description && (
                 <ToastDescription>{toast.description}</ToastDescription>

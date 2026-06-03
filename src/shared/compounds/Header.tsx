@@ -213,9 +213,9 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
           <MegaSection title="Software">
             <MegaLink
               href="/infomap/workbench"
-              label="Try it"
+              label="Workbench"
               desc="Run Infomap in your browser"
-              analytics={{ cta_type: "try", content_id: "mega-try" }}
+              analytics={{ cta_type: "infomap", content_id: "mega-try" }}
             />
             <MegaLink
               href="/infomap/install"
