@@ -11,6 +11,7 @@ export interface AppCardProps {
   imagePosition?: string;
   imageSize?: string;
   external?: boolean;
+  onClick?: () => void;
   children?: ReactNode;
 }
 
@@ -23,6 +24,7 @@ export default function AppCard({
   imagePosition = "center",
   imageSize = "cover",
   external = true,
+  onClick,
 }: AppCardProps) {
   return (
     <Stack as="article" gap={3} bg="transparent" transition="transform 150ms">
@@ -36,6 +38,7 @@ export default function AppCard({
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noreferrer" : undefined}
+          onClick={onClick}
         >
           <ImageThumb
             src={image}
@@ -63,6 +66,7 @@ export default function AppCard({
             href={href}
             target={external ? "_blank" : undefined}
             rel={external ? "noreferrer" : undefined}
+            onClick={onClick}
           >
             Launch →
           </a>

@@ -9,6 +9,7 @@ import {
 import type { NextPage } from "next";
 import AppCard from "../shared/compounds/AppCard";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
+import { trackEvent } from "../shared/analytics";
 
 interface AppItem {
   id: string;
@@ -104,6 +105,13 @@ const AppsPage: NextPage = () => (
             image={a.image}
             imageAlt={a.title}
             imagePosition={a.imagePosition}
+            onClick={() =>
+              trackEvent("outbound_clicked", {
+                site_area: "apps",
+                content_id: `apps-${a.id}`,
+                destination: a.href,
+              })
+            }
           />
         ))}
       </SimpleGrid>
