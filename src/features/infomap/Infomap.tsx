@@ -10,8 +10,8 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import Infomap from "@mapequation/infomap";
 import type { Result } from "@mapequation/infomap";
+import Infomap from "@mapequation/infomap";
 import localforage from "localforage";
 import dynamic from "next/dynamic";
 import {
@@ -27,7 +27,6 @@ import {
 import {
   LuChevronDown,
   LuChevronRight,
-  LuCheck,
   LuDownload,
   LuFiles,
   LuPanelLeftOpen,
@@ -39,6 +38,7 @@ import {
   LuX,
 } from "react-icons/lu";
 import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
+import { shareUrlSavedToast, toaster } from "../../shared/components/toaster";
 import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
 import { trackEvent } from "../../shared/analytics";
 import {
@@ -76,8 +76,8 @@ import Parameters, {
 } from "./Parameters";
 import {
   errorGraph,
-  type PreviewGraph,
   parseInfomapPreviewResult,
+  type PreviewGraph,
 } from "./parseInfomapPreview";
 import { buildWorkbenchUrl, parseWorkbenchUrlState } from "./urlState";
 
@@ -512,7 +512,6 @@ export default function InfomapOnline() {
   const [isRunning, setIsRunning] = useState(false);
   const [isInputLoading, setIsInputLoading] = useState(false);
   const [lastRun, setLastRun] = useState<LastRunSummary | null>(null);
-  const [shareUrlSaved, setShareUrlSaved] = useState(false);
   const [showAdvancedParameters, setShowAdvancedParameters] = useState(false);
   const [parameterSearch, setParameterSearch] = useState("");
   const [openInputCards, setOpenInputCards] = useState<Set<InputName>>(
@@ -637,37 +636,41 @@ export default function InfomapOnline() {
     if (initializedUrlStateRef.current) return;
     initializedUrlStateRef.current = true;
 
-    const urlState = parseWorkbenchUrlState(
-      new URLSearchParams(window.location.search),
-    );
-    const expandedInputs = new Set<InputName>();
-
-    if (urlState.network) {
-      store.setNetwork(urlState.network);
-      expandedInputs.add("network");
-    }
-    if (urlState.clusterData) {
-      store.params.setFileParam(
-        store.params.getParam("--cluster-data"),
-        urlState.clusterData,
+    void (async () => {
+      const urlState = await parseWorkbenchUrlState(
+        new URLSearchParams(window.location.search),
       );
-      expandedInputs.add("cluster data");
-      setClusterChangedAt(Date.now());
-    }
-    if (urlState.metaData) {
-      store.params.setFileParam(
-        store.params.getParam("--meta-data"),
-        urlState.metaData,
-      );
-      expandedInputs.add("meta data");
-    }
+      const expandedInputs = new Set<InputName>();
 
-    store.params.setArgs(urlState.args ?? DEFAULT_INFOMAP_ARGS);
+      if (urlState.network) {
+        store.setNetwork(urlState.network);
+        expandedInputs.add("network");
+      }
+      if (urlState.clusterData) {
+        store.params.setFileParam(
+          store.params.getParam("--cluster-data"),
+          urlState.clusterData,
+        );
+        expandedInputs.add("cluster data");
+        setClusterChangedAt(Date.now());
+      }
+      if (urlState.metaData) {
+        store.params.setFileParam(
+          store.params.getParam("--meta-data"),
+          urlState.metaData,
+        );
+        expandedInputs.add("meta data");
+      }
 
-    if (expandedInputs.size > 0) {
-      setOpenInputCards((current) => new Set([...current, ...expandedInputs]));
-      store.setActiveInput(expandedInputs.values().next().value ?? "network");
-    }
+      store.params.setArgs(urlState.args ?? DEFAULT_INFOMAP_ARGS);
+
+      if (expandedInputs.size > 0) {
+        setOpenInputCards(
+          (current) => new Set([...current, ...expandedInputs]),
+        );
+        store.setActiveInput(expandedInputs.values().next().value ?? "network");
+      }
+    })();
   }, [store]);
 
   const directedActive = Boolean(store.params.getParam("--directed").active);
@@ -1153,63 +1156,39 @@ export default function InfomapOnline() {
     /Mac|iPhone|iPad/.test(navigator.platform)
       ? "⌘ + Enter"
       : "Ctrl + Enter";
-  const runButton = (
-    <Button
-      bg="brand.solid"
-      color="white"
-      _hover={{ bg: "brand.hover" }}
-      _active={{ bg: "brand.active" }}
-      _disabled={{ bg: "gray.300", color: "gray.500" }}
-      disabled={hasArgsError || isRunning}
-      loading={isRunning}
-      onClick={run}
-      size="sm"
-      title={`Run Infomap (${runShortcut})`}
-    >
-      <LuPlay />
-      Run
-    </Button>
-  );
   const saveShareUrl = useCallback(async () => {
     if (typeof window === "undefined") return;
 
-    const shareUrl = buildWorkbenchUrl(window.location.href, {
-      args: params.args,
-      clusterData,
-      metaData,
-      network,
-    });
+    let shareUrl: string;
+    try {
+      shareUrl = await buildWorkbenchUrl(window.location.href, {
+        args: params.args,
+        clusterData,
+        metaData,
+        network,
+      });
+    } catch (error) {
+      console.warn("Failed to build workbench URL.", error);
+      return;
+    }
+
     window.history.replaceState(null, "", shareUrl);
 
     if (navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(shareUrl);
+        toaster.create(shareUrlSavedToast());
       } catch (error) {
         console.warn("Failed to copy workbench URL.", error);
+        return;
       }
     }
 
-    setShareUrlSaved(true);
-    window.setTimeout(() => setShareUrlSaved(false), 1400);
     trackEvent("workbench_share_url_saved", {
       site_area: "workbench",
       content_id: "save-url",
     });
   }, [clusterData, metaData, network, params.args]);
-  const shareUrlButton = (
-    <Button
-      disabled={isRunning}
-      onClick={() => {
-        void saveShareUrl();
-      }}
-      size="sm"
-      title="Save current inputs in the URL and copy it"
-      variant="outline"
-    >
-      {shareUrlSaved ? <LuCheck /> : <LuShare2 />}
-      {shareUrlSaved ? "Saved" : "Save URL"}
-    </Button>
-  );
   const renderInputPanel = () => (
     <>
       <WorkbenchPanelHeader
@@ -1460,8 +1439,30 @@ export default function InfomapOnline() {
 
       <HStack flexShrink={0} justify="space-between" gap={3} mb={3}>
         <HStack gap={2}>
-          {runButton}
-          {shareUrlButton}
+          <Button
+            bg="brand.solid"
+            color="white"
+            _hover={{ bg: "brand.hover" }}
+            _active={{ bg: "brand.active" }}
+            _disabled={{ bg: "gray.300", color: "gray.500" }}
+            disabled={hasArgsError || isRunning}
+            loading={isRunning}
+            onClick={run}
+            size="sm"
+            title={`Run Infomap (${runShortcut})`}
+          >
+            <LuPlay />
+            Run
+          </Button>
+          <Button
+            disabled={isRunning}
+            onClick={() => void saveShareUrl()}
+            size="sm"
+            title="Save current inputs in the URL and copy it"
+            variant="outline"
+          >
+            <LuShare2 /> Share
+          </Button>
         </HStack>
         <RunStatus
           changedSinceRun={changedSinceRun}

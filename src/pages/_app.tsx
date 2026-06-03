@@ -10,6 +10,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { useEffect } from "react";
+import { Toaster } from "../shared/components/toaster";
 import SiteLayout from "../shared/compounds/SiteLayout";
 import system from "../theme";
 
@@ -100,6 +101,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <SiteLayout fillViewport={fillViewport}>
           <Component {...pageProps} />
         </SiteLayout>
+        <Toaster />
       </ChakraProvider>
     </>
   );
