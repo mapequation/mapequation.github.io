@@ -101,6 +101,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "796ca5d926a84b2b8c959e636b6ab0df"}'
       />
+      <Script
+        data-goatcounter="https://mapequation.goatcounter.com/count"
+        async
+        src="//gc.zgo.at/count.js"
+      />
 
       <ChakraProvider value={system}>
         <SiteLayout fillViewport={fillViewport}>
