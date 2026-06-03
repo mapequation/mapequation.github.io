@@ -4,6 +4,7 @@ export type AnalyticsEvent =
   | "code_example_copied"
   | "citation_copied"
   | "outbound_clicked"
+  | "not_found"
   | "workbench_opened"
   | "workbench_run_started"
   | "workbench_run_completed"
@@ -12,6 +13,7 @@ export type AnalyticsEvent =
   | "support_clicked";
 
 export type AnalyticsProps = {
+  attempted_path?: string;
   citation_type?: "bibtex" | "method-text";
   content_id?: string;
   cta_type?: "infomap" | "install" | "docs" | "cite" | "read" | "support";
@@ -25,6 +27,7 @@ export type AnalyticsProps = {
   package?: "python" | "r" | "homebrew" | "docker" | "typescript" | "source";
   page_path?: string;
   paper?: string;
+  referrer?: string;
   site_area?:
     | "home"
     | "infomap"
