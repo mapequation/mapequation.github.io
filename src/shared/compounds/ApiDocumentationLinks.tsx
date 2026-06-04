@@ -1,5 +1,4 @@
 import { chakra, Heading, SimpleGrid, Stack, Text } from "@chakra-ui/react";
-import { LuArrowRight } from "react-icons/lu";
 import { trackEvent, type AnalyticsProps } from "../analytics";
 import { INFOMAP_PYTHON_DOCS_URL, INFOMAP_R_DOCS_URL } from "../docsUrls";
 
