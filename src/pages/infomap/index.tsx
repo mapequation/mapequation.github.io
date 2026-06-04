@@ -13,6 +13,7 @@ import NextLink from "next/link";
 import { LuArrowRight } from "react-icons/lu";
 import { trackEvent } from "../../shared/analytics";
 import { PrimaryButton } from "../../shared/components/PrimaryButton";
+import { ApiDocumentationLinks } from "../../shared/compounds/ApiDocumentationLinks";
 import InstallCard from "../../shared/compounds/InstallCard";
 import PillarCard from "../../shared/compounds/PillarCard";
 import { PortalEyebrow, PortalSection } from "../../shared/compounds/portal";
@@ -99,6 +100,29 @@ const Home: NextPage = () => {
         </NextLink>
       </SimpleGrid>
 
+      <PortalSection title="API documentation" eyebrow="Docs">
+        <Text color="gray.700" fontSize="sm" mb={4} maxW="44rem">
+          Looking for the Python API docs? Old Python documentation bookmarks
+          may land on this Infomap overview. Use the API references below for
+          Python and R workflows.
+        </Text>
+        <ApiDocumentationLinks
+          siteArea="infomap"
+          pythonContentId="infomap-python-docs-notice"
+          rContentId="infomap-r-docs-notice"
+        />
+      </PortalSection>
+
+      <PortalSection
+        id="install"
+        eyebrow="Install"
+        title="Choose your research workflow"
+        href="/infomap/install"
+        linkText="Full install guide"
+      >
+        <InstallCard />
+      </PortalSection>
+
       {/* Three pillars — using Infomap */}
       <PortalSection title="Use Infomap" eyebrow="Get started">
         <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
@@ -145,16 +169,6 @@ const Home: NextPage = () => {
             }
           />
         </SimpleGrid>
-      </PortalSection>
-
-      <PortalSection
-        id="install"
-        eyebrow="Install"
-        title="Choose your research workflow"
-        href="/infomap/install"
-        linkText="Full install guide"
-      >
-        <InstallCard />
       </PortalSection>
 
       <PortalSection title="Documentation" eyebrow="Learn">

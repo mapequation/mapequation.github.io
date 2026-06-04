@@ -1,6 +1,7 @@
 import { chakra, Flex, Text } from "@chakra-ui/react";
 import { trackEvent, type AnalyticsProps } from "../analytics";
 import { TabbedCodeBlock } from "../components/CodeBlock";
+import { INFOMAP_PYTHON_DOCS_URL, INFOMAP_R_DOCS_URL } from "../docsUrls";
 
 type InstallOption = {
   id: string;
@@ -23,10 +24,9 @@ const installOptions: InstallOption[] = [
     note: "Recommended for most research workflows · Python 3.11+ · Windows / macOS / Linux wheels",
     package: "python",
     links: [
-      { label: "PyPI", href: "https://pypi.org/project/infomap/" },
       {
         label: "Python API docs",
-        href: "https://mapequation.github.io/infomap-python-docs/",
+        href: INFOMAP_PYTHON_DOCS_URL,
       },
     ],
     language: "shell",
@@ -42,7 +42,7 @@ const installOptions: InstallOption[] = [
     links: [
       {
         label: "r-universe",
-        href: "https://mapequation.r-universe.dev/infomap",
+        href: INFOMAP_R_DOCS_URL,
       },
     ],
     language: "r",

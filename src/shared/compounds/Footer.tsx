@@ -11,6 +11,7 @@ import NextLink from "next/link";
 import { trackEvent } from "../analytics";
 import EmailLink from "../components/EmailLink";
 import Logo from "../components/Logo";
+import { INFOMAP_PYTHON_DOCS_URL, INFOMAP_R_DOCS_URL } from "../docsUrls";
 import { PortalEyebrow } from "./portal";
 
 const linkStyles = {
@@ -120,25 +121,18 @@ export default function Footer() {
                 GitHub ↗
               </FootLink>
               <FootLink
-                href="https://pypi.org/project/infomap/"
+                href={INFOMAP_PYTHON_DOCS_URL}
                 external
-                eventId="footer-pypi"
+                eventId="footer-python-docs"
               >
-                PyPI ↗
+                Python API docs ↗
               </FootLink>
               <FootLink
-                href="https://mapequation.r-universe.dev/infomap"
+                href={INFOMAP_R_DOCS_URL}
                 external
                 eventId="footer-r-universe"
               >
                 R-universe ↗
-              </FootLink>
-              <FootLink
-                href="https://www.npmjs.com/package/@mapequation/infomap"
-                external
-                eventId="footer-npm"
-              >
-                npm ↗
               </FootLink>
             </Stack>
           </Box>

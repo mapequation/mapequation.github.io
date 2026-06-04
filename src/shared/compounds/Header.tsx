@@ -23,6 +23,7 @@ import {
 import { LuMenu, LuX } from "react-icons/lu";
 import { trackEvent, type AnalyticsProps } from "../analytics";
 import Logo from "../components/Logo";
+import { INFOMAP_PYTHON_DOCS_URL, INFOMAP_R_DOCS_URL } from "../docsUrls";
 
 interface NavItem {
   id: string;
@@ -126,42 +127,73 @@ const MegaLink = ({
   label,
   desc,
   analytics,
+  external = false,
 }: {
   href: string;
   label: string;
   desc: string;
   analytics?: AnalyticsProps;
-}) => (
-  <Box
-    asChild
-    display="block"
-    px={2.5}
-    py={2}
-    borderRadius="md"
-    color="fg"
-    textDecoration="none"
-    _hover={{ bg: "bg.subtle" }}
-  >
-    <NextLink
-      href={href}
-      prefetch={false}
-      onClick={() =>
-        trackEvent("cta_clicked", {
-          site_area: "infomap",
-          content_id: `mega-${label.toLowerCase().replaceAll(" ", "-")}`,
-          ...analytics,
-        })
-      }
-    >
+  external?: boolean;
+}) => {
+  const contentId =
+    analytics?.content_id ?? `mega-${label.toLowerCase().replaceAll(" ", "-")}`;
+  const children = (
+    <>
       <Text as="strong" fontSize="sm" fontWeight={600} mb={0}>
         {label}
       </Text>
       <Text color="fg.muted" fontSize="xs" mb={0} mt="2px">
         {desc}
       </Text>
-    </NextLink>
-  </Box>
-);
+    </>
+  );
+
+  return (
+    <Box
+      asChild
+      display="block"
+      px={2.5}
+      py={2}
+      borderRadius="md"
+      color="fg"
+      textDecoration="none"
+      _hover={{ bg: "bg.subtle" }}
+    >
+      {external ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() =>
+            trackEvent("outbound_clicked", {
+              site_area: "infomap",
+              cta_type: "docs",
+              ...analytics,
+              content_id: contentId,
+              destination: href,
+            })
+          }
+        >
+          {children}
+        </a>
+      ) : (
+        <NextLink
+          href={href}
+          prefetch={false}
+          onClick={() =>
+            trackEvent("cta_clicked", {
+              site_area: "infomap",
+              content_id: contentId,
+              ...analytics,
+            })
+          }
+        >
+          {children}
+        </NextLink>
+      )}
+    </Box>
+  );
+};
 
 // Chakra v3 HoverCard's Trigger/Content children prop is missing from
 // the published types — runtime accepts children fine, just narrow.
@@ -236,6 +268,20 @@ const InfomapMega = ({ active, href }: { active: boolean; href: string }) => (
               label="How it works"
               desc="The map equation and the search algorithm"
               analytics={{ cta_type: "docs", content_id: "mega-how-it-works" }}
+            />
+            <MegaLink
+              href={INFOMAP_PYTHON_DOCS_URL}
+              label="Python API"
+              desc="Python package reference"
+              external
+              analytics={{ cta_type: "docs", content_id: "mega-python-api" }}
+            />
+            <MegaLink
+              href={INFOMAP_R_DOCS_URL}
+              label="R package"
+              desc="R reference on r-universe"
+              external
+              analytics={{ cta_type: "docs", content_id: "mega-r-package" }}
             />
           </MegaSection>
         </SimpleGrid>

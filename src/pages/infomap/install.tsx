@@ -19,6 +19,11 @@ import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
 import { Tag } from "../../shared/components/Tag";
+import { ApiDocumentationLinks } from "../../shared/compounds/ApiDocumentationLinks";
+import {
+  INFOMAP_PYTHON_DOCS_URL,
+  INFOMAP_R_DOCS_URL,
+} from "../../shared/docsUrls";
 
 type InstallMethod = {
   command?: string;
@@ -54,7 +59,7 @@ const installMethods: InstallMethod[] = [
     ],
     links: [
       ["PyPI", "//pypi.org/project/infomap/"],
-      ["Python API reference", "//mapequation.github.io/infomap-python-docs/"],
+      ["Python API reference", INFOMAP_PYTHON_DOCS_URL],
     ],
     language: "shell",
   },
@@ -69,7 +74,7 @@ const installMethods: InstallMethod[] = [
     command:
       'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
     commandContentId: "r-install",
-    links: [["r-universe", "//mapequation.r-universe.dev/infomap"]],
+    links: [["r-universe", INFOMAP_R_DOCS_URL]],
     language: "r",
   },
   {
@@ -434,6 +439,17 @@ const InstallPage: NextPage = () => {
               ),
             )}
           </Flex>
+
+          <DocsCard title="API documentation" mb={8}>
+            <Text color="fg.muted" fontSize="sm" mb={4}>
+              Use these references once Infomap is installed in Python or R.
+            </Text>
+            <ApiDocumentationLinks
+              siteArea="install"
+              pythonContentId="install-python-docs-top"
+              rContentId="install-r-docs-top"
+            />
+          </DocsCard>
 
           <Stack gap={6}>
             {installMethods.map((method) => (
