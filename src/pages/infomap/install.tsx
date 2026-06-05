@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LuArrowRight, LuMonitor, LuTerminal } from "react-icons/lu";
 import { type AnalyticsProps, trackEvent } from "../../shared/analytics";
 import { CodeBlock } from "../../shared/components/CodeBlock";
@@ -24,6 +24,10 @@ import {
   INFOMAP_PYTHON_DOCS_URL,
   INFOMAP_R_DOCS_URL,
 } from "../../shared/docsUrls";
+import {
+  getManualCommandCopyProps,
+  selectionElement,
+} from "./installCopyTracking";
 
 type InstallMethod = {
   command?: string;
@@ -229,7 +233,11 @@ function MethodCard({ method }: { method: InstallMethod }) {
             cta_type: "install",
             package: method.package,
             content_id: method.commandContentId,
+            copy_method: "button",
           }}
+          data-content-id={method.commandContentId}
+          data-install-command
+          data-package={method.package}
         >
           {method.command}
         </CodeBlock>
@@ -253,7 +261,13 @@ function MethodCard({ method }: { method: InstallMethod }) {
                     content_id: `${method.id}-${title
                       .toLowerCase()
                       .replaceAll(" ", "-")}`,
+                    copy_method: "button",
                   }}
+                  data-content-id={`${method.id}-${title
+                    .toLowerCase()
+                    .replaceAll(" ", "-")}`}
+                  data-install-command
+                  data-package={method.package}
                 >
                   {command}
                 </CodeBlock>
@@ -380,6 +394,22 @@ function BinaryTable() {
 
 const InstallPage: NextPage = () => {
   const [active, setActive] = useState("PythonPackage");
+
+  useEffect(() => {
+    function trackManualCommandCopy() {
+      const selection = window.getSelection();
+      const selectedText = selection?.toString() ?? "";
+      const element =
+        selectionElement(selection?.anchorNode ?? null) ??
+        selectionElement(selection?.focusNode ?? null);
+      const props = getManualCommandCopyProps(selectedText, element);
+
+      if (props) trackEvent("command_copied", props);
+    }
+
+    document.addEventListener("copy", trackManualCommandCopy);
+    return () => document.removeEventListener("copy", trackManualCommandCopy);
+  }, []);
 
   return (
     <Container>
