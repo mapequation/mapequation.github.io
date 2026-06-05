@@ -203,7 +203,7 @@ export default function HowToCite() {
             { label: "DOI", href: "https://doi.org/10.1073/pnas.0706851105" },
             {
               label: "PDF",
-              href: "/publications/Rosvall-Bergstrom-2008-Maps-of-information-flow/0706851105.pdf",
+              href: "/publications/Rosvall-Bergstrom-2008-Maps-of-information-flow/RosvallBergstromPNAS2008Full.pdf",
             },
           ]}
         />
