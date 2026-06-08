@@ -194,6 +194,22 @@ export async function parseWorkbenchUrlState(
   return parseLegacyState(params);
 }
 
+export async function parseWorkbenchLocationState(
+  search: string,
+  hash: string,
+) {
+  const hashParams = new URLSearchParams(
+    hash.startsWith("#") ? hash.slice(1) : hash,
+  );
+  const compressed = cleanParam(hashParams, SHARE_PARAM);
+  if (compressed) {
+    const state = await parseCompressedState(compressed);
+    if (state) return state;
+  }
+
+  return parseWorkbenchUrlState(new URLSearchParams(search));
+}
+
 export async function buildWorkbenchUrl(
   baseUrl: string,
   state: WorkbenchShareState,
@@ -217,8 +233,8 @@ export async function buildWorkbenchUrl(
     bytesToBase64Url(await compressText(JSON.stringify(payload))),
   );
 
-  url.search = params.toString();
-  url.hash = "";
+  url.search = "";
+  url.hash = params.toString();
   if (url.toString().length > MAX_SHARE_URL_LENGTH) {
     throw new Error("Share URL is too long for the current inputs.");
   }

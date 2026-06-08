@@ -79,7 +79,7 @@ import {
   parseInfomapPreviewResult,
   type PreviewGraph,
 } from "./parseInfomapPreview";
-import { buildWorkbenchUrl, parseWorkbenchUrlState } from "./urlState";
+import { buildWorkbenchUrl, parseWorkbenchLocationState } from "./urlState";
 
 localforage.config({ name: "infomap" });
 
@@ -637,8 +637,9 @@ export default function InfomapOnline() {
     initializedUrlStateRef.current = true;
 
     void (async () => {
-      const urlState = await parseWorkbenchUrlState(
-        new URLSearchParams(window.location.search),
+      const urlState = await parseWorkbenchLocationState(
+        window.location.search,
+        window.location.hash,
       );
       const expandedInputs = new Set<InputName>();
 
