@@ -28,7 +28,7 @@ import {
 import {
   getManualCommandCopyProps,
   selectionElement,
-} from "./installCopyTracking";
+} from "../../shared/installCopyTracking";
 
 type InstallMethod = {
   command?: string;
