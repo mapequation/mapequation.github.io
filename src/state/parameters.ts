@@ -2,7 +2,7 @@ import { parameters as infomapParameters } from "@mapequation/infomap";
 import arg from "arg";
 import type { InfomapParameter } from "./types";
 
-export const DEFAULT_INFOMAP_ARGS = "--clu --tree --num-trials 10";
+export const DEFAULT_INFOMAP_ARGS = "--clu --tree --num-trials 10 --pretty";
 
 const getOptions = (description: string) => {
   const match = description.match(/Options: (.*)\.$/);
