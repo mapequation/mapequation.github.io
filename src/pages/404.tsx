@@ -32,6 +32,7 @@ const NotFoundPage: NextPage = () => {
     <>
       <Head>
         <title>Page not found — MapEquation</title>
+        <meta name="robots" content="noindex" />
       </Head>
       <Container>
         <Stack
