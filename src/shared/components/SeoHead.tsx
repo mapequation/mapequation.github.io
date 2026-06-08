@@ -15,20 +15,39 @@ type SeoHeadProps = {
 };
 
 function absoluteUrl(path: string) {
-  if (path.startsWith("https://") || path.startsWith("http://")) {
-    return path;
-  }
-
-  return `${SITE_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`;
+  return new URL(path, SITE_ORIGIN).toString();
 }
 
 function canonicalUrl(path: string) {
-  if (path === "/") return `${SITE_ORIGIN}/`;
+  const url = new URL(path, SITE_ORIGIN);
 
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return absoluteUrl(
-    normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`,
-  );
+  url.hash = "";
+  url.search = "";
+
+  if (url.pathname !== "/" && !url.pathname.endsWith("/")) {
+    url.pathname = `${url.pathname}/`;
+  }
+
+  return url.toString();
+}
+
+function imageMimeType(image: string) {
+  const pathname = new URL(image, SITE_ORIGIN).pathname.toLowerCase();
+  const extension = pathname.split(".").pop();
+
+  switch (extension) {
+    case "gif":
+      return "image/gif";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "svg":
+      return "image/svg+xml";
+    case "webp":
+      return "image/webp";
+    default:
+      return "image/png";
+  }
 }
 
 export function SeoHead({
@@ -40,7 +59,7 @@ export function SeoHead({
 }: SeoHeadProps) {
   const canonical = canonicalUrl(path);
   const imageUrl = absoluteUrl(image);
-  const imageType = image.endsWith(".svg") ? "image/svg+xml" : "image/png";
+  const imageType = imageMimeType(image);
 
   return (
     <Head>
