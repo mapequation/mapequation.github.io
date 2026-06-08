@@ -1,4 +1,4 @@
-import type { AnalyticsProps } from "../../shared/analytics";
+import type { AnalyticsProps } from "./analytics";
 
 const INSTALL_COMMAND_SELECTOR = "[data-install-command]";
 

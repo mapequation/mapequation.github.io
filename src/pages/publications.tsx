@@ -24,6 +24,7 @@ import { FaRegFilePdf } from "react-icons/fa6";
 import { LuX } from "react-icons/lu";
 import { SiGooglescholar } from "react-icons/si";
 import { trackEvent } from "../shared/analytics";
+import { SeoHead } from "../shared/components/SeoHead";
 import { Tag } from "../shared/components/Tag";
 import HowToCite from "../shared/compounds/HowToCite";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
@@ -655,59 +656,66 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
   }, [publications]);
 
   return (
-    <Container>
-      <Stack mt={{ base: 8, md: 12 }} gap={4} align="flex-start">
-        <PortalEyebrow>Publications</PortalEyebrow>
-        <Heading as="h1" textStyle="h1" maxW="20ch">
-          Papers behind the Map Equation framework
-        </Heading>
-        <Text color="fg.muted" textStyle="body" maxW="42rem">
-          Find the core method papers, software citations, surveys, and
-          application papers for flow-based community detection with Infomap.
-        </Text>
-      </Stack>
-
-      <Box id="how-to-cite" mt={{ base: 10, md: 12 }} scrollMarginTop="6rem">
-        <HowToCite />
-      </Box>
-
-      {featured.length > 0 && (
-        <PortalSection
-          eyebrow="Featured"
-          title="Featured papers"
-          display={{ base: "none", lg: "block" }}
-        >
-          <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-            {featured.map((p) => (
-              <FeaturedPublicationCard
-                key={p.slug}
-                publication={p}
-                onSelect={(slug) => setOpenItems([slug])}
-              />
-            ))}
-          </SimpleGrid>
-        </PortalSection>
-      )}
-
-      <PortalSection title="All papers">
-        <Card.Root
-          bg="bg.panel"
-          borderColor="border.emphasized"
-          overflow="hidden"
-        >
-          <PublicationsAccordion
-            publications={publications}
-            value={openItems}
-            onValueChange={setOpenItems}
-            onFigureOpen={setFigurePublication}
-          />
-        </Card.Root>
-      </PortalSection>
-      <PublicationFigureModal
-        publication={figurePublication}
-        onClose={() => setFigurePublication(undefined)}
+    <>
+      <SeoHead
+        title="MapEquation publications and Infomap citations"
+        description="Find the core map equation papers, Infomap software citations, surveys, BibTeX, and application papers for flow-based community detection."
+        path="/publications/"
       />
-    </Container>
+      <Container>
+        <Stack mt={{ base: 8, md: 12 }} gap={4} align="flex-start">
+          <PortalEyebrow>Publications</PortalEyebrow>
+          <Heading as="h1" textStyle="h1" maxW="20ch">
+            Papers behind the Map Equation framework
+          </Heading>
+          <Text color="fg.muted" textStyle="body" maxW="42rem">
+            Find the core method papers, software citations, surveys, and
+            application papers for flow-based community detection with Infomap.
+          </Text>
+        </Stack>
+
+        <Box id="how-to-cite" mt={{ base: 10, md: 12 }} scrollMarginTop="6rem">
+          <HowToCite />
+        </Box>
+
+        {featured.length > 0 && (
+          <PortalSection
+            eyebrow="Featured"
+            title="Featured papers"
+            display={{ base: "none", lg: "block" }}
+          >
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+              {featured.map((p) => (
+                <FeaturedPublicationCard
+                  key={p.slug}
+                  publication={p}
+                  onSelect={(slug) => setOpenItems([slug])}
+                />
+              ))}
+            </SimpleGrid>
+          </PortalSection>
+        )}
+
+        <PortalSection title="All papers">
+          <Card.Root
+            bg="bg.panel"
+            borderColor="border.emphasized"
+            overflow="hidden"
+          >
+            <PublicationsAccordion
+              publications={publications}
+              value={openItems}
+              onValueChange={setOpenItems}
+              onFigureOpen={setFigurePublication}
+            />
+          </Card.Root>
+        </PortalSection>
+        <PublicationFigureModal
+          publication={figurePublication}
+          onClose={() => setFigurePublication(undefined)}
+        />
+      </Container>
+    </>
   );
 };
 

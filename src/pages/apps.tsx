@@ -7,6 +7,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
+import { SeoHead } from "../shared/components/SeoHead";
 import AppCard from "../shared/compounds/AppCard";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
 import { trackEvent } from "../shared/analytics";
@@ -82,85 +83,92 @@ const SOURCE_TOOLS = [
 ];
 
 const AppsPage: NextPage = () => (
-  <Container>
-    <Stack mt={{ base: 8, md: 12 }} gap={4} align="flex-start">
-      <PortalEyebrow>Apps</PortalEyebrow>
-      <Heading as="h1" textStyle="h1" maxW="20ch">
-        Tools for inspecting Infomap results
-      </Heading>
-      <Text color="gray.700" textStyle="body" maxW="42rem">
-        Explore module hierarchies, compare partitions, inspect higher-order
-        state networks, and visualize bioregions.
-      </Text>
-    </Stack>
+  <>
+    <SeoHead
+      title="MapEquation apps and notebooks"
+      description="Explore apps, notebooks, visualization tools, and companion methods for inspecting Infomap results and map equation workflows."
+      path="/apps/"
+    />
+    <Container>
+      <Stack mt={{ base: 8, md: 12 }} gap={4} align="flex-start">
+        <PortalEyebrow>Apps</PortalEyebrow>
+        <Heading as="h1" textStyle="h1" maxW="20ch">
+          Tools for inspecting Infomap results
+        </Heading>
+        <Text color="gray.700" textStyle="body" maxW="42rem">
+          Explore module hierarchies, compare partitions, inspect higher-order
+          state networks, and visualize bioregions.
+        </Text>
+      </Stack>
 
-    <PortalSection title="Apps">
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
-        {APPS.map((a) => (
-          <AppCard
-            key={a.id}
-            href={a.href}
-            title={a.title}
-            description={a.description}
-            image={a.image}
-            imageAlt={a.title}
-            imagePosition={a.imagePosition}
-            onClick={() =>
-              trackEvent("outbound_clicked", {
-                site_area: "apps",
-                content_id: `apps-${a.id}`,
-                destination: a.href,
-              })
-            }
-          />
-        ))}
-      </SimpleGrid>
-    </PortalSection>
+      <PortalSection title="Apps">
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
+          {APPS.map((a) => (
+            <AppCard
+              key={a.id}
+              href={a.href}
+              title={a.title}
+              description={a.description}
+              image={a.image}
+              imageAlt={a.title}
+              imagePosition={a.imagePosition}
+              onClick={() =>
+                trackEvent("outbound_clicked", {
+                  site_area: "apps",
+                  content_id: `apps-${a.id}`,
+                  destination: a.href,
+                })
+              }
+            />
+          ))}
+        </SimpleGrid>
+      </PortalSection>
 
-    <PortalSection title="Notebooks and companion methods">
-      <Text color="gray.600" fontSize="sm" mb={4} maxW="42rem">
-        Tutorials, validation tools, and significance tests for researchers
-        working with map equation results.
-      </Text>
-      <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-        {SOURCE_TOOLS.map((t) => (
-          <chakra.a
-            key={t.id}
-            href={t.href}
-            target="_blank"
-            rel="noreferrer"
-            role="group"
-            display="block"
-            bg="white"
-            borderWidth="1px"
-            borderColor="gray.200"
-            borderRadius="md"
-            p={5}
-            textDecoration="none"
-            color="inherit"
-            transition="border-color 150ms"
-            _hover={{ borderColor: "gray.400", textDecoration: "none" }}
-          >
-            <Heading as="h3" size="sm" mb={2}>
-              {t.title}
-            </Heading>
-            <Text color="gray.700" fontSize="sm" mb={3}>
-              {t.desc}
-            </Text>
-            <Text
-              color="link.emphasis"
-              fontFamily="monospace"
-              fontSize="xs"
-              mb={0}
-              _groupHover={{ color: "link.emphasisHover" }}
+      <PortalSection title="Notebooks and companion methods">
+        <Text color="gray.600" fontSize="sm" mb={4} maxW="42rem">
+          Tutorials, validation tools, and significance tests for researchers
+          working with map equation results.
+        </Text>
+        <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+          {SOURCE_TOOLS.map((t) => (
+            <chakra.a
+              key={t.id}
+              href={t.href}
+              target="_blank"
+              rel="noreferrer"
+              role="group"
+              display="block"
+              bg="white"
+              borderWidth="1px"
+              borderColor="gray.200"
+              borderRadius="md"
+              p={5}
+              textDecoration="none"
+              color="inherit"
+              transition="border-color 150ms"
+              _hover={{ borderColor: "gray.400", textDecoration: "none" }}
             >
-              {t.link} ↗
-            </Text>
-          </chakra.a>
-        ))}
-      </SimpleGrid>
-    </PortalSection>
-  </Container>
+              <Heading as="h3" size="sm" mb={2}>
+                {t.title}
+              </Heading>
+              <Text color="gray.700" fontSize="sm" mb={3}>
+                {t.desc}
+              </Text>
+              <Text
+                color="link.emphasis"
+                fontFamily="monospace"
+                fontSize="xs"
+                mb={0}
+                _groupHover={{ color: "link.emphasisHover" }}
+              >
+                {t.link} ↗
+              </Text>
+            </chakra.a>
+          ))}
+        </SimpleGrid>
+      </PortalSection>
+    </Container>
+  </>
 );
 
 export default AppsPage;

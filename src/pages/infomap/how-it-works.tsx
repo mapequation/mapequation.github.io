@@ -30,6 +30,7 @@ import {
 import traceDemoManifest from "../../../public/trace-demo/manifest.json";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { SeoHead } from "../../shared/components/SeoHead";
 
 const FlowDemo = dynamic(() => import("../../shared/compounds/FlowDemo"), {
   ssr: false,
@@ -483,404 +484,413 @@ const HowItWorksPage: NextPage = () => {
   );
 
   return (
-    <Container>
-      <Grid
-        templateColumns={{ base: "1fr", lg: "13rem 1fr" }}
-        gap={{ base: 8, lg: 12 }}
-        alignItems="start"
-        mt={8}
-      >
-        <DocsRail
-          items={railItems}
-          active={active}
-          onActiveChange={setActive}
-        />
+    <>
+      <SeoHead
+        title="How Infomap and the map equation work"
+        description="Learn how Infomap uses flow, compression, network models, and the map equation to detect communities in complex networks."
+        path="/infomap/how-it-works/"
+      />
+      <Container>
+        <Grid
+          templateColumns={{ base: "1fr", lg: "13rem 1fr" }}
+          gap={{ base: 8, lg: 12 }}
+          alignItems="start"
+          mt={8}
+        >
+          <DocsRail
+            items={railItems}
+            active={active}
+            onActiveChange={setActive}
+          />
 
-        <Box as="main">
-          <Text color="fg.muted" fontSize="sm" mb={2}>
-            Research framework
-          </Text>
-          <Heading
-            as="h1"
-            textStyle="h1"
-            mb={4}
-            id="HowItWorks"
-            scrollMarginTop="7rem"
-          >
-            Infomap maps networks by treating flow as a lens
-          </Heading>
-
-          <Stack gap={4} maxW="46rem" mb={8}>
-            <Text color="fg" fontSize={{ base: "md", md: "lg" }} mb={0}>
-              A network representation defines what can move, persist, or be
-              described. Infomap maps where that flow is retained, where it
-              crosses boundaries, and which modular description captures the
-              organization implied by the chosen lens. The resulting communities
-              are meaningful relative to that lens, not as a universal property
-              of the network.
+          <Box as="main">
+            <Text color="fg.muted" fontSize="sm" mb={2}>
+              Research framework
             </Text>
-          </Stack>
-
-          <Stack gap={5}>
-            <SectionCard
-              id="FlowLens"
-              eyebrow="Flow as a lens"
-              title="From research question to map"
+            <Heading
+              as="h1"
+              textStyle="h1"
+              mb={4}
+              id="HowItWorks"
+              scrollMarginTop="7rem"
             >
-              <Text color="fg.muted" fontSize="sm" maxW="44rem">
-                The scientific logic is a modeling chain: the research question
-                motivates the network representation, the representation guides
-                the flow model, and Infomap maps where that flow is retained.
-                Each step is adaptable and can be customized to the problem at
-                hand. The map should be interpreted through that chain.
+              Infomap maps networks by treating flow as a lens
+            </Heading>
+
+            <Stack gap={4} maxW="46rem" mb={8}>
+              <Text color="fg" fontSize={{ base: "md", md: "lg" }} mb={0}>
+                A network representation defines what can move, persist, or be
+                described. Infomap maps where that flow is retained, where it
+                crosses boundaries, and which modular description captures the
+                organization implied by the chosen lens. The resulting
+                communities are meaningful relative to that lens, not as a
+                universal property of the network.
               </Text>
-              <FigureCard
-                my={4}
-                caption="The map equation framework in three steps. A network representation (left) is chosen for the type of interaction — pairwise, multi-mode, multi-step, or multi-body. A random-walk model (middle) approximates the flow on that representation. Minimizing the map equation reveals flow modules (right) where a random walker tends to stay before moving on."
+            </Stack>
+
+            <Stack gap={5}>
+              <SectionCard
+                id="FlowLens"
+                eyebrow="Flow as a lens"
+                title="From research question to map"
               >
-                <chakra.img
-                  src="/images/fig-flow-mapping.svg"
-                  alt="Modeling and mapping flow with the map equation framework"
-                  maxW="48rem"
-                  w="100%"
-                  display="block"
-                  mx="auto"
-                />
-              </FigureCard>
-              <Card.Root
-                bg="bg.subtle"
-                borderColor="border.emphasized"
-                borderRadius="md"
-                borderWidth="1px"
-                mb={4}
-              >
-                <Card.Body p={4}>
-                  <Text
-                    color="fg.muted"
-                    fontFamily="monospace"
-                    fontSize="xs"
-                    letterSpacing="0.08em"
-                    textTransform="uppercase"
-                    mb={2}
-                  >
-                    Working definition
-                  </Text>
-                  <Text color="fg" fontSize="sm" fontWeight={600} mb={0}>
-                    In this page, a community is a region where flow is retained
-                    under the chosen network model — a region the random walker
-                    tends to stay inside before moving on.
-                  </Text>
-                </Card.Body>
-              </Card.Root>
-              <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-                {researchToMapSteps.map((step, index) => (
-                  <InfoCard
-                    key={step.title}
-                    title={step.title}
-                    index={index}
-                    highlighted={index === 2 || index === 4}
-                  >
-                    <Text color="fg.muted" fontSize="sm" mb={0}>
-                      {step.text}
-                    </Text>
-                  </InfoCard>
-                ))}
-              </SimpleGrid>
-            </SectionCard>
-
-            <SectionCard
-              id="ChooseLens"
-              eyebrow="Modeling choice"
-              title="Choosing the flow lens"
-            >
-              <Text color="fg.muted" fontSize="sm" maxW="42rem" mb={4}>
-                Flow is a modeling choice. It can be measured directly in some
-                systems and induced by the network representation in others. The
-                four typical setups below differ in where flow comes from and
-                how strongly the data constrains the lens.
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
-                {fitCards.map((card, index) => (
-                  <InfoCard
-                    key={card.title}
-                    title={card.title}
-                    highlighted={index === 1}
-                  >
-                    <Text color="fg.muted" fontSize="sm" mb={0}>
-                      {card.text}
-                    </Text>
-                  </InfoCard>
-                ))}
-              </SimpleGrid>
-            </SectionCard>
-
-            <SectionCard
-              id="NetworkModels"
-              eyebrow="Models"
-              title="Network models refine what the lens can see"
-            >
-              <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
-                The previous section asked what kind of process drives flow. The
-                network model decides how that process is encoded: direction,
-                weights, node types, layers, memory, scale, and regularization
-                each change what the random walker can do and which structure
-                becomes visible.
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
-                {networkModels.map((model) => (
-                  <InfoCard key={model.title} title={model.title}>
-                    <Text color="fg.muted" fontSize="sm">
-                      {model.text}
-                    </Text>
-                    <CkLink asChild fontSize="sm" fontWeight={600}>
-                      <NextLink href={model.href}>
-                        {model.linkText} <LuArrowRight />
-                      </NextLink>
-                    </CkLink>
-                  </InfoCard>
-                ))}
-              </SimpleGrid>
-            </SectionCard>
-
-            <SectionCard
-              id="RetainedFlow"
-              eyebrow="Communities"
-              title="Communities are regions of retained flow"
-            >
-              <Stack gap={3} maxW="44rem" mb={5}>
-                <Text color="fg.muted" fontSize="sm" mb={0}>
-                  Communities under this definition are not the same as dense
-                  node sets. A module is useful when flow circulates inside it
-                  long enough to make the boundary informative, regardless of
-                  how many edges connect the nodes.
+                <Text color="fg.muted" fontSize="sm" maxW="44rem">
+                  The scientific logic is a modeling chain: the research
+                  question motivates the network representation, the
+                  representation guides the flow model, and Infomap maps where
+                  that flow is retained. Each step is adaptable and can be
+                  customized to the problem at hand. The map should be
+                  interpreted through that chain.
                 </Text>
-                <Text color="fg.muted" fontSize="sm" mb={0}>
-                  For similarity, correlation, or affinity networks, flow probes
-                  the weighted topology — it does not imply that expression,
-                  similarity, or influence physically moves between nodes. The
-                  walker is a measurement device, not a claim about the system.
-                </Text>
-              </Stack>
-              <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-                {flowIntuitionCards.map((card, index) => (
-                  <InfoCard
-                    key={card.title}
-                    title={card.title}
-                    index={index}
-                    highlighted={index === 1}
-                  >
-                    <Text color="fg.muted" fontSize="sm" mb={0}>
-                      {card.text}
-                    </Text>
-                  </InfoCard>
-                ))}
-              </SimpleGrid>
-            </SectionCard>
-
-            <SectionCard
-              id="Compression"
-              eyebrow="Compression"
-              title="Good maps compress what matters"
-            >
-              <Stack gap={3} maxW="44rem" mb={5}>
-                <Text color="fg" fontSize="sm" fontWeight={600} mb={0}>
-                  If flow lingers in a region, naming it locally is cheaper than
-                  naming it globally. Retained flow and short codelength are the
-                  same property seen from two angles.
-                </Text>
-                <Text color="fg.muted" fontSize="sm" mb={0}>
-                  The map equation makes this concrete by scoring how
-                  efficiently a partition describes movement. When flow stays
-                  within modules, local codebooks reuse short names inside each
-                  module and only switch context when flow crosses a boundary.
-                  Short codelength means the map captures regularities in the
-                  modeled flow.
-                </Text>
-              </Stack>
-              <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-                {compressionCards.map((card, index) => (
-                  <InfoCard
-                    key={card.title}
-                    title={card.title}
-                    index={index}
-                    highlighted={index === 1}
-                  >
-                    <Text color="fg.muted" fontSize="sm" mb={0}>
-                      {card.text}
-                    </Text>
-                  </InfoCard>
-                ))}
-              </SimpleGrid>
-              <FigureCard
-                mt={5}
-                caption="The same random walker on two views of the network. Without modules (left), every node needs its own global codeword, so the average codelength L₁ stays high. With modules (right), the walker reuses short codewords inside each module and only spends extra bits on enter and exit codes when it crosses a boundary; when flow is retained inside modules, L drops. The walker also teleports to a random node with a small probability so it can escape dead ends and explore disconnected parts of the network — the same teleport that defines the stationary flow used by the map equation."
-              >
-                <FlowDemo showCodes />
-              </FigureCard>
-            </SectionCard>
-
-            <SectionCard
-              id="MapEquation"
-              eyebrow="Formula"
-              title="The map equation scores a partition"
-            >
-              <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
-                The map equation is an information-theoretic objective: the
-                expected codelength of describing a random walk with modular
-                codebooks. It connects retained-flow communities to how
-                efficiently the chosen flow model can be described.
-              </Text>
-              <FigureCard
-                mb={5}
-                maxW="52rem"
-                caption="Solution landscape across partitions of varying model complexity. The number of modules grows from left to right; colors mark module assignments and the numbers approximate the description length in bits per step. The shortest codelength balances model complexity against the regularities the partition captures — here the four-module partition at 3.1 bits."
-              >
-                <chakra.img
-                  src="/images/fig-complexity.svg"
-                  alt="Description length versus model complexity for partitions of a network"
-                  maxW="52rem"
-                  w="100%"
-                  display="block"
-                  mx="auto"
-                />
-              </FigureCard>
-              <Grid
-                templateColumns={{ base: "minmax(0, 1fr)", md: "3fr 2fr" }}
-                gap={5}
-                alignItems="stretch"
-                minW={0}
-              >
-                <Stack gap={4} minW={0}>
-                  <Flex
-                    align={{ base: "flex-start", sm: "center" }}
-                    bg="bg.subtle"
-                    borderWidth="1px"
-                    borderColor="border.emphasized"
-                    borderRadius="md"
-                    p={{ base: 4, md: 5 }}
-                    minH={{ md: "11rem" }}
-                    justifyContent={{ base: "flex-start", sm: "center" }}
-                    overflowX="auto"
-                    textAlign="center"
-                    fontSize={{ base: "0.78rem", sm: "sm", md: "lg" }}
-                    maxW="100%"
-                  >
-                    <TeX
-                      math="L(M) = q_{\curvearrowleft}H(\mathcal{Q}) + \sum_{i = 1}^{m}p_{\circlearrowright}^{i}H(\mathcal{P}^{i})"
-                      block
-                    />
-                  </Flex>
-                  <Text color="fg.muted" fontSize="sm" mb={0}>
-                    The entropy terms come from source coding: common events can
-                    have shorter codewords than rare events. A good partition
-                    makes codebook use predictable by matching module boundaries
-                    to retained flow.
-                  </Text>
-                </Stack>
-                <Stack gap={3}>
-                  {formulaTerms.map((item) => (
-                    <Box
-                      key={item.term}
-                      borderBottomWidth="1px"
-                      borderBottomColor="border.emphasized"
-                      pb={3}
+                <FigureCard
+                  my={4}
+                  caption="The map equation framework in three steps. A network representation (left) is chosen for the type of interaction — pairwise, multi-mode, multi-step, or multi-body. A random-walk model (middle) approximates the flow on that representation. Minimizing the map equation reveals flow modules (right) where a random walker tends to stay before moving on."
+                >
+                  <chakra.img
+                    src="/images/fig-flow-mapping.svg"
+                    alt="Modeling and mapping flow with the map equation framework"
+                    maxW="48rem"
+                    w="100%"
+                    display="block"
+                    mx="auto"
+                  />
+                </FigureCard>
+                <Card.Root
+                  bg="bg.subtle"
+                  borderColor="border.emphasized"
+                  borderRadius="md"
+                  borderWidth="1px"
+                  mb={4}
+                >
+                  <Card.Body p={4}>
+                    <Text
+                      color="fg.muted"
+                      fontFamily="monospace"
+                      fontSize="xs"
+                      letterSpacing="0.08em"
+                      textTransform="uppercase"
+                      mb={2}
                     >
-                      <Text color="fg" fontWeight={700} mb={1}>
-                        <TeX math={item.term} />
-                      </Text>
-                      <Text color="fg.muted" fontSize="sm" mb={0}>
-                        {item.text}
-                      </Text>
-                    </Box>
-                  ))}
-                </Stack>
-              </Grid>
-            </SectionCard>
-
-            <SectionCard
-              id="SearchAlgorithm"
-              eyebrow="Optimization"
-              title="How Infomap searches after the model is defined"
-            >
-              <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
-                Once the flow model and objective are defined, Infomap searches
-                for a map with a short description under that model. The
-                algorithmic question is practical: given this lens, which
-                partition and hierarchy best compress the flow?
-              </Text>
-              <AlgorithmTraceDemo
-                activeFrame={traceFrame}
-                setActiveFrame={setTraceFrame}
-              />
-              <Stack
-                gap={0}
-                borderTopWidth="1px"
-                borderTopColor="gray.200"
-                mt={5}
-              >
-                {algorithmSteps.map((step, index) => {
-                  const isCurrent = index === activeTraceStep;
-                  return (
-                    <Grid
+                      Working definition
+                    </Text>
+                    <Text color="fg" fontSize="sm" fontWeight={600} mb={0}>
+                      In this page, a community is a region where flow is
+                      retained under the chosen network model — a region the
+                      random walker tends to stay inside before moving on.
+                    </Text>
+                  </Card.Body>
+                </Card.Root>
+                <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+                  {researchToMapSteps.map((step, index) => (
+                    <InfoCard
                       key={step.title}
-                      templateColumns={{ base: "1fr", md: "5rem 1fr" }}
-                      gap={{ base: 1, md: 4 }}
-                      px={3}
-                      py={4}
-                      bg={isCurrent ? "red.50" : "transparent"}
-                      borderBottomWidth="1px"
-                      borderBottomColor="gray.200"
-                      borderLeftWidth="3px"
-                      borderLeftColor={isCurrent ? "red.500" : "transparent"}
-                      transition="background-color 160ms ease, border-color 160ms ease"
+                      title={step.title}
+                      index={index}
+                      highlighted={index === 2 || index === 4}
                     >
-                      <Text
-                        color={isCurrent ? "red.700" : "gray.500"}
-                        fontFamily="monospace"
-                        fontSize="xs"
-                        fontWeight={isCurrent ? 700 : 400}
-                        mb={0}
-                      >
-                        STEP {index + 1}
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
+                        {step.text}
                       </Text>
-                      <Box>
-                        <Heading
-                          as="h3"
-                          size="sm"
-                          mb={1}
-                          color={isCurrent ? "gray.950" : "gray.900"}
-                        >
-                          {step.title}
-                        </Heading>
+                    </InfoCard>
+                  ))}
+                </SimpleGrid>
+              </SectionCard>
+
+              <SectionCard
+                id="ChooseLens"
+                eyebrow="Modeling choice"
+                title="Choosing the flow lens"
+              >
+                <Text color="fg.muted" fontSize="sm" maxW="42rem" mb={4}>
+                  Flow is a modeling choice. It can be measured directly in some
+                  systems and induced by the network representation in others.
+                  The four typical setups below differ in where flow comes from
+                  and how strongly the data constrains the lens.
+                </Text>
+                <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+                  {fitCards.map((card, index) => (
+                    <InfoCard
+                      key={card.title}
+                      title={card.title}
+                      highlighted={index === 1}
+                    >
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
+                        {card.text}
+                      </Text>
+                    </InfoCard>
+                  ))}
+                </SimpleGrid>
+              </SectionCard>
+
+              <SectionCard
+                id="NetworkModels"
+                eyebrow="Models"
+                title="Network models refine what the lens can see"
+              >
+                <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
+                  The previous section asked what kind of process drives flow.
+                  The network model decides how that process is encoded:
+                  direction, weights, node types, layers, memory, scale, and
+                  regularization each change what the random walker can do and
+                  which structure becomes visible.
+                </Text>
+                <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
+                  {networkModels.map((model) => (
+                    <InfoCard key={model.title} title={model.title}>
+                      <Text color="fg.muted" fontSize="sm">
+                        {model.text}
+                      </Text>
+                      <CkLink asChild fontSize="sm" fontWeight={600}>
+                        <NextLink href={model.href}>
+                          {model.linkText} <LuArrowRight />
+                        </NextLink>
+                      </CkLink>
+                    </InfoCard>
+                  ))}
+                </SimpleGrid>
+              </SectionCard>
+
+              <SectionCard
+                id="RetainedFlow"
+                eyebrow="Communities"
+                title="Communities are regions of retained flow"
+              >
+                <Stack gap={3} maxW="44rem" mb={5}>
+                  <Text color="fg.muted" fontSize="sm" mb={0}>
+                    Communities under this definition are not the same as dense
+                    node sets. A module is useful when flow circulates inside it
+                    long enough to make the boundary informative, regardless of
+                    how many edges connect the nodes.
+                  </Text>
+                  <Text color="fg.muted" fontSize="sm" mb={0}>
+                    For similarity, correlation, or affinity networks, flow
+                    probes the weighted topology — it does not imply that
+                    expression, similarity, or influence physically moves
+                    between nodes. The walker is a measurement device, not a
+                    claim about the system.
+                  </Text>
+                </Stack>
+                <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+                  {flowIntuitionCards.map((card, index) => (
+                    <InfoCard
+                      key={card.title}
+                      title={card.title}
+                      index={index}
+                      highlighted={index === 1}
+                    >
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
+                        {card.text}
+                      </Text>
+                    </InfoCard>
+                  ))}
+                </SimpleGrid>
+              </SectionCard>
+
+              <SectionCard
+                id="Compression"
+                eyebrow="Compression"
+                title="Good maps compress what matters"
+              >
+                <Stack gap={3} maxW="44rem" mb={5}>
+                  <Text color="fg" fontSize="sm" fontWeight={600} mb={0}>
+                    If flow lingers in a region, naming it locally is cheaper
+                    than naming it globally. Retained flow and short codelength
+                    are the same property seen from two angles.
+                  </Text>
+                  <Text color="fg.muted" fontSize="sm" mb={0}>
+                    The map equation makes this concrete by scoring how
+                    efficiently a partition describes movement. When flow stays
+                    within modules, local codebooks reuse short names inside
+                    each module and only switch context when flow crosses a
+                    boundary. Short codelength means the map captures
+                    regularities in the modeled flow.
+                  </Text>
+                </Stack>
+                <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+                  {compressionCards.map((card, index) => (
+                    <InfoCard
+                      key={card.title}
+                      title={card.title}
+                      index={index}
+                      highlighted={index === 1}
+                    >
+                      <Text color="fg.muted" fontSize="sm" mb={0}>
+                        {card.text}
+                      </Text>
+                    </InfoCard>
+                  ))}
+                </SimpleGrid>
+                <FigureCard
+                  mt={5}
+                  caption="The same random walker on two views of the network. Without modules (left), every node needs its own global codeword, so the average codelength L₁ stays high. With modules (right), the walker reuses short codewords inside each module and only spends extra bits on enter and exit codes when it crosses a boundary; when flow is retained inside modules, L drops. The walker also teleports to a random node with a small probability so it can escape dead ends and explore disconnected parts of the network — the same teleport that defines the stationary flow used by the map equation."
+                >
+                  <FlowDemo showCodes />
+                </FigureCard>
+              </SectionCard>
+
+              <SectionCard
+                id="MapEquation"
+                eyebrow="Formula"
+                title="The map equation scores a partition"
+              >
+                <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
+                  The map equation is an information-theoretic objective: the
+                  expected codelength of describing a random walk with modular
+                  codebooks. It connects retained-flow communities to how
+                  efficiently the chosen flow model can be described.
+                </Text>
+                <FigureCard
+                  mb={5}
+                  maxW="52rem"
+                  caption="Solution landscape across partitions of varying model complexity. The number of modules grows from left to right; colors mark module assignments and the numbers approximate the description length in bits per step. The shortest codelength balances model complexity against the regularities the partition captures — here the four-module partition at 3.1 bits."
+                >
+                  <chakra.img
+                    src="/images/fig-complexity.svg"
+                    alt="Description length versus model complexity for partitions of a network"
+                    maxW="52rem"
+                    w="100%"
+                    display="block"
+                    mx="auto"
+                  />
+                </FigureCard>
+                <Grid
+                  templateColumns={{ base: "minmax(0, 1fr)", md: "3fr 2fr" }}
+                  gap={5}
+                  alignItems="stretch"
+                  minW={0}
+                >
+                  <Stack gap={4} minW={0}>
+                    <Flex
+                      align={{ base: "flex-start", sm: "center" }}
+                      bg="bg.subtle"
+                      borderWidth="1px"
+                      borderColor="border.emphasized"
+                      borderRadius="md"
+                      p={{ base: 4, md: 5 }}
+                      minH={{ md: "11rem" }}
+                      justifyContent={{ base: "flex-start", sm: "center" }}
+                      overflowX="auto"
+                      textAlign="center"
+                      fontSize={{ base: "0.78rem", sm: "sm", md: "lg" }}
+                      maxW="100%"
+                    >
+                      <TeX
+                        math="L(M) = q_{\curvearrowleft}H(\mathcal{Q}) + \sum_{i = 1}^{m}p_{\circlearrowright}^{i}H(\mathcal{P}^{i})"
+                        block
+                      />
+                    </Flex>
+                    <Text color="fg.muted" fontSize="sm" mb={0}>
+                      The entropy terms come from source coding: common events
+                      can have shorter codewords than rare events. A good
+                      partition makes codebook use predictable by matching
+                      module boundaries to retained flow.
+                    </Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    {formulaTerms.map((item) => (
+                      <Box
+                        key={item.term}
+                        borderBottomWidth="1px"
+                        borderBottomColor="border.emphasized"
+                        pb={3}
+                      >
+                        <Text color="fg" fontWeight={700} mb={1}>
+                          <TeX math={item.term} />
+                        </Text>
                         <Text color="fg.muted" fontSize="sm" mb={0}>
-                          {step.text}
+                          {item.text}
                         </Text>
                       </Box>
-                    </Grid>
-                  );
-                })}
-              </Stack>
-              <Text color="fg.muted" fontSize="sm" mt={4} mb={0}>
-                Multiple trials and refinements help navigate a non-convex
-                search space. The result is evaluated by codelength and then
-                interpreted relative to the representation, parameters, and
-                research question.
-              </Text>
-            </SectionCard>
+                    ))}
+                  </Stack>
+                </Grid>
+              </SectionCard>
 
-            <DocsCard id="ReadNext" title="Read next" mb={12}>
-              <Flex gap={4} flexWrap="wrap">
-                <CkLink asChild fontWeight={600}>
-                  <NextLink href="/publications#how-to-cite">
-                    How to cite Infomap <LuArrowRight />
-                  </NextLink>
-                </CkLink>
-              </Flex>
-            </DocsCard>
-          </Stack>
-        </Box>
-      </Grid>
-    </Container>
+              <SectionCard
+                id="SearchAlgorithm"
+                eyebrow="Optimization"
+                title="How Infomap searches after the model is defined"
+              >
+                <Text color="fg.muted" fontSize="sm" maxW="44rem" mb={5}>
+                  Once the flow model and objective are defined, Infomap
+                  searches for a map with a short description under that model.
+                  The algorithmic question is practical: given this lens, which
+                  partition and hierarchy best compress the flow?
+                </Text>
+                <AlgorithmTraceDemo
+                  activeFrame={traceFrame}
+                  setActiveFrame={setTraceFrame}
+                />
+                <Stack
+                  gap={0}
+                  borderTopWidth="1px"
+                  borderTopColor="gray.200"
+                  mt={5}
+                >
+                  {algorithmSteps.map((step, index) => {
+                    const isCurrent = index === activeTraceStep;
+                    return (
+                      <Grid
+                        key={step.title}
+                        templateColumns={{ base: "1fr", md: "5rem 1fr" }}
+                        gap={{ base: 1, md: 4 }}
+                        px={3}
+                        py={4}
+                        bg={isCurrent ? "red.50" : "transparent"}
+                        borderBottomWidth="1px"
+                        borderBottomColor="gray.200"
+                        borderLeftWidth="3px"
+                        borderLeftColor={isCurrent ? "red.500" : "transparent"}
+                        transition="background-color 160ms ease, border-color 160ms ease"
+                      >
+                        <Text
+                          color={isCurrent ? "red.700" : "gray.500"}
+                          fontFamily="monospace"
+                          fontSize="xs"
+                          fontWeight={isCurrent ? 700 : 400}
+                          mb={0}
+                        >
+                          STEP {index + 1}
+                        </Text>
+                        <Box>
+                          <Heading
+                            as="h3"
+                            size="sm"
+                            mb={1}
+                            color={isCurrent ? "gray.950" : "gray.900"}
+                          >
+                            {step.title}
+                          </Heading>
+                          <Text color="fg.muted" fontSize="sm" mb={0}>
+                            {step.text}
+                          </Text>
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Stack>
+                <Text color="fg.muted" fontSize="sm" mt={4} mb={0}>
+                  Multiple trials and refinements help navigate a non-convex
+                  search space. The result is evaluated by codelength and then
+                  interpreted relative to the representation, parameters, and
+                  research question.
+                </Text>
+              </SectionCard>
+
+              <DocsCard id="ReadNext" title="Read next" mb={12}>
+                <Flex gap={4} flexWrap="wrap">
+                  <CkLink asChild fontWeight={600}>
+                    <NextLink href="/publications#how-to-cite">
+                      How to cite Infomap <LuArrowRight />
+                    </NextLink>
+                  </CkLink>
+                </Flex>
+              </DocsCard>
+            </Stack>
+          </Box>
+        </Grid>
+      </Container>
+    </>
   );
 };
 

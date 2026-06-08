@@ -21,6 +21,7 @@ import * as outputExamples from "../../data/output";
 import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { SeoHead } from "../../shared/components/SeoHead";
 import { Tag } from "../../shared/components/Tag";
 import { infomapVersionLabel } from "../../shared/infomapVersion";
 
@@ -348,224 +349,238 @@ const FormatsPage: NextPage = () => {
   const [showAnnotations, setShowAnnotations] = useState(true);
 
   return (
-    <Container>
-      <Grid
-        templateColumns={{ base: "minmax(0, 1fr)", lg: "13rem minmax(0, 1fr)" }}
-        gap={{ base: 8, lg: 12 }}
-        alignItems="start"
-        mt={8}
-        minW={0}
-      >
-        <DocsRail
-          items={railItems}
-          active={active}
-          onActiveChange={setActive}
-        />
+    <>
+      <SeoHead
+        title="Infomap input and output formats"
+        description="Prepare Infomap network input files and understand output formats including link lists, state networks, multilayer networks, trees, and cluster assignments."
+        path="/infomap/formats/"
+      />
+      <Container>
+        <Grid
+          templateColumns={{
+            base: "minmax(0, 1fr)",
+            lg: "13rem minmax(0, 1fr)",
+          }}
+          gap={{ base: 8, lg: 12 }}
+          alignItems="start"
+          mt={8}
+          minW={0}
+        >
+          <DocsRail
+            items={railItems}
+            active={active}
+            onActiveChange={setActive}
+          />
 
-        <Box as="main" minW={0}>
-          <Text color="gray.500" fontSize="sm" mb={2}>
-            Documentation
-          </Text>
-          <Heading
-            as="h1"
-            textStyle="h1"
-            mb={4}
-            id="Formats"
-            scrollMarginTop="7rem"
-          >
-            Prepare network data and read Infomap output
-          </Heading>
-
-          <Text
-            color="gray.700"
-            fontSize={{ base: "md", md: "lg" }}
-            maxW="42rem"
-          >
-            Infomap reads plain-text network files and writes the communities it
-            finds in formats suited for downstream analysis, visualization, and
-            reproducible reporting.
-          </Text>
-
-          <Box as="section" mb={10}>
-            <Flex
-              justify="space-between"
-              align="baseline"
-              gap={3}
-              mb={3}
-              minW={0}
+          <Box as="main" minW={0}>
+            <Text color="gray.500" fontSize="sm" mb={2}>
+              Documentation
+            </Text>
+            <Heading
+              as="h1"
+              textStyle="h1"
+              mb={4}
+              id="Formats"
+              scrollMarginTop="7rem"
             >
-              <Heading as="h2" size="md" id="Input" scrollMarginTop="7rem">
-                Input
-              </Heading>
-              <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
-                {inputFormats.length} formats
-              </Text>
-            </Flex>
-            <Text color="gray.700" maxW="42rem">
-              Start with a link list unless you need node names, bipartite flow,
-              multilayer flow, or state nodes.
+              Prepare network data and read Infomap output
+            </Heading>
+
+            <Text
+              color="gray.700"
+              fontSize={{ base: "md", md: "lg" }}
+              maxW="42rem"
+            >
+              Infomap reads plain-text network files and writes the communities
+              it finds in formats suited for downstream analysis, visualization,
+              and reproducible reporting.
             </Text>
 
-            <Stack gap={5}>
-              {inputFormats.map((format) => (
-                <FormatCard key={format.id} format={format} />
-              ))}
-            </Stack>
-
-            <DocsCard borderColor="red.200" p={4} mt={5}>
-              <Text color="gray.700" fontSize="sm" mb={0}>
-                <strong>Self-links:</strong> since v2.0.0 Infomap counts
-                self-links by default. Pass <code>--no-self-links</code> to
-                exclude them. For undirected networks, Infomap follows the
-                convention of counting self-links once.
-              </Text>
-            </DocsCard>
-          </Box>
-
-          <Box as="section" mb={10}>
-            <Flex
-              justify="space-between"
-              align="baseline"
-              gap={3}
-              mb={3}
-              minW={0}
-            >
-              <Heading as="h2" size="md" id="Output" scrollMarginTop="7rem">
-                Output
-              </Heading>
-              <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
-                {outputFormats.length} formats
-              </Text>
-            </Flex>
-            <Text color="gray.700" maxW="42rem">
-              For most workflows use <code>.clu</code> for flat assignments and{" "}
-              <code>.tree</code> for hierarchy. Write several outputs with{" "}
-              <code>-o tree,ftree,clu</code>.
-            </Text>
-
-            <Stack gap={5}>
-              {outputFormats.map((format) => (
-                <FormatCard key={format.id} format={format} />
-              ))}
-            </Stack>
-          </Box>
-
-          <DocsCard id="OutputHeader" mb={6}>
-            <Flex
-              justify="space-between"
-              align={{ base: "flex-start", md: "baseline" }}
-              direction={{ base: "column", md: "row" }}
-              gap={3}
-              mb={3}
-            >
-              <Heading as="h2" size="md">
-                Output header
-              </Heading>
-              <Button
-                type="button"
-                variant="surface"
-                size="sm"
-                onClick={() => setShowAnnotations(!showAnnotations)}
+            <Box as="section" mb={10}>
+              <Flex
+                justify="space-between"
+                align="baseline"
+                gap={3}
+                mb={3}
+                minW={0}
               >
-                {showAnnotations ? "Hide annotations" : "Show annotations"}
-              </Button>
-            </Flex>
-            <Text color="gray.600" fontSize="sm">
-              Every output file starts with a header that records the run.
-            </Text>
-            <SimpleGrid columns={{ base: 1, md: showAnnotations ? 2 : 1 }}>
-              <CodeBlock mt={4} language="infomap">{`# ${infomapVersionLabel}
+                <Heading as="h2" size="md" id="Input" scrollMarginTop="7rem">
+                  Input
+                </Heading>
+                <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
+                  {inputFormats.length} formats
+                </Text>
+              </Flex>
+              <Text color="gray.700" maxW="42rem">
+                Start with a link list unless you need node names, bipartite
+                flow, multilayer flow, or state nodes.
+              </Text>
+
+              <Stack gap={5}>
+                {inputFormats.map((format) => (
+                  <FormatCard key={format.id} format={format} />
+                ))}
+              </Stack>
+
+              <DocsCard borderColor="red.200" p={4} mt={5}>
+                <Text color="gray.700" fontSize="sm" mb={0}>
+                  <strong>Self-links:</strong> since v2.0.0 Infomap counts
+                  self-links by default. Pass <code>--no-self-links</code> to
+                  exclude them. For undirected networks, Infomap follows the
+                  convention of counting self-links once.
+                </Text>
+              </DocsCard>
+            </Box>
+
+            <Box as="section" mb={10}>
+              <Flex
+                justify="space-between"
+                align="baseline"
+                gap={3}
+                mb={3}
+                minW={0}
+              >
+                <Heading as="h2" size="md" id="Output" scrollMarginTop="7rem">
+                  Output
+                </Heading>
+                <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
+                  {outputFormats.length} formats
+                </Text>
+              </Flex>
+              <Text color="gray.700" maxW="42rem">
+                For most workflows use <code>.clu</code> for flat assignments
+                and <code>.tree</code> for hierarchy. Write several outputs with{" "}
+                <code>-o tree,ftree,clu</code>.
+              </Text>
+
+              <Stack gap={5}>
+                {outputFormats.map((format) => (
+                  <FormatCard key={format.id} format={format} />
+                ))}
+              </Stack>
+            </Box>
+
+            <DocsCard id="OutputHeader" mb={6}>
+              <Flex
+                justify="space-between"
+                align={{ base: "flex-start", md: "baseline" }}
+                direction={{ base: "column", md: "row" }}
+                gap={3}
+                mb={3}
+              >
+                <Heading as="h2" size="md">
+                  Output header
+                </Heading>
+                <Button
+                  type="button"
+                  variant="surface"
+                  size="sm"
+                  onClick={() => setShowAnnotations(!showAnnotations)}
+                >
+                  {showAnnotations ? "Hide annotations" : "Show annotations"}
+                </Button>
+              </Flex>
+              <Text color="gray.600" fontSize="sm">
+                Every output file starts with a header that records the run.
+              </Text>
+              <SimpleGrid columns={{ base: 1, md: showAnnotations ? 2 : 1 }}>
+                <CodeBlock mt={4} language="infomap">{`# ${infomapVersionLabel}
 # ./Infomap network.net . --ftree --clu
 # started at 2026-05-05, 07:23:30
 # completed in 0.114 s
 # partitioned into 2 levels with 2 top modules
 # codelength 2.32073 bits
 # relative codelength savings 9.22792%`}</CodeBlock>
-              {showAnnotations && (
-                <Box
-                  borderWidth="1px"
-                  borderColor="border.emphasized"
-                  borderRadius="md"
-                  p={4}
-                  fontSize="sm"
-                  color="fg.muted"
-                >
-                  <Stack gap={2}>
-                    <Text mb={0}>Infomap version</Text>
-                    <Text mb={0}>Exact command-line invocation</Text>
-                    <Text mb={0}>Run timestamp</Text>
-                    <Text mb={0}>Wall time</Text>
-                    <Text mb={0}>Hierarchy depth and top-level count</Text>
-                    <Text color="fg" fontWeight={700} mb={0}>
-                      Total description length
-                    </Text>
-                    <Text color="fg" fontWeight={700} mb={0}>
-                      Savings versus one-level baseline
-                    </Text>
-                  </Stack>
-                </Box>
-              )}
-            </SimpleGrid>
-          </DocsCard>
+                {showAnnotations && (
+                  <Box
+                    borderWidth="1px"
+                    borderColor="border.emphasized"
+                    borderRadius="md"
+                    p={4}
+                    fontSize="sm"
+                    color="fg.muted"
+                  >
+                    <Stack gap={2}>
+                      <Text mb={0}>Infomap version</Text>
+                      <Text mb={0}>Exact command-line invocation</Text>
+                      <Text mb={0}>Run timestamp</Text>
+                      <Text mb={0}>Wall time</Text>
+                      <Text mb={0}>Hierarchy depth and top-level count</Text>
+                      <Text color="fg" fontWeight={700} mb={0}>
+                        Total description length
+                      </Text>
+                      <Text color="fg" fontWeight={700} mb={0}>
+                        Savings versus one-level baseline
+                      </Text>
+                    </Stack>
+                  </Box>
+                )}
+              </SimpleGrid>
+            </DocsCard>
 
-          <DocsCard id="CodelengthSavings" title="Codelength savings" mb={6}>
-            <Text color="fg.muted" fontSize="sm" maxW="38rem">
-              The relative savings measures how much shorter Infomap&apos;s
-              modular description is compared to the one-level baseline. Higher
-              means stronger modular structure.
-            </Text>
-            <Box textAlign="center" py={3} fontSize={{ base: "lg", md: "xl" }}>
-              <TeX math="S_L = 1 - \frac{L}{L_1}" block />
-            </Box>
-            <Text color="fg.muted" fontSize="sm" textAlign="center" mb={0}>
-              where <TeX>L</TeX> is the codelength and <TeX>L_1</TeX> is the
-              one-level codelength.
-            </Text>
-          </DocsCard>
-
-          <DocsCard
-            id="PhysicalAndStateOutput"
-            title="Physical and state-level output"
-            mb={12}
-          >
-            <Grid
-              templateColumns={{ base: "1fr", md: "3fr 2fr" }}
-              gap={5}
-              alignItems="start"
-            >
-              <Text color="fg.muted" fontSize="sm" mb={0}>
-                For ordinary networks, output rows refer to physical nodes. For
-                memory, state, or multilayer networks, Infomap can also write
-                state-level outputs. State-level files keep internal state nodes
-                separate; physical outputs merge states that represent the same
-                physical node when possible. Higher-order networks write two
-                files for each of <code>clu</code>, <code>tree</code>, and{" "}
-                <code>ftree</code>; the extra file has <code>_states</code>{" "}
-                appended before the extension.
+            <DocsCard id="CodelengthSavings" title="Codelength savings" mb={6}>
+              <Text color="fg.muted" fontSize="sm" maxW="38rem">
+                The relative savings measures how much shorter Infomap&apos;s
+                modular description is compared to the one-level baseline.
+                Higher means stronger modular structure.
               </Text>
-              <FigureBlock
-                figure={{
-                  src: "/images/physical-and-state-nodes.svg",
-                  alt: "Physical and state nodes in output",
-                  caption:
-                    "Network flows at different modular levels. Large circles represent physical nodes, small circles represent state nodes, and dashed areas represent modules.",
-                }}
-              />
-            </Grid>
-          </DocsCard>
+              <Box
+                textAlign="center"
+                py={3}
+                fontSize={{ base: "lg", md: "xl" }}
+              >
+                <TeX math="S_L = 1 - \frac{L}{L_1}" block />
+              </Box>
+              <Text color="fg.muted" fontSize="sm" textAlign="center" mb={0}>
+                where <TeX>L</TeX> is the codelength and <TeX>L_1</TeX> is the
+                one-level codelength.
+              </Text>
+            </DocsCard>
 
-          <DocsCard id="ReadNext" title="Read next" mb={12}>
-            <Flex gap={4} flexWrap="wrap">
-              <CkLink asChild fontWeight={600}>
-                <NextLink href="/infomap/how-it-works">
-                  How Infomap works <LuArrowRight />
-                </NextLink>
-              </CkLink>
-            </Flex>
-          </DocsCard>
-        </Box>
-      </Grid>
-    </Container>
+            <DocsCard
+              id="PhysicalAndStateOutput"
+              title="Physical and state-level output"
+              mb={12}
+            >
+              <Grid
+                templateColumns={{ base: "1fr", md: "3fr 2fr" }}
+                gap={5}
+                alignItems="start"
+              >
+                <Text color="fg.muted" fontSize="sm" mb={0}>
+                  For ordinary networks, output rows refer to physical nodes.
+                  For memory, state, or multilayer networks, Infomap can also
+                  write state-level outputs. State-level files keep internal
+                  state nodes separate; physical outputs merge states that
+                  represent the same physical node when possible. Higher-order
+                  networks write two files for each of <code>clu</code>,{" "}
+                  <code>tree</code>, and <code>ftree</code>; the extra file has{" "}
+                  <code>_states</code> appended before the extension.
+                </Text>
+                <FigureBlock
+                  figure={{
+                    src: "/images/physical-and-state-nodes.svg",
+                    alt: "Physical and state nodes in output",
+                    caption:
+                      "Network flows at different modular levels. Large circles represent physical nodes, small circles represent state nodes, and dashed areas represent modules.",
+                  }}
+                />
+              </Grid>
+            </DocsCard>
+
+            <DocsCard id="ReadNext" title="Read next" mb={12}>
+              <Flex gap={4} flexWrap="wrap">
+                <CkLink asChild fontWeight={600}>
+                  <NextLink href="/infomap/how-it-works">
+                    How Infomap works <LuArrowRight />
+                  </NextLink>
+                </CkLink>
+              </Flex>
+            </DocsCard>
+          </Box>
+        </Grid>
+      </Container>
+    </>
   );
 };
 

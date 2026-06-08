@@ -6,7 +6,6 @@ import "@fontsource/open-sans/600.css";
 import "@fontsource/open-sans/700.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
-import Head from "next/head";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { useEffect } from "react";
@@ -73,9 +72,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <Head>
-        <title>MapEquation — research, software, and visualizations</title>
-      </Head>
       {UMAMI_WEBSITE_ID && (
         <Script
           async

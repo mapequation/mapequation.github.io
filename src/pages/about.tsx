@@ -16,6 +16,7 @@ import NextLink from "next/link";
 import { LuArrowRight, LuMail } from "react-icons/lu";
 import { SiGooglescholar, SiLinkedin, SiOrcid } from "react-icons/si";
 import EmailLink from "../shared/components/EmailLink";
+import { SeoHead } from "../shared/components/SeoHead";
 import { PortalEyebrow } from "../shared/compounds/portal";
 
 interface PersonLinks {
@@ -254,99 +255,106 @@ const PeopleSection = ({
 );
 
 const AboutPage: NextPage = () => (
-  <Container>
-    <SimpleGrid
-      columns={{ base: 1, lg: 2 }}
-      gap={{ base: 8, lg: 12 }}
-      alignItems="start"
-      mt={{ base: 8, md: 12 }}
-    >
-      <Box position={{ lg: "sticky" }} top={{ lg: "5rem" }} alignSelf="start">
+  <>
+    <SeoHead
+      title="About MapEquation"
+      description="Meet the MapEquation research group at Umeå University and learn about the team behind Infomap, flow-based community detection, and network science tools."
+      path="/about/"
+    />
+    <Container>
+      <SimpleGrid
+        columns={{ base: 1, lg: 2 }}
+        gap={{ base: 8, lg: 12 }}
+        alignItems="start"
+        mt={{ base: 8, md: 12 }}
+      >
+        <Box position={{ lg: "sticky" }} top={{ lg: "5rem" }} alignSelf="start">
+          <Box>
+            <PortalEyebrow>About</PortalEyebrow>
+            <Heading as="h1" textStyle="h1" mb={4} maxW="14em">
+              We develop methods for mapping flow in complex systems
+            </Heading>
+            <Text color="fg.muted" textStyle="body" mb={4}>
+              We are a research group at Umeå University studying flow-based
+              community detection. We build Infomap, visualization tools, and
+              methods for higher-order, multilayer, and Bayesian network models.
+            </Text>
+            <Text color="fg.muted" textStyle="body" mb={6}>
+              Our software is open source, and our papers are freely available.
+            </Text>
+            <Flex gap={3} flexWrap="wrap">
+              <Button asChild variant="surface">
+                <NextLink href="/publications">
+                  Publications <LuArrowRight />
+                </NextLink>
+              </Button>
+            </Flex>
+          </Box>
+
+          <Box mt="5rem">
+            <Heading as="h2" textStyle="h2" mb={4} id="Terms">
+              Terms
+            </Heading>
+            <Text color="fg.muted" textStyle="body" mb={4}>
+              The Infomap software is released under a dual licence. To give
+              everyone maximum freedom to make use of Infomap and derivative
+              works, we make the code open source under the{" "}
+              <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
+                GNU Affero General Public License version 3 or any later version
+              </chakra.a>
+              .
+            </Text>
+            <Text color="fg.muted" fontSize="md" mb={4}>
+              As this is a{" "}
+              <a href="https://en.wikipedia.org/wiki/Copyleft">copyleft</a>{" "}
+              license, each distribution of the software, including modified and
+              extended versions, is required to be free in the same sense as
+              well. The{" "}
+              <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
+                AGPLv3
+              </chakra.a>{" "}
+              license is built on{" "}
+              <chakra.a href="https://www.gnu.org/licenses/gpl-3.0.html">
+                GPLv3
+              </chakra.a>{" "}
+              , with the addition that making the product available via a
+              network service also counts as distribution. For a non-copyleft
+              license, please contact us.
+            </Text>
+          </Box>
+        </Box>
+
         <Box>
-          <PortalEyebrow>About</PortalEyebrow>
-          <Heading as="h1" textStyle="h1" mb={4} maxW="14em">
-            We develop methods for mapping flow in complex systems
+          <PeopleSection title="People" people={PEOPLE} />
+          <PeopleSection title="Alumni" people={ALUMNI} />
+
+          <Heading as="h2" size="md" mb={4}>
+            Collaborators
           </Heading>
-          <Text color="fg.muted" textStyle="body" mb={4}>
-            We are a research group at Umeå University studying flow-based
-            community detection. We build Infomap, visualization tools, and
-            methods for higher-order, multilayer, and Bayesian network models.
-          </Text>
-          <Text color="fg.muted" textStyle="body" mb={6}>
-            Our software is open source, and our papers are freely available.
-          </Text>
-          <Flex gap={3} flexWrap="wrap">
-            <Button asChild variant="surface">
-              <NextLink href="/publications">
-                Publications <LuArrowRight />
-              </NextLink>
-            </Button>
-          </Flex>
+          <SimpleGrid columns={{ base: 1, sm: 2 }} gap={2}>
+            {COLLABORATORS.map((c) => (
+              <Box
+                key={c.name}
+                bg="bg.subtle"
+                borderRadius="md"
+                px={3}
+                py={2}
+                fontSize="sm"
+              >
+                <Text as="strong" fontWeight={600}>
+                  {c.name}
+                </Text>
+                <Text as="span" color="fg.muted">
+                  {" "}
+                  · {c.org}
+                </Text>
+              </Box>
+            ))}
+          </SimpleGrid>
         </Box>
-
-        <Box mt="5rem">
-          <Heading as="h2" textStyle="h2" mb={4} id="Terms">
-            Terms
-          </Heading>
-          <Text color="fg.muted" textStyle="body" mb={4}>
-            The Infomap software is released under a dual licence. To give
-            everyone maximum freedom to make use of Infomap and derivative
-            works, we make the code open source under the{" "}
-            <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
-              GNU Affero General Public License version 3 or any later version
-            </chakra.a>
-            .
-          </Text>
-          <Text color="fg.muted" fontSize="md" mb={4}>
-            As this is a{" "}
-            <a href="https://en.wikipedia.org/wiki/Copyleft">copyleft</a>{" "}
-            license, each distribution of the software, including modified and
-            extended versions, is required to be free in the same sense as well.
-            The{" "}
-            <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
-              AGPLv3
-            </chakra.a>{" "}
-            license is built on{" "}
-            <chakra.a href="https://www.gnu.org/licenses/gpl-3.0.html">
-              GPLv3
-            </chakra.a>{" "}
-            , with the addition that making the product available via a network
-            service also counts as distribution. For a non-copyleft license,
-            please contact us.
-          </Text>
-        </Box>
-      </Box>
-
-      <Box>
-        <PeopleSection title="People" people={PEOPLE} />
-        <PeopleSection title="Alumni" people={ALUMNI} />
-
-        <Heading as="h2" size="md" mb={4}>
-          Collaborators
-        </Heading>
-        <SimpleGrid columns={{ base: 1, sm: 2 }} gap={2}>
-          {COLLABORATORS.map((c) => (
-            <Box
-              key={c.name}
-              bg="bg.subtle"
-              borderRadius="md"
-              px={3}
-              py={2}
-              fontSize="sm"
-            >
-              <Text as="strong" fontWeight={600}>
-                {c.name}
-              </Text>
-              <Text as="span" color="fg.muted">
-                {" "}
-                · {c.org}
-              </Text>
-            </Box>
-          ))}
-        </SimpleGrid>
-      </Box>
-    </SimpleGrid>
-  </Container>
+      </SimpleGrid>
+    </Container>
+  </>
 );
 
 export default AboutPage;

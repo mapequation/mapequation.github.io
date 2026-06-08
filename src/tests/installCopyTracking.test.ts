@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getManualCommandCopyProps } from "./installCopyTracking";
+import { getManualCommandCopyProps } from "../shared/installCopyTracking";
 
 describe("getManualCommandCopyProps", () => {
   it("returns manual command copy props for selected install command text", () => {

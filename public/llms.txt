@@ -1,0 +1,23 @@
+# MapEquation
+
+> MapEquation is the home of the map equation framework and Infomap, software for flow-based community detection in complex networks.
+
+MapEquation explains how flow-based community detection works and provides Infomap software, installation instructions, input and output formats, publications, and an online workbench.
+
+Important notes:
+
+- Use "Infomap" for the software implementation.
+- Use "map equation" for the theoretical framework.
+- Infomap supports directed, weighted, multilayer, bipartite, and memory networks.
+- The online workbench runs in the browser.
+- For citation questions, prefer the Publications page.
+
+## Core pages
+
+- [Infomap overview](https://www.mapequation.org/infomap/): What Infomap is and when to use it.
+- [Install Infomap](https://www.mapequation.org/infomap/install/): Python, R, CLI, Docker, Homebrew, binaries, TypeScript, and source installation.
+- [Input and output formats](https://www.mapequation.org/infomap/formats/): Link lists, state networks, multilayer networks, trees, and clustering outputs.
+- [How the map equation works](https://www.mapequation.org/infomap/how-it-works/): Explanation of flow, compression, modules, and the search algorithm.
+- [Publications and citations](https://www.mapequation.org/publications/): Recommended citations, BibTeX, and method papers.
+- [Online workbench](https://www.mapequation.org/infomap/workbench/): Browser-based Infomap runner.
+- [Apps and notebooks](https://www.mapequation.org/apps/): Visualization tools, notebooks, and companion methods.

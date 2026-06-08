@@ -18,6 +18,7 @@ import { type AnalyticsProps, trackEvent } from "../../shared/analytics";
 import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { SeoHead } from "../../shared/components/SeoHead";
 import { Tag } from "../../shared/components/Tag";
 import { ApiDocumentationLinks } from "../../shared/compounds/ApiDocumentationLinks";
 import {
@@ -27,7 +28,7 @@ import {
 import {
   getManualCommandCopyProps,
   selectionElement,
-} from "./installCopyTracking";
+} from "../../shared/installCopyTracking";
 
 type InstallMethod = {
   command?: string;
@@ -412,114 +413,121 @@ const InstallPage: NextPage = () => {
   }, []);
 
   return (
-    <Container>
-      <Grid
-        templateColumns={{ base: "1fr", lg: "13rem 1fr" }}
-        gap={{ base: 8, lg: 12 }}
-        alignItems="start"
-        mt={8}
-      >
-        <DocsRail
-          items={railItems}
-          active={active}
-          onActiveChange={(next) => {
-            setActive(next);
-            const method = installMethods.find((item) => item.id === next);
-            if (method) {
-              trackEvent("cta_clicked", {
-                site_area: "install",
-                cta_type: "install",
-                package: method.package,
-                content_id: `install-section-${next}`,
-              });
-            }
-          }}
-        />
-
-        <Box as="main">
-          <Text color="gray.500" fontSize="sm" mb={2}>
-            Documentation
-          </Text>
-          <Heading
-            as="h1"
-            textStyle="h1"
-            mb={4}
-            id="Install"
-            scrollMarginTop="7rem"
-          >
-            Install Infomap for Python, R, CLI, Docker, and TypeScript
-          </Heading>
-
-          <Text
-            color="gray.700"
-            fontSize={{ base: "md", md: "lg" }}
-            maxW="42rem"
-          >
-            For most researchers, the Python package is the best starting point:
-            it installs both the Python API and the <code>infomap</code>{" "}
-            command-line tool. Use R for analysis workflows, Docker for
-            reproducible compute environments, or standalone binaries when you
-            only need the executable.
-          </Text>
-
-          <Flex gap={2} flexWrap="wrap" mb={8}>
-            {["Python 3.11+", "CLI included", "macOS / Linux / Windows"].map(
-              (tag) => (
-                <Tag key={tag}>{tag}</Tag>
-              ),
-            )}
-          </Flex>
-
-          <DocsCard title="API documentation" mb={8}>
-            <Text color="fg.muted" fontSize="sm" mb={4}>
-              Use these references once Infomap is installed in Python or R.
-            </Text>
-            <ApiDocumentationLinks
-              siteArea="install"
-              pythonContentId="install-python-docs-top"
-              rContentId="install-r-docs-top"
-            />
-          </DocsCard>
-
-          <Stack gap={6}>
-            {installMethods.map((method) => (
-              <MethodCard key={method.id} method={method} />
-            ))}
-          </Stack>
-
-          <DocsCard id="Running" title="Run Infomap" mt={8} mb={12}>
-            <Text color="fg.muted">
-              After installation, the command-line form is:
-            </Text>
-            <CodeBlock>infomap [options] network_data destination</CodeBlock>
-
-            <Text color="fg.muted" mt={5}>
-              For example:
-            </Text>
-            <CodeBlock language="shell">
-              {
-                "infomap network.net out\ninfomap --two-level --directed network.net out"
+    <>
+      <SeoHead
+        title="Install Infomap for Python, R, CLI, Docker, and TypeScript"
+        description="Install Infomap with pip, R, Homebrew, Docker, binaries, TypeScript, or source builds, then run flow-based community detection from your workflow."
+        path="/infomap/install/"
+      />
+      <Container>
+        <Grid
+          templateColumns={{ base: "1fr", lg: "13rem 1fr" }}
+          gap={{ base: 8, lg: 12 }}
+          alignItems="start"
+          mt={8}
+        >
+          <DocsRail
+            items={railItems}
+            active={active}
+            onActiveChange={(next) => {
+              setActive(next);
+              const method = installMethods.find((item) => item.id === next);
+              if (method) {
+                trackEvent("cta_clicked", {
+                  site_area: "install",
+                  cta_type: "install",
+                  package: method.package,
+                  content_id: `install-section-${next}`,
+                });
               }
-            </CodeBlock>
+            }}
+          />
 
-            <Text color="fg.muted" mt={5}>
-              List all available options with:
+          <Box as="main">
+            <Text color="gray.500" fontSize="sm" mb={2}>
+              Documentation
             </Text>
-            <CodeBlock language="shell">infomap --help</CodeBlock>
-          </DocsCard>
+            <Heading
+              as="h1"
+              textStyle="h1"
+              mb={4}
+              id="Install"
+              scrollMarginTop="7rem"
+            >
+              Install Infomap for Python, R, CLI, Docker, and TypeScript
+            </Heading>
 
-          <DocsCard id="ReadNext" title="Read next" mb={12}>
-            <Flex gap={4} flexWrap="wrap">
-              <CkLink asChild fontWeight={600}>
-                <NextLink href="/infomap/formats">
-                  Input and output formats <LuArrowRight />
-                </NextLink>
-              </CkLink>
+            <Text
+              color="gray.700"
+              fontSize={{ base: "md", md: "lg" }}
+              maxW="42rem"
+            >
+              For most researchers, the Python package is the best starting
+              point: it installs both the Python API and the{" "}
+              <code>infomap</code> command-line tool. Use R for analysis
+              workflows, Docker for reproducible compute environments, or
+              standalone binaries when you only need the executable.
+            </Text>
+
+            <Flex gap={2} flexWrap="wrap" mb={8}>
+              {["Python 3.11+", "CLI included", "macOS / Linux / Windows"].map(
+                (tag) => (
+                  <Tag key={tag}>{tag}</Tag>
+                ),
+              )}
             </Flex>
-          </DocsCard>
-        </Box>
-      </Grid>
-    </Container>
+
+            <DocsCard title="API documentation" mb={8}>
+              <Text color="fg.muted" fontSize="sm" mb={4}>
+                Use these references once Infomap is installed in Python or R.
+              </Text>
+              <ApiDocumentationLinks
+                siteArea="install"
+                pythonContentId="install-python-docs-top"
+                rContentId="install-r-docs-top"
+              />
+            </DocsCard>
+
+            <Stack gap={6}>
+              {installMethods.map((method) => (
+                <MethodCard key={method.id} method={method} />
+              ))}
+            </Stack>
+
+            <DocsCard id="Running" title="Run Infomap" mt={8} mb={12}>
+              <Text color="fg.muted">
+                After installation, the command-line form is:
+              </Text>
+              <CodeBlock>infomap [options] network_data destination</CodeBlock>
+
+              <Text color="fg.muted" mt={5}>
+                For example:
+              </Text>
+              <CodeBlock language="shell">
+                {
+                  "infomap network.net out\ninfomap --two-level --directed network.net out"
+                }
+              </CodeBlock>
+
+              <Text color="fg.muted" mt={5}>
+                List all available options with:
+              </Text>
+              <CodeBlock language="shell">infomap --help</CodeBlock>
+            </DocsCard>
+
+            <DocsCard id="ReadNext" title="Read next" mb={12}>
+              <Flex gap={4} flexWrap="wrap">
+                <CkLink asChild fontWeight={600}>
+                  <NextLink href="/infomap/formats">
+                    Input and output formats <LuArrowRight />
+                  </NextLink>
+                </CkLink>
+              </Flex>
+            </DocsCard>
+          </Box>
+        </Grid>
+      </Container>
+    </>
   );
 };
 
