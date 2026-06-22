@@ -6,9 +6,12 @@ const DEFAULT_IMAGE = "/assets/img/icons/apple-touch-icon-144.png";
 
 type SeoType = "website" | "article";
 
+type JsonLd = Record<string, unknown>;
+
 type SeoHeadProps = {
   description: string;
   image?: string;
+  jsonLd?: JsonLd | JsonLd[];
   path: string;
   title: string;
   type?: SeoType;
@@ -53,6 +56,7 @@ function imageMimeType(image: string) {
 export function SeoHead({
   description,
   image = DEFAULT_IMAGE,
+  jsonLd,
   path,
   title,
   type = "website",
@@ -60,6 +64,7 @@ export function SeoHead({
   const canonical = canonicalUrl(path);
   const imageUrl = absoluteUrl(image);
   const imageType = imageMimeType(image);
+  const schemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
   return (
     <Head>
@@ -80,6 +85,15 @@ export function SeoHead({
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageUrl} />
+
+      {schemas.map((schema) => (
+        <script
+          key={String(schema["@id"] ?? schema["@type"])}
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD must be inlined as raw JSON
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
     </Head>
   );
 }

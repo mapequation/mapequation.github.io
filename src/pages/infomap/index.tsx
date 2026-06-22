@@ -14,6 +14,7 @@ import { LuArrowRight } from "react-icons/lu";
 import { trackEvent } from "../../shared/analytics";
 import { PrimaryButton } from "../../shared/components/PrimaryButton";
 import { SeoHead } from "../../shared/components/SeoHead";
+import { infomapSoftwareSchema } from "../../shared/components/structuredData";
 import { ApiDocumentationLinks } from "../../shared/compounds/ApiDocumentationLinks";
 import InstallCard from "../../shared/compounds/InstallCard";
 import PillarCard from "../../shared/compounds/PillarCard";
@@ -26,6 +27,7 @@ const Home: NextPage = () => {
         title="Infomap — flow-based community detection software"
         description="Install Infomap or run it in the browser to detect communities in directed, weighted, multilayer, bipartite, and memory networks."
         path="/infomap/"
+        jsonLd={infomapSoftwareSchema}
       />
       <Container>
         <SimpleGrid

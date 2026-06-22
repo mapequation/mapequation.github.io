@@ -299,8 +299,8 @@ const AboutPage: NextPage = () => (
               The Infomap software is released under a dual licence. To give
               everyone maximum freedom to make use of Infomap and derivative
               works, we make the code open source under the{" "}
-              <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
-                GNU Affero General Public License version 3 or any later version
+              <chakra.a href="https://www.gnu.org/licenses/gpl-3.0.html">
+                GNU General Public License version 3 or any later version
               </chakra.a>
               .
             </Text>
@@ -309,17 +309,7 @@ const AboutPage: NextPage = () => (
               <a href="https://en.wikipedia.org/wiki/Copyleft">copyleft</a>{" "}
               license, each distribution of the software, including modified and
               extended versions, is required to be free in the same sense as
-              well. The{" "}
-              <chakra.a href="https://www.gnu.org/licenses/agpl-3.0.html">
-                AGPLv3
-              </chakra.a>{" "}
-              license is built on{" "}
-              <chakra.a href="https://www.gnu.org/licenses/gpl-3.0.html">
-                GPLv3
-              </chakra.a>{" "}
-              , with the addition that making the product available via a
-              network service also counts as distribution. For a non-copyleft
-              license, please contact us.
+              well. For a non-copyleft license, please contact us.
             </Text>
           </Box>
         </Box>
