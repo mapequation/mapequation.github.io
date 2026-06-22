@@ -15,11 +15,7 @@ export const organizationSchema = {
   logo: `${SITE_ORIGIN}/assets/img/icons/apple-touch-icon-144.png`,
   description:
     "MapEquation is the home of the map equation framework and Infomap, software for flow-based community detection in complex networks.",
-  sameAs: [
-    "https://github.com/mapequation",
-    "https://pypi.org/project/infomap/",
-    "https://www.npmjs.com/package/@mapequation/infomap",
-  ],
+  sameAs: ["https://github.com/mapequation"],
 };
 
 export const infomapSoftwareSchema = {
@@ -46,5 +42,7 @@ export const infomapSoftwareSchema = {
   sameAs: [
     "https://github.com/mapequation/infomap",
     "https://pypi.org/project/infomap/",
+    "https://www.npmjs.com/package/@mapequation/infomap",
+    "https://mapequation.r-universe.dev/infomap",
   ],
 };
