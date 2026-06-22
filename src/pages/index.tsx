@@ -16,6 +16,7 @@ import { trackEvent } from "../shared/analytics";
 import { ImageThumb } from "../shared/components/ImageThumb";
 import { PrimaryButton } from "../shared/components/PrimaryButton";
 import { SeoHead } from "../shared/components/SeoHead";
+import { organizationSchema } from "../shared/components/structuredData";
 import FlowDemo from "../shared/compounds/FlowDemo";
 import NewsList from "../shared/compounds/NewsList";
 import { PortalSection } from "../shared/compounds/portal";
@@ -75,6 +76,7 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
         title="MapEquation — flow-based community detection with Infomap"
         description="Use the map equation framework and Infomap to detect multilevel communities in directed, weighted, multilayer, bipartite, and memory networks."
         path="/"
+        jsonLd={organizationSchema}
       />
       <Container>
         {/* Hero — brand level */}
