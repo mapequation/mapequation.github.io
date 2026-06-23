@@ -205,8 +205,8 @@ const fitCards = [
 
 const flowIntuitionCards = [
   {
-    title: "Not just density",
-    text: "A dense subgraph is not automatically a module. What matters is whether flow circulates inside the region long enough to make a boundary useful.",
+    title: "Density can mislead",
+    text: "A dense subgraph need not be a module. A module forms only where flow circulates long enough to make its boundary useful.",
   },
   {
     title: "Boundaries matter",
@@ -214,7 +214,7 @@ const flowIntuitionCards = [
   },
   {
     title: "Lingering implies compressibility",
-    text: "When flow lingers inside a region, that region can be described more efficiently with a local codebook — the bridge to the map equation that follows.",
+    text: "When flow lingers inside a region, a local codebook describes that region more efficiently than a global one.",
   },
 ];
 
@@ -538,13 +538,12 @@ const HowItWorksPage: NextPage = () => {
                   The scientific logic is a modeling chain: the research
                   question motivates the network representation, the
                   representation guides the flow model, and Infomap maps where
-                  that flow is retained. Each step is adaptable and can be
-                  customized to the problem at hand. The map should be
-                  interpreted through that chain.
+                  that flow is retained. Each step adapts to the problem at
+                  hand. The map should be interpreted through that chain.
                 </Text>
                 <FigureCard
                   my={4}
-                  caption="The map equation framework in three steps. A network representation (left) is chosen for the type of interaction — pairwise, multi-mode, multi-step, or multi-body. A random-walk model (middle) approximates the flow on that representation. Minimizing the map equation reveals flow modules (right) where a random walker tends to stay before moving on."
+                  caption="The map equation framework in three steps. A network representation (left) is chosen for the type of interaction: pairwise, multi-mode, multi-step, or multi-body. A random-walk model (middle) approximates the flow on that representation. Minimizing the map equation reveals flow modules (right) where a random walker tends to stay before moving on."
                 >
                   <chakra.img
                     src="/images/fig-flow-mapping.svg"
@@ -575,7 +574,7 @@ const HowItWorksPage: NextPage = () => {
                     </Text>
                     <Text color="fg" fontSize="sm" fontWeight={600} mb={0}>
                       In this page, a community is a region where flow is
-                      retained under the chosen network model — a region the
+                      retained under the chosen network model, a region the
                       random walker tends to stay inside before moving on.
                     </Text>
                   </Card.Body>
@@ -664,7 +663,7 @@ const HowItWorksPage: NextPage = () => {
                   </Text>
                   <Text color="fg.muted" fontSize="sm" mb={0}>
                     For similarity, correlation, or affinity networks, flow
-                    probes the weighted topology — it does not imply that
+                    probes the weighted topology. It does not imply that
                     expression, similarity, or influence physically moves
                     between nodes. The walker is a measurement device, not a
                     claim about the system.
@@ -722,7 +721,7 @@ const HowItWorksPage: NextPage = () => {
                 </SimpleGrid>
                 <FigureCard
                   mt={5}
-                  caption="The same random walker on two views of the network. Without modules (left), every node needs its own global codeword, so the average codelength L₁ stays high. With modules (right), the walker reuses short codewords inside each module and only spends extra bits on enter and exit codes when it crosses a boundary; when flow is retained inside modules, L drops. The walker also teleports to a random node with a small probability so it can escape dead ends and explore disconnected parts of the network — the same teleport that defines the stationary flow used by the map equation."
+                  caption="The same random walker on two views of the network. Without modules (left), every node needs its own global codeword, so the average codelength L₁ stays high. With modules (right), the walker reuses short codewords inside each module and only spends extra bits on enter and exit codes when it crosses a boundary; when flow is retained inside modules, L drops. The walker also teleports to a random node with a small probability so it can escape dead ends and explore disconnected parts of the network, the same teleport that defines the stationary flow used by the map equation."
                 >
                   <FlowDemo showCodes />
                 </FigureCard>
@@ -742,7 +741,7 @@ const HowItWorksPage: NextPage = () => {
                 <FigureCard
                   mb={5}
                   maxW="52rem"
-                  caption="Solution landscape across partitions of varying model complexity. The number of modules grows from left to right; colors mark module assignments and the numbers approximate the description length in bits per step. The shortest codelength balances model complexity against the regularities the partition captures — here the four-module partition at 3.1 bits."
+                  caption="Solution landscape across partitions of varying model complexity. The number of modules grows from left to right; colors mark module assignments and the numbers approximate the description length in bits per step. The shortest codelength balances model complexity against the regularities the partition captures, here the four-module partition at 3.1 bits."
                 >
                   <chakra.img
                     src="/images/fig-complexity.svg"

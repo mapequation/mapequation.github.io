@@ -196,7 +196,7 @@ export default function HowToCite() {
           chipTone="accent"
           meta={`2008 · PNAS`}
           title="Maps of random walks on complex networks reveal community structure"
-          description="Rosvall, M., & Bergstrom, C. T. — the original paper. Cite this when you describe the map equation method behind Infomap."
+          description="Rosvall, M., & Bergstrom, C. T. Cite the original paper when you describe the map equation method behind Infomap."
           bibtex={paperBibtex}
           paper="map-equation-2008"
           links={[
