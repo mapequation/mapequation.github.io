@@ -65,9 +65,24 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     const target = getRedirectTarget();
 
-    if (target) {
-      void router.replace(target);
+    if (!target) {
+      return;
     }
+
+    // The Infomap Python docs moved to their own GitHub Pages site at
+    // /infomap-python-docs/. Retired /infomap/python/* links are trampolined
+    // here too, so send them on to the new docs instead of routing into this
+    // app (which has no such page and would land on the 404).
+    const targetPath = target.split(/[?#]/, 1)[0];
+    if (
+      targetPath === "/infomap/python" ||
+      targetPath.startsWith("/infomap/python/")
+    ) {
+      window.location.replace("/infomap-python-docs/");
+      return;
+    }
+
+    void router.replace(target);
   }, [router]);
 
   return (
