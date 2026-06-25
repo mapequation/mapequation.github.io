@@ -17,7 +17,14 @@ export type AnalyticsProps = {
   citation_type?: "bibtex" | "method-text";
   content_id?: string;
   copy_method?: "button" | "manual";
-  cta_type?: "infomap" | "install" | "docs" | "cite" | "read" | "support";
+  cta_type?:
+    | "infomap"
+    | "install"
+    | "docs"
+    | "cite"
+    | "read"
+    | "support"
+    | "tutorial";
   destination?: string;
   elapsed_bucket?: string;
   example?: string;

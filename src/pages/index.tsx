@@ -12,7 +12,7 @@ import {
 import type { GetStaticProps, NextPage } from "next";
 import NextLink from "next/link";
 import { LuArrowRight } from "react-icons/lu";
-import { trackEvent } from "../shared/analytics";
+import { type AnalyticsProps, trackEvent } from "../shared/analytics";
 import { ImageThumb } from "../shared/components/ImageThumb";
 import { PrimaryButton } from "../shared/components/PrimaryButton";
 import { SeoHead } from "../shared/components/SeoHead";
@@ -60,6 +60,20 @@ const PORTAL_CARDS = [
   },
 ] as const;
 
+const TUTORIAL_CARDS = [
+  {
+    href: "/tutorial",
+    title: "Tutorial",
+    description:
+      "Understand the mechanics of the Map Equation through interactive visualizations.",
+    image: "/apps/Tutorial.jpg",
+    imagePosition: "center top",
+    imageSize: undefined,
+    ctaType: "tutorial",
+    contentId: "portal-tutorial",
+  },
+] as const;
+
 interface Props {
   recentNews: NewsItem[];
 }
@@ -68,6 +82,56 @@ const QUOTE = {
   q: "The best maps convey a great deal of information but require minimal bandwidth: the best maps are also good compressions.",
   by: "M. Rosvall and C. T. Bergstrom, PNAS 105, 1118 (2008)",
 };
+
+type PortalCardData = {
+  href: string;
+  title: string;
+  description: string;
+  image: string;
+  imagePosition: string;
+  imageSize?: string;
+  ctaType: NonNullable<AnalyticsProps["cta_type"]>;
+  contentId: string;
+};
+
+const PortalCard = ({ card }: { card: PortalCardData }) => (
+  <NextLink
+    href={card.href}
+    onClick={() =>
+      trackEvent("cta_clicked", {
+        site_area: "home",
+        cta_type: card.ctaType,
+        content_id: card.contentId,
+      })
+    }
+    style={{ textDecoration: "none", display: "block" }}
+  >
+    <Stack role="group" gap={3} h="100%">
+      <ImageThumb
+        src={card.image}
+        alt={card.title}
+        imagePosition={card.imagePosition}
+        imageSize={card.imageSize}
+        aspectRatio="16 / 10"
+      />
+      <Heading
+        as="h3"
+        size="md"
+        color="link.emphasis"
+        _groupHover={{ color: "link.emphasisHover" }}
+        mb={0}
+      >
+        {card.title}{" "}
+        <chakra.span aria-hidden="true" fontWeight={400}>
+          »
+        </chakra.span>
+      </Heading>
+      <Text color="fg.muted" fontSize="sm" mb={0}>
+        {card.description}
+      </Text>
+    </Stack>
+  </NextLink>
+);
 
 const HomePage: NextPage<Props> = ({ recentNews }) => {
   return (
@@ -142,47 +206,20 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
           </Box>
         </SimpleGrid>
 
+        {/* Tutorial — start here */}
+        <PortalSection eyebrow="Start here" title="Tutorial">
+          <SimpleGrid columns={{ base: 1, md: 3 }} gap={16}>
+            {TUTORIAL_CARDS.map((card) => (
+              <PortalCard key={card.href} card={card} />
+            ))}
+          </SimpleGrid>
+        </PortalSection>
+
         {/* Portal cards — three doorways */}
-        <PortalSection eyebrow="Start here" title="Explore">
+        <PortalSection title="Explore">
           <SimpleGrid columns={{ base: 1, md: 3 }} gap={16}>
             {PORTAL_CARDS.map((card) => (
-              <NextLink
-                key={card.href}
-                href={card.href}
-                onClick={() =>
-                  trackEvent("cta_clicked", {
-                    site_area: "home",
-                    cta_type: card.ctaType,
-                    content_id: card.contentId,
-                  })
-                }
-                style={{ textDecoration: "none", display: "block" }}
-              >
-                <Stack role="group" gap={3} h="100%">
-                  <ImageThumb
-                    src={card.image}
-                    alt={card.title}
-                    imagePosition={card.imagePosition}
-                    imageSize={card.imageSize}
-                    aspectRatio="16 / 10"
-                  />
-                  <Heading
-                    as="h3"
-                    size="md"
-                    color="link.emphasis"
-                    _groupHover={{ color: "link.emphasisHover" }}
-                    mb={0}
-                  >
-                    {card.title}{" "}
-                    <chakra.span aria-hidden="true" fontWeight={400}>
-                      »
-                    </chakra.span>
-                  </Heading>
-                  <Text color="fg.muted" fontSize="sm" mb={0}>
-                    {card.description}
-                  </Text>
-                </Stack>
-              </NextLink>
+              <PortalCard key={card.href} card={card} />
             ))}
           </SimpleGrid>
         </PortalSection>
