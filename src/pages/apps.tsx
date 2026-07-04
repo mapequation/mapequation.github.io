@@ -7,10 +7,10 @@ import {
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
+import { trackEvent } from "../shared/analytics";
 import { SeoHead } from "../shared/components/SeoHead";
 import AppCard from "../shared/compounds/AppCard";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
-import { trackEvent } from "../shared/analytics";
 
 interface AppItem {
   id: string;
@@ -100,6 +100,28 @@ const AppsPage: NextPage = () => (
           state networks, and visualize bioregions.
         </Text>
       </Stack>
+
+      <PortalSection title="Start here">
+        <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
+          <AppCard
+            href="/tutorial"
+            title="Tutorial"
+            description="Understand the mechanics of the Map Equation through interactive visualizations."
+            image="/apps/Tutorial.jpg"
+            imageAlt="Tutorial"
+            imagePosition="center top"
+            external={false}
+            cta="Start the tutorial"
+            onClick={() =>
+              trackEvent("cta_clicked", {
+                site_area: "apps",
+                cta_type: "tutorial",
+                content_id: "apps-tutorial",
+              })
+            }
+          />
+        </SimpleGrid>
+      </PortalSection>
 
       <PortalSection title="Apps">
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>

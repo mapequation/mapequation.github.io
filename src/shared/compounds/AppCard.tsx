@@ -1,5 +1,6 @@
 import { Box, Heading, Link, Stack, Text } from "@chakra-ui/react";
-import type { ReactNode } from "react";
+import NextLink from "next/link";
+import type { ComponentProps, ReactNode } from "react";
 import { ImageThumb } from "../components/ImageThumb";
 
 export interface AppCardProps {
@@ -11,8 +12,36 @@ export interface AppCardProps {
   imagePosition?: string;
   imageSize?: string;
   external?: boolean;
+  cta?: string;
   onClick?: () => void;
   children?: ReactNode;
+}
+
+function CardLink({
+  href,
+  external,
+  onClick,
+  children,
+  ...linkProps
+}: {
+  href: string;
+  external: boolean;
+  onClick?: () => void;
+  children: ReactNode;
+} & Omit<ComponentProps<typeof Link>, "href" | "onClick" | "children">) {
+  return (
+    <Link asChild {...linkProps}>
+      {external ? (
+        <a href={href} target="_blank" rel="noreferrer" onClick={onClick}>
+          {children}
+        </a>
+      ) : (
+        <NextLink href={href} onClick={onClick}>
+          {children}
+        </NextLink>
+      )}
+    </Link>
+  );
 }
 
 export default function AppCard({
@@ -24,31 +53,27 @@ export default function AppCard({
   imagePosition = "center",
   imageSize = "cover",
   external = true,
+  cta = "Launch",
   onClick,
 }: AppCardProps) {
   return (
     <Stack as="article" gap={3} bg="transparent" transition="transform 150ms">
-      <Link
-        asChild
+      <CardLink
+        href={href}
+        external={external}
+        onClick={onClick}
         _hover={{ textDecoration: "none" }}
         role="group"
         display="block"
       >
-        <a
-          href={href}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noreferrer" : undefined}
-          onClick={onClick}
-        >
-          <ImageThumb
-            src={image}
-            alt={imageAlt}
-            imagePosition={imagePosition}
-            imageSize={imageSize}
-            aspectRatio="16 / 9"
-          />
-        </a>
-      </Link>
+        <ImageThumb
+          src={image}
+          alt={imageAlt}
+          imagePosition={imagePosition}
+          imageSize={imageSize}
+          aspectRatio="16 / 9"
+        />
+      </CardLink>
 
       <Heading as="h3" textStyle="h2" color="fg" mb={0}>
         {title}
@@ -61,16 +86,16 @@ export default function AppCard({
       )}
 
       <Box>
-        <Link asChild fontSize="sm" fontWeight={600} color="link.emphasis">
-          <a
-            href={href}
-            target={external ? "_blank" : undefined}
-            rel={external ? "noreferrer" : undefined}
-            onClick={onClick}
-          >
-            Launch →
-          </a>
-        </Link>
+        <CardLink
+          href={href}
+          external={external}
+          onClick={onClick}
+          fontSize="sm"
+          fontWeight={600}
+          color="link.emphasis"
+        >
+          {cta} →
+        </CardLink>
       </Box>
     </Stack>
   );

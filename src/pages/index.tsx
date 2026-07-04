@@ -60,20 +60,6 @@ const PORTAL_CARDS = [
   },
 ] as const;
 
-const TUTORIAL_CARDS = [
-  {
-    href: "/tutorial",
-    title: "Tutorial",
-    description:
-      "Understand the mechanics of the Map Equation through interactive visualizations.",
-    image: "/apps/Tutorial.jpg",
-    imagePosition: "center top",
-    imageSize: undefined,
-    ctaType: "tutorial",
-    contentId: "portal-tutorial",
-  },
-] as const;
-
 interface Props {
   recentNews: NewsItem[];
 }
@@ -205,15 +191,6 @@ const HomePage: NextPage<Props> = ({ recentNews }) => {
             <FlowDemo />
           </Box>
         </SimpleGrid>
-
-        {/* Tutorial — start here */}
-        <PortalSection eyebrow="Start here" title="Tutorial">
-          <SimpleGrid columns={{ base: 1, md: 3 }} gap={16}>
-            {TUTORIAL_CARDS.map((card) => (
-              <PortalCard key={card.href} card={card} />
-            ))}
-          </SimpleGrid>
-        </PortalSection>
 
         {/* Portal cards — three doorways */}
         <PortalSection title="Explore">
