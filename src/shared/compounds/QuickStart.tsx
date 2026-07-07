@@ -3,12 +3,28 @@ import NextLink from "next/link";
 import { trackEvent } from "../analytics";
 import { TabbedCodeBlock } from "../components/CodeBlock";
 
-const PYTHON_SNIPPET = `import networkx as nx
-from infomap import find_communities
+const PYTHON_SNIPPET = `import infomap
 
-G = nx.Graph([(1, 2), (1, 3), (2, 3), (3, 4), (4, 5), (4, 6), (5, 6)])
-communities = find_communities(G)
-# [{1, 2, 3}, {4, 5, 6}]`;
+edges = [(0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (3, 5), (4, 5)]
+result = infomap.run(edges)
+result.modules()
+# {2: 1, 0: 1, 1: 1, 3: 2, 4: 2, 5: 2}`;
+
+const NETWORKX_SNIPPET = `import networkx as nx
+import infomap
+
+G = nx.Graph([(0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (3, 5), (4, 5)])
+result = infomap.run(G)
+result.modules()
+# {2: 1, 0: 1, 1: 1, 3: 2, 4: 2, 5: 2}`;
+
+const IGRAPH_SNIPPET = `import igraph as ig
+import infomap
+
+G = ig.Graph([(0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (3, 5), (4, 5)])
+result = infomap.run(G)
+result.modules()
+# {2: 1, 0: 1, 1: 1, 3: 2, 4: 2, 5: 2}`;
 
 const R_SNIPPET = `library(infomap)
 edges <- data.frame(
@@ -31,6 +47,18 @@ export function QuickStart() {
             label: "Python",
             code: PYTHON_SNIPPET,
             value: "python",
+          },
+          {
+            language: "python",
+            label: "Python + NetworkX",
+            code: NETWORKX_SNIPPET,
+            value: "networkx",
+          },
+          {
+            language: "python",
+            label: "Python + igraph",
+            code: IGRAPH_SNIPPET,
+            value: "igraph",
           },
           { language: "r", label: "R", code: R_SNIPPET, value: "r" },
         ]}
