@@ -168,6 +168,47 @@ const formats = [
     language: "infomap",
   },
   {
+    id: "InputNetworkJson",
+    chip: ".json",
+    side: "input",
+    title: "Network JSON",
+    tag: "nodes + edges",
+    description:
+      "Use the infomap-network JSON format when you generate networks programmatically or want one structured format that covers standard, bipartite, multilayer, and state networks.",
+    details: [
+      "Every file sets format to infomap-network and version to 1.0. The required edges array lists links as source, target, and optional weight. The optional nodes array names physical nodes and can set weights, metadata, or an initial partition path.",
+      "The type field selects the network kind: standard (default), bipartite (with bipartiteStartId), multilayer (with multilayer set to full, intra, or intra-inter and per-edge layers), or state (with an explicit states array). Set directed to true for directed links.",
+    ],
+    example: exampleNetworks.networkJson,
+    examples: [
+      {
+        label: "Standard",
+        description:
+          "A plain network. Only edges are required; the nodes array is optional and used here to name the physical nodes.",
+        code: exampleNetworks.networkJson,
+      },
+      {
+        label: "Bipartite",
+        description:
+          "Two node types. bipartiteStartId marks the first feature-node id.",
+        code: exampleNetworks.networkJsonBipartite,
+      },
+      {
+        label: "Multilayer",
+        description:
+          "With multilayer set to full, every edge lists both its source and target layer.",
+        code: exampleNetworks.networkJsonMultilayer,
+      },
+      {
+        label: "State",
+        description:
+          "Explicit state nodes. Edges reference state ids, and each state maps to a physical node.",
+        code: exampleNetworks.networkJsonState,
+      },
+    ],
+    language: "json",
+  },
+  {
     id: "OutputClu",
     chip: ".clu",
     side: "output",

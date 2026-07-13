@@ -226,6 +226,93 @@ export const states = `# A network in state format
 6 4 1
 6 5 1`;
 
+export const networkJson = `{
+  "format": "infomap-network",
+  "version": "1.0",
+  "nodes": [
+    { "id": 1, "name": "a" },
+    { "id": 2, "name": "b" },
+    { "id": 3, "name": "c" },
+    { "id": 4, "name": "d" },
+    { "id": 5, "name": "e" },
+    { "id": 6, "name": "f" }
+  ],
+  "edges": [
+    { "source": 1, "target": 2 },
+    { "source": 1, "target": 3 },
+    { "source": 2, "target": 3 },
+    { "source": 3, "target": 4 },
+    { "source": 4, "target": 5 },
+    { "source": 4, "target": 6 },
+    { "source": 5, "target": 6 }
+  ]
+}`;
+
+export const networkJsonBipartite = `{
+  "format": "infomap-network",
+  "version": "1.0",
+  "type": "bipartite",
+  "bipartiteStartId": 4,
+  "nodes": [
+    { "id": 1, "name": "Node 1" },
+    { "id": 2, "name": "Node 2" },
+    { "id": 3, "name": "Node 3" },
+    { "id": 4, "name": "Feature 1" },
+    { "id": 5, "name": "Feature 2" }
+  ],
+  "edges": [
+    { "source": 1, "target": 4 },
+    { "source": 2, "target": 4 },
+    { "source": 2, "target": 5, "weight": 0.25 },
+    { "source": 3, "target": 5 }
+  ]
+}`;
+
+export const networkJsonMultilayer = `{
+  "format": "infomap-network",
+  "version": "1.0",
+  "type": "multilayer",
+  "multilayer": "full",
+  "nodes": [
+    { "id": 1, "name": "i" },
+    { "id": 2, "name": "j" },
+    { "id": 3, "name": "k" },
+    { "id": 4, "name": "l" },
+    { "id": 5, "name": "m" }
+  ],
+  "edges": [
+    { "layers": [1, 1], "source": 1, "target": 4, "weight": 0.8 },
+    { "layers": [1, 1], "source": 4, "target": 5, "weight": 1 },
+    { "layers": [2, 2], "source": 1, "target": 2, "weight": 0.8 },
+    { "layers": [2, 2], "source": 2, "target": 3, "weight": 1 },
+    { "layers": [1, 2], "source": 1, "target": 2, "weight": 0.2 },
+    { "layers": [2, 1], "source": 1, "target": 4, "weight": 0.2 }
+  ]
+}`;
+
+export const networkJsonState = `{
+  "format": "infomap-network",
+  "version": "1.0",
+  "type": "state",
+  "nodes": [
+    { "id": 1, "name": "i" },
+    { "id": 2, "name": "j" },
+    { "id": 3, "name": "k" }
+  ],
+  "states": [
+    { "id": 1, "node": 1, "name": "i from j" },
+    { "id": 2, "node": 2, "name": "j" },
+    { "id": 3, "node": 3, "name": "k" },
+    { "id": 4, "node": 1, "name": "i from k" }
+  ],
+  "edges": [
+    { "source": 1, "target": 3, "weight": 1 },
+    { "source": 2, "target": 1, "weight": 1 },
+    { "source": 4, "target": 2, "weight": 1 },
+    { "source": 3, "target": 4, "weight": 1 }
+  ]
+}`;
+
 export const karate = `# Zacharys karate club
 0 1 4
 0 2 5
