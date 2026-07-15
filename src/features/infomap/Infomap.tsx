@@ -1439,7 +1439,7 @@ export default function InfomapOnline() {
         }
       />
 
-      <HStack flexShrink={0} justify="space-between" gap={3} mb={3}>
+      <HStack flexShrink={0} justify="space-between" gap={3} mb={0}>
         <HStack gap={2}>
           <Button
             bg="brand.solid"
@@ -1472,6 +1472,11 @@ export default function InfomapOnline() {
           lastRun={lastRun}
         />
       </HStack>
+      <Box mb={3}>
+        <Text color="fg.muted" fontSize="xs" mb={0}>
+          Infomap v{Infomap.__version__}
+        </Text>
+      </Box>
 
       <Box flexShrink={0} mb={5}>
         <InputParameters loading={isRunning} onClick={run} />
