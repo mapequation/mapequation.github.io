@@ -388,15 +388,12 @@ const parameterIsChanged = (
 
 function ParamName({
   param,
-  short = false,
+  short = true,
 }: {
   param: InfomapParameter;
   short?: boolean;
 }) {
-  const name =
-    short && param.shortString
-      ? stripFlagPrefix(param.shortString)
-      : parameterLabel(param);
+  const name = parameterLabel(param);
   const parts = name.split(/(<[^>]+>)/g);
 
   return (
@@ -412,8 +409,17 @@ function ParamName({
       userSelect="none"
     >
       {parts.map((part) =>
-        part.startsWith("<") && part.endsWith(">") ? null : part,
+        part.startsWith("<") && part.endsWith(">") ? null : part.trim(),
       )}
+      {short &&
+        param.shortString &&
+        param.shortString.split(/(<[^>]+>)/g).map((part) =>
+          part.startsWith("<") && part.endsWith(">") ? null : (
+            <chakra.span key={part} color="fg.muted" ml={1}>
+              {part}
+            </chakra.span>
+          ),
+        )}
     </chakra.code>
   );
 }
