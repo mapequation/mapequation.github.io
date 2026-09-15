@@ -21,11 +21,15 @@ import type { GetStaticProps, NextPage } from "next";
 import type { FC, PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaRegFilePdf } from "react-icons/fa6";
-import { LuX } from "react-icons/lu";
+import { LuCheck, LuLink, LuX } from "react-icons/lu";
 import { SiGooglescholar } from "react-icons/si";
 import { trackEvent } from "../shared/analytics";
 import { SeoHead } from "../shared/components/SeoHead";
 import { Tag } from "../shared/components/Tag";
+import {
+  publicationLinkCopiedToast,
+  toaster,
+} from "../shared/components/toaster";
 import HowToCite from "../shared/compounds/HowToCite";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
 import { loadPublications, type Publication } from "../shared/loadPublications";
@@ -90,6 +94,16 @@ function formatPubDate(p: Publication): string {
   return String(p.year);
 }
 
+const actionLinkStyles = {
+  fontSize: "sm",
+  color: "link.emphasis",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 1,
+  textDecoration: "none",
+  _hover: { color: "link.emphasisHover", textDecoration: "underline" },
+} as const;
+
 const ActionLink = ({
   href,
   ariaLabel,
@@ -125,17 +139,63 @@ const ActionLink = ({
         },
       )
     }
-    fontSize="sm"
-    color="link.emphasis"
-    display="inline-flex"
-    alignItems="center"
-    gap={1}
-    textDecoration="none"
-    _hover={{ color: "link.emphasisHover", textDecoration: "underline" }}
+    {...actionLinkStyles}
   >
     {children}
   </chakra.a>
 );
+
+// Permalink to a single paper. Opening it expands the paper again, since the
+// page syncs the open accordion item with the URL hash.
+const ShareLink = ({ slug }: { slug: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  return (
+    <chakra.a
+      href={`#${slug}`}
+      aria-label="Copy link to this paper"
+      onClick={async (event: React.MouseEvent<HTMLAnchorElement>) => {
+        // Modified clicks keep their browser default (new tab, download, ...).
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+          return;
+        }
+        event.preventDefault();
+
+        const url = `${window.location.href.split("#")[0]}#${slug}`;
+        // Keep the address bar in sync without scrolling the expanded paper away.
+        window.history.replaceState(null, "", `#${slug}`);
+
+        let didCopy = false;
+        if (navigator.clipboard) {
+          try {
+            await navigator.clipboard.writeText(url);
+            didCopy = true;
+          } catch (error) {
+            console.warn("Failed to copy publication link.", error);
+          }
+        }
+
+        setCopied(didCopy);
+        if (didCopy) window.setTimeout(() => setCopied(false), 1400);
+        toaster.create(publicationLinkCopiedToast(didCopy));
+        trackEvent("cta_clicked", {
+          site_area: "publications",
+          cta_type: "share",
+          content_id: "publication-permalink",
+          paper: slug,
+        });
+      }}
+      {...actionLinkStyles}
+    >
+      {copied ? (
+        <LuCheck size={16} aria-hidden="true" />
+      ) : (
+        <LuLink size={16} aria-hidden="true" />
+      )}
+      {copied ? "Copied" : "Copy link"}
+    </chakra.a>
+  );
+};
 
 const FigureCaption = ({ children }: { children: string }) => {
   const captionRef = useRef<HTMLElement | null>(null);
@@ -543,6 +603,7 @@ const PublicationsAccordion = ({
                         {l.label} ↗
                       </ActionLink>
                     ))}
+                    <ShareLink slug={p.slug} />
                   </HStack>
                 </Box>
               </Grid>

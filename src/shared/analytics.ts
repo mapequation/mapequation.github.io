@@ -23,6 +23,7 @@ export type AnalyticsProps = {
     | "docs"
     | "cite"
     | "read"
+    | "share"
     | "support"
     | "tutorial";
   destination?: string;

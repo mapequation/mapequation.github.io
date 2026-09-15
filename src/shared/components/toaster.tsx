@@ -6,7 +6,10 @@ import {
   createToaster,
 } from "@chakra-ui/react";
 import type { FC, PropsWithChildren, ReactNode } from "react";
-export { shareUrlSavedToast } from "./toastMessages";
+export {
+  publicationLinkCopiedToast,
+  shareUrlSavedToast,
+} from "./toastMessages";
 
 export const toaster = createToaster({
   max: 3,
