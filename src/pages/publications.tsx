@@ -1,6 +1,7 @@
 import {
   Accordion,
   Box,
+  Button,
   Card,
   Container,
   chakra,
@@ -21,7 +22,13 @@ import type { GetStaticProps, NextPage } from "next";
 import type { FC, PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaRegFilePdf } from "react-icons/fa6";
-import { LuCheck, LuLink, LuX } from "react-icons/lu";
+import {
+  LuCheck,
+  LuChevronsDownUp,
+  LuChevronsUpDown,
+  LuLink,
+  LuX,
+} from "react-icons/lu";
 import { SiGooglescholar } from "react-icons/si";
 import { trackEvent } from "../shared/analytics";
 import { SeoHead } from "../shared/components/SeoHead";
@@ -380,6 +387,7 @@ const PublicationsAccordion = ({
 }) => (
   <Accordion.Root
     collapsible
+    multiple
     variant="plain"
     value={value}
     onValueChange={(d) => onValueChange(d.value)}
@@ -696,6 +704,13 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
     [publications],
   );
 
+  const allSlugs = useMemo(
+    () => publications.map((p) => p.slug),
+    [publications],
+  );
+  const allExpanded =
+    publications.length > 0 && openItems.length === publications.length;
+
   // Sync open accordion item with URL hash on mount + hashchange.
   useEffect(() => {
     const sync = () => {
@@ -757,7 +772,21 @@ const PublicationsPage: NextPage<Props> = ({ publications }) => {
           </PortalSection>
         )}
 
-        <PortalSection title="All papers">
+        <PortalSection
+          title="All papers"
+          extra={
+            <Button
+              type="button"
+              size="xs"
+              variant="surface"
+              title="Expand every paper so in-page search can find abstracts and journals"
+              onClick={() => setOpenItems(allExpanded ? [] : allSlugs)}
+            >
+              {allExpanded ? <LuChevronsDownUp /> : <LuChevronsUpDown />}
+              {allExpanded ? "Collapse all" : "Expand all"}
+            </Button>
+          }
+        >
           <Card.Root
             bg="bg.panel"
             borderColor="border.emphasized"
