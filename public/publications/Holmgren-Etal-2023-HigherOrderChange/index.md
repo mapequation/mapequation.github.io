@@ -3,7 +3,8 @@ title: "Mapping change in higher-order networks with multilevel and overlapping 
 authors: "Anton Holmgren, Daniel Edler, Martin Rosvall"
 year: 2023
 date: "2023-06-26"
-journal: "Applied Network Science 8, 42 (2023)"
+journal: "Applied Network Science"
+journalDetails: "8, 42 (2023)"
 doi: "https://doi.org/10.1007/s41109-023-00565-4"
 arxiv: "2303.00622"
 links:

@@ -3,7 +3,8 @@ title: "Modelling temporal networks with Markov chains, community structures and
 authors: "Tiago P. Peixoto, Martin Rosvall"
 year: 2023
 date: "2023-11-21"
-journal: "Temporal Network Theory (Springer, 2023), Chapter 4"
+journal: "Temporal Network Theory"
+journalDetails: "(Springer, 2023), Chapter 4"
 doi: "https://doi.org/10.1007/978-3-031-30399-9_4"
 ---
 

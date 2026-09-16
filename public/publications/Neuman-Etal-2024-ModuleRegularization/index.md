@@ -3,7 +3,8 @@ title: "Module-based regularization improves Gaussian graphical models when obse
 authors: "Magnus Neuman, Joaquín Calatayud, Viktor Tasselius, Martin Rosvall"
 year: 2024
 date: "2024-04-17"
-journal: "Applied Network Science 9, 8 (2024)"
+journal: "Applied Network Science"
+journalDetails: "9, 8 (2024)"
 doi: "https://doi.org/10.1007/s41109-024-00618-2"
 arxiv: "2303.16796"
 figure:

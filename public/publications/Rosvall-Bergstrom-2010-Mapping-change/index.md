@@ -2,7 +2,8 @@
 title: "Mapping change in large networks"
 authors: "Martin Rosvall and Carl T. Bergstrom"
 year: 2010
-journal: "PLoS ONE 5(1): e8694 (2010)"
+journal: "PLoS ONE"
+journalDetails: "5(1): e8694 (2010)"
 doi: "http://dx.doi.org/10.1371/journal.pone.0008694"
 arxiv: "0812.1242"
 figure:

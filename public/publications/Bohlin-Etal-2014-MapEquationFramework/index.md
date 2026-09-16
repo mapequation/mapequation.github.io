@@ -3,7 +3,8 @@ title: "Community detection and visualization of networks with the map equation 
 authors: "Ludvig Bohlin, Daniel Edler, Andrea Lancichinetti, Martin Rosvall"
 year: 2014
 category: Tutorial
-journal: "Measuring Scholarly Impact (Springer, 2014), Chapter 1"
+journal: "Measuring Scholarly Impact"
+journalDetails: "(Springer, 2014), Chapter 1"
 doi: "https://doi.org/10.1007/978-3-319-10377-8_1"
 ---
 

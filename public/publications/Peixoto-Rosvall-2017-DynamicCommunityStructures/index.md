@@ -2,7 +2,8 @@
 title: "Modelling sequences and temporal networks with dynamic community structures"
 authors: "Tiago P. Peixoto and Martin Rosvall"
 year: 2017
-journal: "Nat. Commun. 8, 582 (2017)"
+journal: "Nature Communications"
+journalDetails: "8, 582 (2017)"
 doi: "https://doi.org/10.1038/s41467-017-00148-9"
 ---
 

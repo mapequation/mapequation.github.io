@@ -2,7 +2,8 @@
 title: "The map equation"
 authors: "Martin Rosvall, Daniel Axelsson and Carl T. Bergstrom"
 year: 2009
-journal: "Eur. Phys. J. Special Topics 178, 13 (2009)"
+journal: "The European Physical Journal Special Topics"
+journalDetails: "178, 13 (2009)"
 doi: "http://dx.doi.org/10.1140/epjst/e2010-01179-1"
 arxiv: "0906.1405"
 figure:

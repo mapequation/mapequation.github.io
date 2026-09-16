@@ -2,7 +2,8 @@
 title: "Estimating the resolution limit of the map equation in community detection"
 authors: "Tatsuro Kawamoto and Martin Rosvall"
 year: 2015
-journal: "Phys Rev E 91, 012809 (2015)"
+journal: "Physical Review E"
+journalDetails: "91, 012809 (2015)"
 doi: "http://dx.doi.org/10.1103/PhysRevE.91.012809"
 arxiv: "1402.4385"
 figure:

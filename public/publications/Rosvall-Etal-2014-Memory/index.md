@@ -2,7 +2,8 @@
 title: "Memory in network flows and its effects on spreading dynamics and community detection"
 authors: "Martin Rosvall, Alcides V. Esquivel, Andrea Lancichinetti, Jevin D. West, and Renaud Lambiotte"
 year: 2014
-journal: "Nature Comm. 5, 4630 (2014)"
+journal: "Nature Communications"
+journalDetails: "5, 4630 (2014)"
 doi: "http://dx.doi.org/10.1038/ncomms5630"
 arxiv: "1305.4807"
 links:

@@ -2,7 +2,8 @@
 title: "Constrained information flows in temporal networks reveal intermittent communities"
 authors: "Ulf Aslak, Martin Rosvall, and Sune Lehmann"
 year: 2018
-journal: "Phys. Rev. E 97, 062312 (2018)"
+journal: "Physical Review E"
+journalDetails: "97, 062312 (2018)"
 doi: "https://doi.org/10.1103/PhysRevE.97.062312"
 arxiv: "1711.07649"
 figure:

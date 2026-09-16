@@ -3,7 +3,8 @@ title: "Compressing regularized dynamics improves link prediction with the map e
 authors: "Maja Lindström, Christopher Blöcker, Tommy Löfstedt, Martin Rosvall"
 year: 2025
 date: "2025-05-22"
-journal: "Physical Review E 111, 054314 (2025)"
+journal: "Physical Review E"
+journalDetails: "111, 054314 (2025)"
 doi: "https://doi.org/10.1103/PhysRevE.111.054314"
 arxiv: "2410.08777"
 featured: true

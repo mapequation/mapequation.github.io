@@ -5,7 +5,8 @@ authors: "Jelena Smiljanić, Christopher Blöcker, Anton Holmgren, Daniel Edler,
 year: 2026
 date: "2026-02-03"
 category: Tutorial
-journal: "ACM Computing Surveys 58(7), 1-34 (2026)"
+journal: "ACM Computing Surveys"
+journalDetails: "58(7), 1-34 (2026)"
 doi: "https://doi.org/10.1145/3779648"
 arxiv: "2311.04036"
 links:

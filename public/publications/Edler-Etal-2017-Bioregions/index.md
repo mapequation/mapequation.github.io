@@ -2,7 +2,8 @@
 title: "Infomap Bioregions: Interactive mapping of biogeographical regions from species distributions"
 authors: "Daniel Edler, Thaís Guedes, Alexander Zizka, Martin Rosvall, and Alexandre Antonelli"
 year: 2017
-journal: "Syst. Biol. 66 (2): 197-204 (2017)"
+journal: "Systematic Biology"
+journalDetails: "66 (2): 197-204 (2017)"
 doi: "http://dx.doi.org/10.1093/sysbio/syw087"
 arxiv: "1512.00892"
 links:

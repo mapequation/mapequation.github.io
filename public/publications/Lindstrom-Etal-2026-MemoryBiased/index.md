@@ -3,7 +3,8 @@ title: "Mapping memory-biased dynamics with compact models reveals overlapping c
 authors: "Maja Lindström, Rohit Sahasrabuddhe, Anton Holmgren, Christopher Blöcker, Daniel Edler, Martin Rosvall"
 year: 2026
 date: "2026-01-23"
-journal: "Journal of Physics: Complexity (2026)"
+journal: "Journal of Physics: Complexity"
+journalDetails: "7(1), 015006 (2026)"
 doi: "https://doi.org/10.1088/2632-072X/ae35bb"
 arxiv: "2304.05775"
 featured: true

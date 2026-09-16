@@ -2,7 +2,8 @@
 title: "Exploring the solution landscape enables more reliable network community detection"
 authors: "Joaquín Calatayud, Rubén Bernardo-Madrid, Magnus Neuman, Alexis Rojas, and Martin Rosvall"
 year: 2019
-journal: "Phys. Rev. E 100, 052308 (2019)"
+journal: "Physical Review E"
+journalDetails: "100, 052308 (2019)"
 doi: "https://doi.org/10.1103/PhysRevE.100.052308"
 arxiv: "1905.11230"
 links:

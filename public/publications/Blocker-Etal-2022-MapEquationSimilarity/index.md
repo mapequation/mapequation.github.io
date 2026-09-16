@@ -3,7 +3,8 @@ title: "Similarity-based Link Prediction from Modular Compression of Network Flo
 authors: "Christopher Blöcker, Jelena Smiljanić, Ingo Scholtes, Martin Rosvall"
 year: 2022
 date: "2022-12-09"
-journal: "Proceedings of Machine Learning Research, PMLR 198:52:1-52:18 (2022)"
+journal: "Proceedings of Machine Learning Research"
+journalDetails: "198:52:1-52:18 (2022)"
 doi: "https://proceedings.mlr.press/v198/blocker22a.html"
 arxiv: "2208.14220"
 pdf: "https://proceedings.mlr.press/v198/blocker22a/blocker22a.pdf"

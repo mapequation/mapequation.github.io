@@ -3,7 +3,8 @@ title: "Compressing network populations with modal networks reveals structural d
 authors: "Alec Kirkley, Alexis Rojas, Martin Rosvall, Jean-Gabriel Young"
 year: 2023
 date: "2023-06-22"
-journal: "Communications Physics 6, 148 (2023)"
+journal: "Communications Physics"
+journalDetails: "6, 148 (2023)"
 doi: "https://doi.org/10.1038/s42005-023-01270-5"
 arxiv: "2209.13827"
 ---

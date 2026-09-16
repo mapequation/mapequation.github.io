@@ -2,7 +2,8 @@
 title: "Ranking and clustering of nodes in networks with smart teleportation"
 authors: "Renaud Lambiotte and Martin Rosvall"
 year: 2012
-journal: "Phys. Rev. E 85, 056107 (2012)"
+journal: "Physical Review E"
+journalDetails: "85, 056107 (2012)"
 doi: "http://dx.doi.org/10.1103/PhysRevE.85.056107"
 arxiv: "1112.5252"
 figure:

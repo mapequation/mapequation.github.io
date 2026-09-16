@@ -2,7 +2,8 @@
 title: "Mapping higher-order network flows in memory and multilayer networks with Infomap"
 authors: "Daniel Edler, Ludvig Bohlin, and Martin Rosvall"
 year: 2017
-journal: "Algorithms 10, 112 (2017)"
+journal: "Algorithms"
+journalDetails: "10, 112 (2017)"
 doi: "http://dx.doi.org/10.3390/a10040112"
 arxiv: "1706.04792"
 figure:

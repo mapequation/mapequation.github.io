@@ -3,7 +3,8 @@ title: "Mapping flows on sparse networks with missing links"
 authors: "Jelena Smiljanić, Daniel Edler, and Martin Rosvall"
 year: 2020
 date: "2020-06-06"
-journal: "Phys. Rev. E 102, 012302 (2020)"
+journal: "Physical Review E"
+journalDetails: "102, 012302 (2020)"
 doi: "https://doi.org/10.1103/PhysRevE.102.012302"
 arxiv: "1912.05377"
 figure:

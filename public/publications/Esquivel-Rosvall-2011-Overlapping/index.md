@@ -2,7 +2,8 @@
 title: "Compression of flow can reveal overlapping modular organization in networks"
 authors: "Alcides Viamontes Esquivel and Martin Rosvall"
 year: 2011
-journal: "Phys. Rev. X 1, 021025 (2011)"
+journal: "Physical Review X"
+journalDetails: "1, 021025 (2011)"
 doi: "http://dx.doi.org/10.1103/PhysRevX.1.021025"
 arxiv: "1105.0812"
 figure:

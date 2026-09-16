@@ -2,7 +2,8 @@
 title: "Identifying modular flows on multilayer networks reveals highly overlapping organization in interconnected systems"
 authors: "Manlio De Domenico, Andrea Lancichinetti, Alex Arenas, and Martin Rosvall"
 year: 2015
-journal: "Phys Rev X 5, 011027 (2015)"
+journal: "Physical Review X"
+journalDetails: "5, 011027 (2015)"
 doi: "http://dx.doi.org/10.1103/PhysRevX.5.011027"
 arxiv: "1408.2925"
 figure:

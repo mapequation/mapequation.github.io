@@ -3,7 +3,8 @@ title: "Identifying flow modules in ecological networks using Infomap"
 authors: "Carmel Farage, Daniel Edler, Anna Eklöf, Martin Rosvall, and Shai Pilosof"
 year: 2021
 date: "2021-02-10"
-journal: "Methods Ecol Evol. 2021;12:778-786"
+journal: "Methods in Ecology and Evolution"
+journalDetails: "12(5), 778-786 (2021)"
 doi: "https://doi.org/10.1111/2041-210X.13569"
 links:
   - { label: "bioRxiv:2020.04.14", href: "https://www.biorxiv.org/content/10.1101/2020.04.14.040519v2.full" }

@@ -2,7 +2,8 @@
 title: "Map equation with metadata: Varying the role of attributes in community detection"
 authors: "Scott Emmons and Peter J. Mucha"
 year: 2019
-journal: "Phys. Rev. E 100, 022301 (2019)"
+journal: "Physical Review E"
+journalDetails: "100, 022301 (2019)"
 doi: "https://doi.org/10.1103/PhysRevE.100.022301"
 arxiv: "1810.10433"
 figure:

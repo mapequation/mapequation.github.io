@@ -3,7 +3,8 @@ title: "Cross-validation of correlation networks using modular structure"
 authors: "Magnus Neuman, Viktor Jonsson, Joaquín Calatayud, Martin Rosvall"
 year: 2022
 date: "2022-11-15"
-journal: "Applied Network Science 7, 75 (2022)"
+journal: "Applied Network Science"
+journalDetails: "7, 75 (2022)"
 doi: "https://doi.org/10.1007/s41109-022-00516-5"
 arxiv: "2303.01835"
 figure:

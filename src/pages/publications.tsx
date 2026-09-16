@@ -454,6 +454,14 @@ const PublicationsAccordion = ({
               <Text color="fg.muted" fontSize="sm" mb={0}>
                 {p.authors}
               </Text>
+              {p.journal && (
+                <Text color="fg.muted" fontSize="xs" mt={1} mb={0}>
+                  <chakra.em fontStyle="italic">{p.journal}</chakra.em>
+                  {value.includes(p.slug) && p.journalDetails
+                    ? ` ${p.journalDetails}`
+                    : ""}
+                </Text>
+              )}
             </Box>
             <Accordion.ItemIndicator />
           </AccTrigger>
@@ -555,11 +563,6 @@ const PublicationsAccordion = ({
                     />
                   )}
                   <HStack gap={4} mt={p.bodyHtml ? 4 : 0} flexWrap="wrap">
-                    {p.journal && (
-                      <Text color="fg.muted" fontSize="sm" mb={0}>
-                        {p.journal}
-                      </Text>
-                    )}
                     {p.doiHref && (
                       <ActionLink
                         href={p.doiHref}
@@ -670,7 +673,8 @@ const FeaturedPublicationCard = ({
       </Text>
       {publication.journal && (
         <Text color="fg.muted" fontSize="xs" mb={0}>
-          {publication.journal}
+          <chakra.em fontStyle="italic">{publication.journal}</chakra.em>
+          {publication.journalDetails ? ` ${publication.journalDetails}` : ""}
         </Text>
       )}
       {publication.figureSrc && (

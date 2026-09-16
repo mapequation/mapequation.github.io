@@ -3,7 +3,8 @@ title: "How choosing random-walk model and network representation matters for fl
 authors: "Anton Eriksson, Daniel Edler, Alexis Rojas, Manlio de Domenico, and Martin Rosvall"
 year: 2021
 date: "2021-06-11"
-journal: "Comm. Phys. 4, 133 (2021)"
+journal: "Communications Physics"
+journalDetails: "4, 133 (2021)"
 doi: "https://doi.org/10.1038/s42005-021-00634-z"
 arxiv: "2101.00656"
 links:

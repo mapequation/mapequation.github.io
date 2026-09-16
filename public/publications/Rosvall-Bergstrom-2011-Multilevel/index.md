@@ -2,7 +2,8 @@
 title: "Multilevel compression of random walks on networks reveals hierarchical organization in large integrated systems"
 authors: "Martin Rosvall and Carl T. Bergstrom"
 year: 2011
-journal: "PLoS ONE 6(4): e18209 (2011)"
+journal: "PLoS ONE"
+journalDetails: "6(4): e18209 (2011)"
 doi: "http://dx.doi.org/10.1371/journal.pone.0018209"
 arxiv: "1010.0431"
 figure:

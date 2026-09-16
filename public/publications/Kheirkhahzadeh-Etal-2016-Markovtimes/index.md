@@ -2,7 +2,8 @@
 title: "Efficient community detection of network flows for varying Markov times and bipartite networks"
 authors: "Masoumeh Kheirkhahzadeh, Andrea Lancichinetti, and Martin Rosvall"
 year: 2016
-journal: "Phys. Rev. E 93, 032309 (2016)"
+journal: "Physical Review E"
+journalDetails: "93, 032309 (2016)"
 doi: "http://dx.doi.org/10.1103/PhysRevE.93.032309"
 arxiv: "1511.01540"
 figure:

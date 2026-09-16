@@ -2,7 +2,8 @@
 title: "Maps of random walks on complex networks reveal community structure"
 authors: "Martin Rosvall and Carl T. Bergstrom"
 year: 2008
-journal: "PNAS 105, 1118 (2008)"
+journal: "Proceedings of the National Academy of Sciences"
+journalDetails: "105, 1118 (2008)"
 doi: "http://dx.doi.org/10.1073/pnas.0706851105"
 arxiv: "0707.0609"
 figure:

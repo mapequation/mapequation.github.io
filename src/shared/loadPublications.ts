@@ -19,6 +19,7 @@ const publicationSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
   journal: z.string().optional(),
+  journalDetails: z.string().optional(),
   doi: z.string().url().optional(),
   arxiv: z.string().optional(),
   pdf: z.string().optional(),
