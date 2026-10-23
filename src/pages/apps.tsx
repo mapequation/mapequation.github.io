@@ -56,6 +56,14 @@ const APPS: AppItem[] = [
     href: "https://www.mapequation.org/state-visualizer",
     image: "/apps/StateVisualizer.png",
   },
+  {
+    id: "c3",
+    title: "C3 – Consistent Categorical Colors",
+    description:
+      "Generate distinct, deterministic categorical colors for maps and charts.",
+    href: "https://www.mapequation.org/c3",
+    image: "/apps/C3.png",
+  },
 ];
 
 const SOURCE_TOOLS = [
@@ -97,7 +105,7 @@ const AppsPage: NextPage = () => (
         </Heading>
         <Text color="gray.700" textStyle="body" maxW="42rem">
           Explore module hierarchies, compare partitions, inspect higher-order
-          state networks, and visualize bioregions.
+          state networks, visualize bioregions, and color modules consistently.
         </Text>
       </Stack>
 
