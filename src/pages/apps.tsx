@@ -1,14 +1,20 @@
 import {
   Container,
   chakra,
+  Flex,
   Heading,
   SimpleGrid,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
-import { trackEvent } from "../shared/analytics";
+import type { IconType } from "react-icons";
+import { LuBookOpen } from "react-icons/lu";
+import { SiNpm, SiPypi, SiR } from "react-icons/si";
+import { type AnalyticsProps, trackEvent } from "../shared/analytics";
+import { TabbedCodeBlock } from "../shared/components/CodeBlock";
 import { SeoHead } from "../shared/components/SeoHead";
+import { INFOMAP_R_DOCS_URL } from "../shared/docsUrls";
 import AppCard from "../shared/compounds/AppCard";
 import { PortalEyebrow, PortalSection } from "../shared/compounds/portal";
 
@@ -66,6 +72,133 @@ const APPS: AppItem[] = [
   },
 ];
 
+interface LibraryPackage {
+  id: NonNullable<AnalyticsProps["package"]>;
+  label: string;
+  command: string;
+  language: string;
+  registry: keyof typeof REGISTRY_ICONS;
+  href: string;
+}
+
+const REGISTRY_ICONS = {
+  npm: SiNpm,
+  PyPI: SiPypi,
+  "r-universe": SiR,
+} satisfies Record<string, IconType>;
+
+interface LibraryItem {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  packages: LibraryPackage[];
+}
+
+const LIBRARIES: LibraryItem[] = [
+  {
+    id: "infomap",
+    title: "Infomap",
+    description:
+      "Community detection with the map equation, in Python, R, and the browser through WebAssembly.",
+    href: "/infomap",
+    packages: [
+      {
+        id: "typescript",
+        label: "TypeScript",
+        command: "npm install @mapequation/infomap",
+        language: "shell",
+        registry: "npm",
+        href: "https://www.npmjs.com/package/@mapequation/infomap",
+      },
+      {
+        id: "python",
+        label: "Python",
+        command: "pip install infomap",
+        language: "shell",
+        registry: "PyPI",
+        href: "https://pypi.org/project/infomap/",
+      },
+      {
+        id: "r",
+        label: "R",
+        command:
+          'install.packages("infomap", repos = c("https://mapequation.r-universe.dev", "https://cloud.r-project.org"))',
+        language: "r",
+        registry: "r-universe",
+        href: INFOMAP_R_DOCS_URL,
+      },
+    ],
+  },
+  {
+    id: "alluvial",
+    title: "Alluvial diagrams",
+    description:
+      "Draw the Alluvial Generator's diagrams of changing partitions in web apps, or with matplotlib in Python.",
+    href: "https://www.mapequation.org/alluvial-py/",
+    packages: [
+      {
+        id: "typescript",
+        label: "TypeScript",
+        command: "npm install @mapequation/alluvial-diagram",
+        language: "shell",
+        registry: "npm",
+        href: "https://www.npmjs.com/package/@mapequation/alluvial-diagram",
+      },
+      {
+        id: "python",
+        label: "Python",
+        command: "pip install alluvial",
+        language: "shell",
+        registry: "PyPI",
+        href: "https://pypi.org/project/alluvial/",
+      },
+    ],
+  },
+  {
+    id: "c3",
+    title: "C3",
+    description:
+      "Generate distinct and consistent categorical colors in milliseconds for your interactive maps and plots.",
+    href: "https://www.mapequation.org/c3/",
+    packages: [
+      {
+        id: "typescript",
+        label: "TypeScript",
+        command: "npm install @mapequation/c3",
+        language: "shell",
+        registry: "npm",
+        href: "https://www.npmjs.com/package/@mapequation/c3",
+      },
+      {
+        id: "python",
+        label: "Python",
+        command: "pip install c3-colors",
+        language: "shell",
+        registry: "PyPI",
+        href: "https://pypi.org/project/c3-colors/",
+      },
+    ],
+  },
+  {
+    id: "d3gl",
+    title: "d3gl",
+    description:
+      "GPU-accelerated rendering for d3 maps, plots, and networks with millions of links, on SVG, Canvas2D, or WebGL2.",
+    href: "https://www.mapequation.org/d3gl/",
+    packages: [
+      {
+        id: "typescript",
+        label: "TypeScript",
+        command: "npm install @mapequation/d3gl",
+        language: "shell",
+        registry: "npm",
+        href: "https://www.npmjs.com/package/@mapequation/d3gl",
+      },
+    ],
+  },
+];
+
 const SOURCE_TOOLS = [
   {
     id: "tutorial",
@@ -94,7 +227,7 @@ const AppsPage: NextPage = () => (
   <>
     <SeoHead
       title="MapEquation apps and notebooks"
-      description="Explore apps, notebooks, visualization tools, and companion methods for inspecting Infomap results and map equation workflows."
+      description="Explore apps, libraries, notebooks, visualization tools, and companion methods for inspecting Infomap results and map equation workflows."
       path="/apps/"
     />
     <Container>
@@ -151,6 +284,95 @@ const AppsPage: NextPage = () => (
               }
             />
           ))}
+        </SimpleGrid>
+      </PortalSection>
+
+      <PortalSection title="Libraries">
+        <Text color="gray.600" fontSize="sm" mb={4} maxW="42rem">
+          The packages behind the apps, for your own analyses, notebooks, and
+          web apps.
+        </Text>
+        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
+          {LIBRARIES.map((lib) => {
+            const links = [
+              { id: "docs", label: "Docs", href: lib.href, Icon: LuBookOpen },
+              ...lib.packages.map((pkg) => ({
+                id: pkg.registry.toLowerCase(),
+                label: pkg.registry,
+                href: pkg.href,
+                Icon: REGISTRY_ICONS[pkg.registry],
+              })),
+            ];
+            return (
+              <Stack
+                key={lib.id}
+                gap={3}
+                minW={0}
+                bg="white"
+                borderWidth="1px"
+                borderColor="gray.200"
+                borderRadius="md"
+                p={5}
+              >
+                <Heading as="h3" size="sm" mb={0}>
+                  {lib.title}
+                </Heading>
+                <Text color="gray.700" fontSize="sm" mb={0}>
+                  {lib.description}
+                </Text>
+                <TabbedCodeBlock
+                  ariaLabel={`Install ${lib.title}`}
+                  files={lib.packages.map((pkg) => ({
+                    code: pkg.command,
+                    label: pkg.label,
+                    language: pkg.language,
+                    value: pkg.id,
+                  }))}
+                  copyEvent="command_copied"
+                  copyProperties={(file) => ({
+                    site_area: "apps",
+                    cta_type: "install",
+                    package: lib.packages.find((pkg) => pkg.id === file.value)
+                      ?.id,
+                    content_id: `libraries-${lib.id}-${file.value}`,
+                  })}
+                />
+                <Flex gap={4} flexWrap="wrap">
+                  {links.map(({ id, label, href, Icon }) => {
+                    const external = href.startsWith("http");
+                    return (
+                      <chakra.a
+                        key={id}
+                        href={href}
+                        target={external ? "_blank" : undefined}
+                        rel={external ? "noreferrer" : undefined}
+                        display="inline-flex"
+                        alignItems="center"
+                        gap={1.5}
+                        fontSize="sm"
+                        color="link.emphasis"
+                        textDecoration="none"
+                        _hover={{
+                          color: "link.emphasisHover",
+                          textDecoration: "underline",
+                        }}
+                        onClick={() =>
+                          trackEvent("outbound_clicked", {
+                            site_area: "apps",
+                            content_id: `libraries-${lib.id}-${id}`,
+                            destination: href,
+                          })
+                        }
+                      >
+                        <Icon size={16} aria-hidden="true" />
+                        {label}
+                      </chakra.a>
+                    );
+                  })}
+                </Flex>
+              </Stack>
+            );
+          })}
         </SimpleGrid>
       </PortalSection>
 
