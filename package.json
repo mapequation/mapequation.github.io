@@ -35,7 +35,7 @@
     "katex": "^0.16.47",
     "localforage": "^1.10.0",
     "marked": "^18.1.2",
-    "next": "15.5.28",
+    "next": "16.4.3",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-icons": "^4.12.0",

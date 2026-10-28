@@ -5,7 +5,7 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   trailingSlash: true,
   images: {
-    domains: ["mapequation.org"],
+    remotePatterns: [{ protocol: "https", hostname: "mapequation.org" }],
     unoptimized: true,
   },
 };

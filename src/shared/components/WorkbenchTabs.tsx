@@ -34,7 +34,7 @@ export function WorkbenchTabs<T extends string>({
     <Tabs.Root
       value={value}
       variant="subtle"
-      onValueChange={(details: { value: T }) => onValueChange(details.value)}
+      onValueChange={(details) => onValueChange(details.value as T)}
       {...props}
     >
       <TabsList aria-label={ariaLabel} gap={1}>

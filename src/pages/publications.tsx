@@ -45,10 +45,8 @@ interface Props {
   publications: Publication[];
 }
 
-// Chakra v3 Accordion types omit children — runtime accepts them, narrow the FCs.
-const AccItem = Accordion.Item as FC<
-  PropsWithChildren<Record<string, unknown>>
->;
+// Chakra v3 Accordion part types omit children — runtime accepts them, narrow the FCs.
+const AccItem = Accordion.Item;
 const AccTrigger = Accordion.ItemTrigger as FC<
   PropsWithChildren<Record<string, unknown>>
 >;
