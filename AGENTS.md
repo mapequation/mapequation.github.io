@@ -3,7 +3,7 @@
 ## Project Overview
 
 This is the source for `mapequation.org`, built with Next.js 15, React 19,
-TypeScript, Chakra UI, and npm. It uses Node 20 from `.nvmrc` and statically
+TypeScript, Chakra UI, and npm. It uses Node 24 from `.nvmrc` and statically
 exports the site with `next build` into `out/` as configured in
 `next.config.js`.
 

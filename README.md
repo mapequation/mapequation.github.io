@@ -52,7 +52,7 @@ batch several edits.
 ```bash
 git clone git@github.com:mapequation/mapequation.github.io.git
 cd mapequation.github.io
-npm install                    # requires Node 20.x (see package.json engines)
+npm install                    # requires Node 24.x (see package.json engines)
 npm run dev                    # http://localhost:3000
 ```
 

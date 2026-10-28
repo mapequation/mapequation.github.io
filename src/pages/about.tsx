@@ -13,8 +13,9 @@ import {
 } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import NextLink from "next/link";
+import { FaLinkedin } from "react-icons/fa6";
 import { LuArrowRight, LuMail } from "react-icons/lu";
-import { SiGooglescholar, SiLinkedin, SiOrcid } from "react-icons/si";
+import { SiGooglescholar, SiOrcid } from "react-icons/si";
 import EmailLink from "../shared/components/EmailLink";
 import { SeoHead } from "../shared/components/SeoHead";
 import { PortalEyebrow } from "../shared/compounds/portal";
@@ -154,7 +155,7 @@ const PersonLinkIcons = ({
   const items = [
     { href: links?.orcid, label: "ORCID", Icon: SiOrcid },
     { href: links?.scholar, label: "Google Scholar", Icon: SiGooglescholar },
-    { href: links?.linkedin, label: "LinkedIn", Icon: SiLinkedin },
+    { href: links?.linkedin, label: "LinkedIn", Icon: FaLinkedin },
   ].filter((it) => it.href);
   if (items.length === 0 && !email) return null;
   return (
