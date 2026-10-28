@@ -55,14 +55,6 @@ const APPS: AppItem[] = [
     imagePosition: "bottom left",
   },
   {
-    id: "state",
-    title: "State Network Visualizer",
-    description:
-      "Inspect the higher-order state networks behind memory and context effects.",
-    href: "https://www.mapequation.org/state-visualizer",
-    image: "/apps/StateVisualizer.png",
-  },
-  {
     id: "c3",
     title: "C3 – Consistent Categorical Colors",
     description:
