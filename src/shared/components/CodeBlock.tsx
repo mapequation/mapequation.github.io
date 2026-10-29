@@ -99,6 +99,7 @@ const shikiAdapter = createShikiAdapter<HighlighterGeneric<any, any>>({
     return createHighlighter({
       langs: [
         "shell",
+        "javascript",
         "json",
         "python",
         "r",

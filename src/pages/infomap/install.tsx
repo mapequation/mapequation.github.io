@@ -170,9 +170,34 @@ const installMethods: InstallMethod[] = [
 const railItems: DocsRailItem[] = [
   ...installMethods.map(({ id, label }) => ({ id, label })),
   { id: "Running", label: "Run Infomap" },
+  { id: "WorkbenchLinks", label: "Link to workbench" },
   { kind: "heading", label: "Read next" },
   { id: "FormatsNext", label: "Formats", href: "/infomap/formats" },
 ];
+
+const workbenchLinkExample = `async function infomapWorkbenchUrl({ network, args }) {
+  const json = JSON.stringify({ v: 1, network, args });
+  const compressed = new Blob([json])
+    .stream()
+    .pipeThrough(new CompressionStream("deflate"));
+  const bytes = new Uint8Array(await new Response(compressed).arrayBuffer());
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  const s = btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+  return \`https://www.mapequation.org/infomap/workbench/#s=\${s}\`;
+}
+
+const url = await infomapWorkbenchUrl({
+  network: {
+    name: "triangles.net",
+    value: "# source target\\n1 2\\n2 3\\n3 1\\n3 4\\n4 5\\n5 6\\n6 4",
+  },
+  args: "--two-level --directed",
+});
+window.open(url, "_blank");`;
 
 function MethodCard({ method }: { method: InstallMethod }) {
   return (
@@ -513,6 +538,31 @@ const InstallPage: NextPage = () => {
                 List all available options with:
               </Text>
               <CodeBlock language="shell">infomap --help</CodeBlock>
+            </DocsCard>
+
+            <DocsCard id="WorkbenchLinks" title="Link to the workbench" mb={12}>
+              <Text color="fg.muted">
+                Web apps can open the Infomap workbench with a network and
+                options already filled in. Put them in a JSON object, compress
+                it with zlib deflate, encode it as base64url without padding,
+                and pass it in the URL fragment as <code>#s=</code>. The
+                fragment is never sent to a server, so the network stays in the
+                browser.
+              </Text>
+              <CodeBlock language="javascript">
+                {workbenchLinkExample}
+              </CodeBlock>
+
+              <Text color="fg.muted" mt={5}>
+                <code>v</code> must be <code>1</code>.{" "}
+                <code>network.value</code> is the network in any{" "}
+                <CkLink asChild>
+                  <NextLink href="/infomap/formats">input format</NextLink>
+                </CkLink>{" "}
+                and can be up to 200,000 characters, and <code>args</code> holds
+                the Infomap options. The workbench opens with these inputs
+                loaded, and the user starts the run.
+              </Text>
             </DocsCard>
 
             <DocsCard id="ReadNext" title="Read next" mb={12}>
