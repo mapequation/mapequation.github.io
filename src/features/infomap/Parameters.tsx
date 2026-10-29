@@ -668,11 +668,15 @@ export default function Parameters({
   useEffect(() => {
     if (!window.location.hash) return;
 
+    // The hash is either a parameter anchor (`#--two-level`) or share state
+    // (`#s=…`), so ignore anything that isn't a known parameter.
     const hash = window.location.hash.slice(1);
-    const param = store.params.getParam(hash);
-
-    if (param?.advanced) {
-      setAdvanced(true);
+    try {
+      if (store.params.getParam(hash).advanced) {
+        setAdvanced(true);
+      }
+    } catch {
+      return;
     }
   }, [store.params.getParam]);
 
