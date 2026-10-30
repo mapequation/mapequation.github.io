@@ -1,11 +1,6 @@
-import {
-  type BoxProps,
-  Card,
-  Heading,
-  type HeadingProps,
-  Text,
-} from "@chakra-ui/react";
+import { type BoxProps, Card, type HeadingProps, Text } from "@chakra-ui/react";
 import type { ReactNode } from "react";
+import { SectionHeading } from "./SectionHeading";
 
 type DocsCardProps = BoxProps & {
   children: ReactNode;
@@ -17,6 +12,7 @@ type DocsCardProps = BoxProps & {
 export function DocsCard({
   children,
   eyebrow,
+  id,
   p = { base: 5, md: 6 },
   title,
   headingAs = "h2",
@@ -30,6 +26,7 @@ export function DocsCard({
       borderColor="border.emphasized"
       borderRadius="md"
       scrollMarginTop="6rem"
+      id={id}
       {...props}
     >
       <Card.Body p={p}>
@@ -46,9 +43,9 @@ export function DocsCard({
           </Text>
         )}
         {title && (
-          <Heading as={headingAs} size="md" mb={3}>
+          <SectionHeading as={headingAs} size="md" mb={3} anchorId={id}>
             {title}
-          </Heading>
+          </SectionHeading>
         )}
         {children}
       </Card.Body>
