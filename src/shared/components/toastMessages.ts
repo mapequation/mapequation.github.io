@@ -19,3 +19,30 @@ export function publicationLinkCopiedToast(copied: boolean) {
     type: "success" as const,
   };
 }
+
+export function shareUrlTooLongToast() {
+  return {
+    closable: true,
+    description:
+      "The current inputs are too large to fit in a URL. Share the input files instead.",
+    title: "Share URL not created",
+    type: "error" as const,
+  };
+}
+
+export function urlInputsSkippedToast(inputs: string[]) {
+  const list = new Intl.ListFormat("en", { type: "conjunction" }).format(
+    inputs,
+  );
+  return {
+    closable: true,
+    description: `The ${list} in this link ${
+      inputs.length === 1 ? "is" : "are"
+    } too large to load. Load the ${
+      inputs.length === 1 ? "file" : "files"
+    } into the workbench instead.`,
+    title:
+      inputs.length === 1 ? "Link input not loaded" : "Link inputs not loaded",
+    type: "warning" as const,
+  };
+}

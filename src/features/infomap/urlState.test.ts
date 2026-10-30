@@ -3,6 +3,7 @@ import {
   buildWorkbenchUrl,
   parseWorkbenchLocationState,
   parseWorkbenchUrlState,
+  ShareUrlTooLongError,
 } from "./urlState";
 
 describe("parseWorkbenchUrlState", () => {
@@ -138,5 +139,37 @@ describe("buildWorkbenchUrl", () => {
       network: { name: "example.net", value: "1 2" },
       oversized: [],
     });
+  });
+
+  it("rejects inputs that opening the link would skip", async () => {
+    await expect(
+      buildWorkbenchUrl("https://mapequation.org/infomap/workbench", {
+        args: "",
+        clusterData: { name: "", value: "" },
+        metaData: { name: "", value: "" },
+        network: { name: "big.net", value: "1 2\n".repeat(50_001) },
+      }),
+    ).rejects.toBeInstanceOf(ShareUrlTooLongError);
+  });
+
+  it("rejects inputs that do not compress into a short enough URL", async () => {
+    let seed = 1;
+    const next = () => {
+      seed = (seed * 48_271) % 2_147_483_647;
+      return seed % 100_000;
+    };
+    const value = Array.from(
+      { length: 4_000 },
+      () => `${next()} ${next()}`,
+    ).join("\n");
+
+    await expect(
+      buildWorkbenchUrl("https://mapequation.org/infomap/workbench", {
+        args: "",
+        clusterData: { name: "", value: "" },
+        metaData: { name: "", value: "" },
+        network: { name: "random.net", value },
+      }),
+    ).rejects.toBeInstanceOf(ShareUrlTooLongError);
   });
 });

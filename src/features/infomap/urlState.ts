@@ -5,7 +5,17 @@ const MAX_SHARE_URL_LENGTH = 16_000;
 const SHARE_PARAM = "s";
 const SHARE_VERSION = 1;
 
-type UrlInputName = Extract<InputName, "network"> | "clusterData" | "metaData";
+export type UrlInputName =
+  | Extract<InputName, "network">
+  | "clusterData"
+  | "metaData";
+
+export class ShareUrlTooLongError extends Error {
+  constructor() {
+    super("Share URL is too long for the current inputs.");
+    this.name = "ShareUrlTooLongError";
+  }
+}
 
 export type WorkbenchUrlState = {
   args?: string;
@@ -116,12 +126,6 @@ function base64UrlToBytes(value: string) {
   return bytes;
 }
 
-function inputFromPayload(input?: InputFile) {
-  if (!input?.value.trim()) return undefined;
-  if (input.value.length > MAX_URL_INPUT_LENGTH) return undefined;
-  return input;
-}
-
 function payloadToState(payload: unknown): WorkbenchUrlState | undefined {
   if (!payload || typeof payload !== "object") return undefined;
   const source = payload as Partial<WorkbenchSharePayload>;
@@ -221,7 +225,12 @@ export async function buildWorkbenchUrl(
   for (const { key } of inputParams) {
     const input = state[key];
     if (!input.value.trim()) continue;
-    payload[key] = inputFromPayload(input);
+    // Opening the link would skip this input, so refuse instead of sharing a
+    // link without it.
+    if (input.value.length > MAX_URL_INPUT_LENGTH) {
+      throw new ShareUrlTooLongError();
+    }
+    payload[key] = input;
   }
 
   if (state.args.trim()) {
@@ -236,7 +245,7 @@ export async function buildWorkbenchUrl(
   url.search = "";
   url.hash = params.toString();
   if (url.toString().length > MAX_SHARE_URL_LENGTH) {
-    throw new Error("Share URL is too long for the current inputs.");
+    throw new ShareUrlTooLongError();
   }
   return url.toString();
 }

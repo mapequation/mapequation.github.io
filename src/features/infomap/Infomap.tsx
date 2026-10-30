@@ -38,7 +38,12 @@ import {
   LuX,
 } from "react-icons/lu";
 import { PreformattedOutput } from "../../shared/components/PreformattedOutput";
-import { shareUrlSavedToast, toaster } from "../../shared/components/toaster";
+import {
+  shareUrlSavedToast,
+  shareUrlTooLongToast,
+  toaster,
+  urlInputsSkippedToast,
+} from "../../shared/components/toaster";
 import { WorkbenchActionMenu } from "../../shared/components/WorkbenchActionMenu";
 import { trackEvent } from "../../shared/analytics";
 import {
@@ -79,9 +84,20 @@ import {
   parseInfomapPreviewResult,
   type PreviewGraph,
 } from "./parseInfomapPreview";
-import { buildWorkbenchUrl, parseWorkbenchLocationState } from "./urlState";
+import {
+  buildWorkbenchUrl,
+  parseWorkbenchLocationState,
+  ShareUrlTooLongError,
+  type UrlInputName,
+} from "./urlState";
 
 localforage.config({ name: "infomap" });
+
+const urlInputLabels: Record<UrlInputName, string> = {
+  network: "network",
+  clusterData: "cluster data",
+  metaData: "metadata",
+};
 
 const toolbarControlHeight = "2.75rem";
 const NetworkPreview = dynamic<NetworkPreviewProps>(
@@ -665,6 +681,14 @@ export default function InfomapOnline() {
 
       store.params.setArgs(urlState.args ?? DEFAULT_INFOMAP_ARGS);
 
+      if (urlState.oversized.length > 0) {
+        toaster.create(
+          urlInputsSkippedToast(
+            urlState.oversized.map((key) => urlInputLabels[key]),
+          ),
+        );
+      }
+
       if (expandedInputs.size > 0) {
         setOpenInputCards(
           (current) => new Set([...current, ...expandedInputs]),
@@ -1169,7 +1193,11 @@ export default function InfomapOnline() {
         network,
       });
     } catch (error) {
-      console.warn("Failed to build workbench URL.", error);
+      if (error instanceof ShareUrlTooLongError) {
+        toaster.create(shareUrlTooLongToast());
+      } else {
+        console.warn("Failed to build workbench URL.", error);
+      }
       return;
     }
 
