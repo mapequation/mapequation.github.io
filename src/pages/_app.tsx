@@ -11,6 +11,7 @@ import Script from "next/script";
 import { useEffect } from "react";
 import { Toaster } from "../shared/components/toaster";
 import SiteLayout from "../shared/compounds/SiteLayout";
+import { getLegacyRedirect } from "../shared/legacyRedirects";
 import system from "../theme";
 
 const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
@@ -30,8 +31,9 @@ const PLAUSIBLE_INIT_SCRIPT = `
   };
   window.plausible.init();
 `;
-// GitHub Pages reserves /infomap for the infomap repository, so that repo can
-// trampoline direct visits through /?redirect_to=/infomap back into this app.
+// While the infomap repository has a GitHub Pages site, it owns /infomap and
+// trampolines direct visits through /?redirect_to=/infomap back into this app.
+// Once that site is turned off, this site serves /infomap/* directly.
 const REDIRECT_TARGET_PREFIX = "/infomap";
 
 function getRedirectTarget() {
@@ -69,16 +71,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       return;
     }
 
-    // The Infomap Python docs moved to their own GitHub Pages site at
-    // /infomap-python-docs/. Retired /infomap/python/* links are trampolined
-    // here too, so send them on to the new docs instead of routing into this
-    // app (which has no such page and would land on the 404).
-    const targetPath = target.split(/[?#]/, 1)[0];
-    if (
-      targetPath === "/infomap/python" ||
-      targetPath.startsWith("/infomap/python/")
-    ) {
-      window.location.replace("/infomap-python-docs/");
+    // Retired /infomap/python/* links are trampolined here too, so send them
+    // on to the new docs instead of routing into this app's 404 page.
+    const legacyTarget = getLegacyRedirect(target.split(/[?#]/, 1)[0]);
+    if (legacyTarget) {
+      window.location.replace(legacyTarget);
       return;
     }
 
