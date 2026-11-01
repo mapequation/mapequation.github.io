@@ -15,12 +15,19 @@ import { LuArrowRight } from "react-icons/lu";
 import { trackEvent } from "../shared/analytics";
 import { PrimaryButton } from "../shared/components/PrimaryButton";
 import { PortalEyebrow } from "../shared/compounds/portal";
+import { getLegacyRedirect } from "../shared/legacyRedirects";
 
 const NotFoundPage: NextPage = () => {
   const router = useRouter();
 
   useEffect(() => {
     if (!router.isReady) return;
+
+    const legacyTarget = getLegacyRedirect(window.location.pathname);
+    if (legacyTarget) {
+      window.location.replace(legacyTarget);
+      return;
+    }
 
     trackEvent("not_found", {
       attempted_path: router.asPath,

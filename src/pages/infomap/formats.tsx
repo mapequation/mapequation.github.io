@@ -21,6 +21,7 @@ import * as outputExamples from "../../data/output";
 import { CodeBlock, TabbedCodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { SectionHeading } from "../../shared/components/SectionHeading";
 import { SeoHead } from "../../shared/components/SeoHead";
 import { Tag } from "../../shared/components/Tag";
 import { infomapVersionLabel } from "../../shared/infomapVersion";
@@ -362,9 +363,9 @@ function FormatCard({ format }) {
         direction={{ base: "column", md: "row" }}
         mb={2}
       >
-        <Heading as="h3" size="sm">
+        <SectionHeading as="h3" size="sm" anchorId={format.id}>
           {format.title}
-        </Heading>
+        </SectionHeading>
         <Flex gap={2} flexWrap="wrap">
           <Tag>{format.chip}</Tag>
           <Tag>{format.tag}</Tag>
@@ -491,9 +492,15 @@ const FormatsPage: NextPage = () => {
                 mb={3}
                 minW={0}
               >
-                <Heading as="h2" size="md" id="Input" scrollMarginTop="7rem">
+                <SectionHeading
+                  as="h2"
+                  size="md"
+                  id="Input"
+                  anchorId="Input"
+                  scrollMarginTop="7rem"
+                >
                   Input
-                </Heading>
+                </SectionHeading>
                 <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
                   {inputFormats.length} formats
                 </Text>
@@ -527,9 +534,15 @@ const FormatsPage: NextPage = () => {
                 mb={3}
                 minW={0}
               >
-                <Heading as="h2" size="md" id="Output" scrollMarginTop="7rem">
+                <SectionHeading
+                  as="h2"
+                  size="md"
+                  id="Output"
+                  anchorId="Output"
+                  scrollMarginTop="7rem"
+                >
                   Output
-                </Heading>
+                </SectionHeading>
                 <Text color="gray.500" fontSize="sm" mb={0} flexShrink={0}>
                   {outputFormats.length} formats
                 </Text>
@@ -555,9 +568,9 @@ const FormatsPage: NextPage = () => {
                 gap={3}
                 mb={3}
               >
-                <Heading as="h2" size="md">
+                <SectionHeading as="h2" size="md" anchorId="OutputHeader">
                   Output header
-                </Heading>
+                </SectionHeading>
                 <Button
                   type="button"
                   variant="surface"

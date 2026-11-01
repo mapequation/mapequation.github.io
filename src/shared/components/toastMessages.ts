@@ -9,6 +9,17 @@ export function shareUrlSavedToast(copied: boolean) {
   };
 }
 
+export function sectionLinkCopiedToast(copied: boolean) {
+  return {
+    closable: true,
+    description: copied
+      ? "The link opens the page at this section."
+      : "Copy the link from the address bar to share this section.",
+    title: copied ? "Link copied" : "Link ready to copy",
+    type: "success" as const,
+  };
+}
+
 export function publicationLinkCopiedToast(copied: boolean) {
   return {
     closable: true,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   publicationLinkCopiedToast,
+  sectionLinkCopiedToast,
   shareUrlSavedToast,
   shareUrlTooLongToast,
   urlInputsSkippedToast,
@@ -72,6 +73,26 @@ describe("publicationLinkCopiedToast", () => {
     expect(publicationLinkCopiedToast(false)).toMatchObject({
       closable: true,
       description: "Copy the link from the address bar to share this paper.",
+      title: "Link ready to copy",
+      type: "success",
+    });
+  });
+});
+
+describe("sectionLinkCopiedToast", () => {
+  it("describes a copied section link", () => {
+    expect(sectionLinkCopiedToast(true)).toMatchObject({
+      closable: true,
+      description: "The link opens the page at this section.",
+      title: "Link copied",
+      type: "success",
+    });
+  });
+
+  it("points at the address bar when copying is unavailable", () => {
+    expect(sectionLinkCopiedToast(false)).toMatchObject({
+      closable: true,
+      description: "Copy the link from the address bar to share this section.",
       title: "Link ready to copy",
       type: "success",
     });
