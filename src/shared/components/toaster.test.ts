@@ -3,6 +3,8 @@ import {
   publicationLinkCopiedToast,
   sectionLinkCopiedToast,
   shareUrlSavedToast,
+  shareUrlTooLongToast,
+  urlInputsSkippedToast,
 } from "./toastMessages";
 
 describe("shareUrlSavedToast", () => {
@@ -21,6 +23,38 @@ describe("shareUrlSavedToast", () => {
       description: "Current inputs are saved in the URL.",
       title: "Share URL saved",
       type: "success",
+    });
+  });
+});
+
+describe("shareUrlTooLongToast", () => {
+  it("reports inputs too large for a share URL", () => {
+    expect(shareUrlTooLongToast()).toMatchObject({
+      closable: true,
+      description:
+        "The current inputs are too large to fit in a URL. Share the input files instead.",
+      title: "Share URL not created",
+      type: "error",
+    });
+  });
+});
+
+describe("urlInputsSkippedToast", () => {
+  it("names a single skipped input", () => {
+    expect(urlInputsSkippedToast(["network"])).toMatchObject({
+      closable: true,
+      description:
+        "The network in this link is too large to load. Load the file into the workbench instead.",
+      title: "Link input not loaded",
+      type: "warning",
+    });
+  });
+
+  it("lists several skipped inputs", () => {
+    expect(urlInputsSkippedToast(["network", "metadata"])).toMatchObject({
+      description:
+        "The network and metadata in this link are too large to load. Load the files into the workbench instead.",
+      title: "Link inputs not loaded",
     });
   });
 });

@@ -3,6 +3,7 @@ import {
   buildWorkbenchUrl,
   parseWorkbenchLocationState,
   parseWorkbenchUrlState,
+  ShareUrlTooLongError,
 } from "./urlState";
 
 describe("parseWorkbenchUrlState", () => {
@@ -136,6 +137,48 @@ describe("buildWorkbenchUrl", () => {
     ).toEqual({
       args: "--directed",
       network: { name: "example.net", value: "1 2" },
+      oversized: [],
+    });
+  });
+
+  it("rejects inputs that opening the link would skip", async () => {
+    await expect(
+      buildWorkbenchUrl("https://mapequation.org/infomap/workbench", {
+        args: "",
+        clusterData: { name: "", value: "" },
+        metaData: { name: "", value: "" },
+        network: { name: "big.net", value: "1 2\n".repeat(50_001) },
+      }),
+    ).rejects.toBeInstanceOf(ShareUrlTooLongError);
+  });
+
+  it("builds long links for inputs that compress poorly", async () => {
+    let seed = 1;
+    const next = () => {
+      seed = (seed * 48_271) % 2_147_483_647;
+      return seed % 100_000;
+    };
+    const value = Array.from(
+      { length: 4_000 },
+      () => `${next()} ${next()}`,
+    ).join("\n");
+
+    const url = await buildWorkbenchUrl(
+      "https://mapequation.org/infomap/workbench",
+      {
+        args: "",
+        clusterData: { name: "", value: "" },
+        metaData: { name: "", value: "" },
+        network: { name: "random.net", value },
+      },
+    );
+    const parsed = new URL(url);
+
+    expect(url.length).toBeGreaterThan(16_000);
+    expect(
+      await parseWorkbenchLocationState(parsed.search, parsed.hash),
+    ).toEqual({
+      network: { name: "random.net", value },
       oversized: [],
     });
   });
