@@ -152,7 +152,7 @@ describe("buildWorkbenchUrl", () => {
     ).rejects.toBeInstanceOf(ShareUrlTooLongError);
   });
 
-  it("rejects inputs that do not compress into a short enough URL", async () => {
+  it("builds long links for inputs that compress poorly", async () => {
     let seed = 1;
     const next = () => {
       seed = (seed * 48_271) % 2_147_483_647;
@@ -163,13 +163,23 @@ describe("buildWorkbenchUrl", () => {
       () => `${next()} ${next()}`,
     ).join("\n");
 
-    await expect(
-      buildWorkbenchUrl("https://mapequation.org/infomap/workbench", {
+    const url = await buildWorkbenchUrl(
+      "https://mapequation.org/infomap/workbench",
+      {
         args: "",
         clusterData: { name: "", value: "" },
         metaData: { name: "", value: "" },
         network: { name: "random.net", value },
-      }),
-    ).rejects.toBeInstanceOf(ShareUrlTooLongError);
+      },
+    );
+    const parsed = new URL(url);
+
+    expect(url.length).toBeGreaterThan(16_000);
+    expect(
+      await parseWorkbenchLocationState(parsed.search, parsed.hash),
+    ).toEqual({
+      network: { name: "random.net", value },
+      oversized: [],
+    });
   });
 });

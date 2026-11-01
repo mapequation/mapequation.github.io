@@ -1,7 +1,6 @@
 import type { InputFile, InputName } from "../../state/types";
 
 const MAX_URL_INPUT_LENGTH = 200_000;
-const MAX_SHARE_URL_LENGTH = 16_000;
 const SHARE_PARAM = "s";
 const SHARE_VERSION = 1;
 
@@ -242,10 +241,8 @@ export async function buildWorkbenchUrl(
     bytesToBase64Url(await compressText(JSON.stringify(payload))),
   );
 
+  // The fragment never reaches a server, so only the input size limit applies.
   url.search = "";
   url.hash = params.toString();
-  if (url.toString().length > MAX_SHARE_URL_LENGTH) {
-    throw new ShareUrlTooLongError();
-  }
   return url.toString();
 }
