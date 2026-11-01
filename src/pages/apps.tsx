@@ -33,7 +33,7 @@ const APPS: AppItem[] = [
     title: "Infomap Network Navigator",
     description:
       "Browse Infomap results and zoom through the module hierarchy.",
-    href: "https://www.mapequation.org/navigator",
+    href: "https://mapequation.org/navigator",
     image: "/apps/InfomapNetworkNavigator.png",
   },
   {
@@ -41,7 +41,7 @@ const APPS: AppItem[] = [
     title: "Infomap Bioregions",
     description:
       "Map species distributions to coherent bioregions and inspect them on a globe.",
-    href: "https://www.mapequation.org/bioregions",
+    href: "https://mapequation.org/bioregions",
     image: "/apps/InfomapBioregions.png",
     imagePosition: "50% 25%",
   },
@@ -50,7 +50,7 @@ const APPS: AppItem[] = [
     title: "Alluvial Generator",
     description:
       "Compare partitions side by side to see which modules split, merge, or persist.",
-    href: "https://www.mapequation.org/alluvial",
+    href: "https://mapequation.org/alluvial",
     image: "/apps/NewAlluvialGenerator.png",
     imagePosition: "bottom left",
   },
@@ -59,7 +59,7 @@ const APPS: AppItem[] = [
     title: "C3 – Consistent Categorical Colors",
     description:
       "Generate distinct, deterministic categorical colors for maps and charts.",
-    href: "https://www.mapequation.org/c3",
+    href: "https://mapequation.org/c3",
     image: "/apps/C3.png",
   },
 ];
@@ -127,7 +127,7 @@ const LIBRARIES: LibraryItem[] = [
     title: "Alluvial diagrams",
     description:
       "Draw the Alluvial Generator's diagrams of changing partitions in web apps, or with matplotlib in Python.",
-    href: "https://www.mapequation.org/alluvial-py/",
+    href: "https://mapequation.org/alluvial-py/",
     packages: [
       {
         id: "typescript",
@@ -152,7 +152,7 @@ const LIBRARIES: LibraryItem[] = [
     title: "C3",
     description:
       "Generate distinct and consistent categorical colors in milliseconds for your interactive maps and plots.",
-    href: "https://www.mapequation.org/c3/",
+    href: "https://mapequation.org/c3/",
     packages: [
       {
         id: "typescript",
@@ -177,7 +177,7 @@ const LIBRARIES: LibraryItem[] = [
     title: "d3gl",
     description:
       "GPU-accelerated rendering for d3 maps, plots, and networks with millions of links, on SVG, Canvas2D, or WebGL2.",
-    href: "https://www.mapequation.org/d3gl/",
+    href: "https://mapequation.org/d3gl/",
     packages: [
       {
         id: "typescript",

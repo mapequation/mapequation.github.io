@@ -1,6 +1,6 @@
 import { infomapVersion } from "../infomapVersion";
 
-const SITE_ORIGIN = "https://www.mapequation.org";
+const SITE_ORIGIN = "https://mapequation.org";
 
 // Stable identifier so the Organization can be referenced (by @id) from
 // schemas on other pages instead of being duplicated.

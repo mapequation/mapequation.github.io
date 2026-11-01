@@ -1,6 +1,6 @@
 import Head from "next/head";
 
-const SITE_ORIGIN = "https://www.mapequation.org";
+const SITE_ORIGIN = "https://mapequation.org";
 const SITE_NAME = "MapEquation";
 const DEFAULT_IMAGE = "/assets/img/icons/apple-touch-icon-144.png";
 

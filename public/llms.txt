@@ -14,10 +14,10 @@ Important notes:
 
 ## Core pages
 
-- [Infomap overview](https://www.mapequation.org/infomap/): What Infomap is and when to use it.
-- [Install Infomap](https://www.mapequation.org/infomap/install/): Python, R, CLI, Docker, Homebrew, binaries, TypeScript, and source installation.
-- [Input and output formats](https://www.mapequation.org/infomap/formats/): Link lists, state networks, multilayer networks, trees, and clustering outputs.
-- [How the map equation works](https://www.mapequation.org/infomap/how-it-works/): Explanation of flow, compression, modules, and the search algorithm.
-- [Publications and citations](https://www.mapequation.org/publications/): Recommended citations, BibTeX, and method papers.
-- [Online workbench](https://www.mapequation.org/infomap/workbench/): Browser-based Infomap runner.
-- [Apps and notebooks](https://www.mapequation.org/apps/): Visualization tools, notebooks, and companion methods.
+- [Infomap overview](https://mapequation.org/infomap/): What Infomap is and when to use it.
+- [Install Infomap](https://mapequation.org/infomap/install/): Python, R, CLI, Docker, Homebrew, binaries, TypeScript, and source installation.
+- [Input and output formats](https://mapequation.org/infomap/formats/): Link lists, state networks, multilayer networks, trees, and clustering outputs.
+- [How the map equation works](https://mapequation.org/infomap/how-it-works/): Explanation of flow, compression, modules, and the search algorithm.
+- [Publications and citations](https://mapequation.org/publications/): Recommended citations, BibTeX, and method papers.
+- [Online workbench](https://mapequation.org/infomap/workbench/): Browser-based Infomap runner.
+- [Apps and notebooks](https://mapequation.org/apps/): Visualization tools, notebooks, and companion methods.

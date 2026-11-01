@@ -1,6 +1,6 @@
 # mapequation.org
 
-Source for the [Map Equation research group](https://www.mapequation.org/) website.
+Source for the [Map Equation research group](https://mapequation.org/) website.
 Built with [Next.js](https://nextjs.org/), React, and [Chakra UI](https://chakra-ui.com/),
 statically exported via `next build` (see [next.config.js](next.config.js)).
 
