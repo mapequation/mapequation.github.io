@@ -188,7 +188,7 @@ const workbenchLinkExample = `async function infomapWorkbenchUrl({ network, args
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replaceAll("=", "");
-  return \`https://www.mapequation.org/infomap/workbench/#s=\${s}\`;
+  return \`https://mapequation.org/infomap/workbench/#s=\${s}\`;
 }
 
 const url = await infomapWorkbenchUrl({
