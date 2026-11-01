@@ -8,6 +8,7 @@ import {
 import type { FC, PropsWithChildren, ReactNode } from "react";
 export {
   publicationLinkCopiedToast,
+  sectionLinkCopiedToast,
   shareUrlSavedToast,
 } from "./toastMessages";
 
