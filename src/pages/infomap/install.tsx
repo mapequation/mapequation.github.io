@@ -18,6 +18,7 @@ import { type AnalyticsProps, trackEvent } from "../../shared/analytics";
 import { CodeBlock } from "../../shared/components/CodeBlock";
 import { DocsCard } from "../../shared/components/DocsCard";
 import { DocsRail, type DocsRailItem } from "../../shared/components/DocsRail";
+import { SectionHeading } from "../../shared/components/SectionHeading";
 import { SeoHead } from "../../shared/components/SeoHead";
 import { Tag } from "../../shared/components/Tag";
 import { ApiDocumentationLinks } from "../../shared/compounds/ApiDocumentationLinks";
@@ -234,9 +235,9 @@ function MethodCard({ method }: { method: InstallMethod }) {
         direction={{ base: "column", md: "row" }}
         mb={2}
       >
-        <Heading as="h2" size="md">
+        <SectionHeading as="h2" size="md" anchorId={method.id}>
           {method.title}
-        </Heading>
+        </SectionHeading>
         <Flex gap={2} flexWrap="wrap">
           {method.tags.map((tag) => (
             <Tag key={tag}>{tag}</Tag>

@@ -6,9 +6,7 @@ import "@fontsource/open-sans/600.css";
 import "@fontsource/open-sans/700.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import type { AppProps } from "next/app";
-import { useRouter } from "next/router";
 import Script from "next/script";
-import { useEffect } from "react";
 import { Toaster } from "../shared/components/toaster";
 import SiteLayout from "../shared/compounds/SiteLayout";
 import system from "../theme";
@@ -30,60 +28,9 @@ const PLAUSIBLE_INIT_SCRIPT = `
   };
   window.plausible.init();
 `;
-// GitHub Pages reserves /infomap for the infomap repository, so that repo can
-// trampoline direct visits through /?redirect_to=/infomap back into this app.
-const REDIRECT_TARGET_PREFIX = "/infomap";
-
-function getRedirectTarget() {
-  const target = new URLSearchParams(window.location.search).get("redirect_to");
-
-  if (!target?.startsWith("/") || target.startsWith("//")) {
-    return null;
-  }
-
-  const url = new URL(target, window.location.origin);
-
-  if (
-    url.origin !== window.location.origin ||
-    (url.pathname !== REDIRECT_TARGET_PREFIX &&
-      !url.pathname.startsWith(`${REDIRECT_TARGET_PREFIX}/`))
-  ) {
-    return null;
-  }
-
-  return `${url.pathname}${url.search}${url.hash}`;
-}
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
   const fillViewport = Boolean((Component as any).fillViewport);
-
-  useEffect(() => {
-    if (window.location.pathname !== "/") {
-      return;
-    }
-
-    const target = getRedirectTarget();
-
-    if (!target) {
-      return;
-    }
-
-    // The Infomap Python docs moved to their own GitHub Pages site at
-    // /infomap-python-docs/. Retired /infomap/python/* links are trampolined
-    // here too, so send them on to the new docs instead of routing into this
-    // app (which has no such page and would land on the 404).
-    const targetPath = target.split(/[?#]/, 1)[0];
-    if (
-      targetPath === "/infomap/python" ||
-      targetPath.startsWith("/infomap/python/")
-    ) {
-      window.location.replace("/infomap-python-docs/");
-      return;
-    }
-
-    void router.replace(target);
-  }, [router]);
 
   return (
     <>
