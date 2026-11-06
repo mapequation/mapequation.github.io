@@ -189,6 +189,23 @@ const LIBRARIES: LibraryItem[] = [
       },
     ],
   },
+  {
+    id: "netgamut",
+    title: "netgamut",
+    description:
+      "Browse, download, and cache network datasets from SNAP, Netzschleuder, KONECT, and other sources in Python.",
+    href: "https://mapequation.org/netgamut/",
+    packages: [
+      {
+        id: "python",
+        label: "Python",
+        command: "pip install netgamut",
+        language: "shell",
+        registry: "PyPI",
+        href: "https://pypi.org/project/netgamut/",
+      },
+    ],
+  },
 ];
 
 const SOURCE_TOOLS = [
